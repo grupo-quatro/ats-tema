@@ -1,21 +1,28 @@
-required dependencies
 
-npm
-npm install -g pnpm firebase-tools
+# instalar las dependencias del proyecto
 
-pnpm install
+npm, node v22.14
 
-firebase login // con cuenta grupo.quatro.ort@gmail.com
+`npm install -g pnpm firebase-tools`
 
-verfiicar que anda
+# instalar las dependencias del proyecto
+`pnpm install`
 
-pnpm install
 
-pnpm audit --fix // corregir dependencias desactualizadas
+## Loggearse en firebase
+`firebase login` // con cuenta grupo.quatro.ort@gmail.com
 
-pnpm turbo run build --filter=@ats/functions // compilar funciones
+## verfiicar que anda
 
-pnpm turbo run dev --filter=@ats/web //levantar next.js en dev
+`pnpm install`
 
-firebase init emulators //correr emuladores de firebase
-firebase emulators:start
+`pnpm audit --fix` // corregir dependencias desactualizadas
+
+`pnpm turbo run build --filter=@ats/functions` // compilar funciones script `compile-fn`
+
+`pnpm turbo run dev --filter=@ats/web` o script `dev-web` //levantar next.js en dev
+
+## Levantar emuladores de firebase
+`firebase init emulators`//correr emuladores de firebase
+
+`firebase emulators:start`
