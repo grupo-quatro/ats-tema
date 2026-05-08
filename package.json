@@ -14,7 +14,7 @@
   },
   "config": {
     "ghooks": {
-      "pre-commit": "pnpm lint && pnpm format && pnpm test",
+      "pre-commit": "CI=true pnpm lint && CI=true pnpm format && CI=true pnpm test",
       "commit-msg": "commitlint -e --verbose || (echo '\n❌ ERROR: El mensaje de commit no sigue el estándar.\n💡 Ejemplo válido: feat(auth): agregar validación de usuario\n📖 Más info en: https://www.conventionalcommits.org/es/\n' && exit 1)"
     }
   },
