@@ -16,7 +16,6 @@ export interface Application {
   jobId: string;
   candidateId: string;
 
-  // Desnormalizado para evitar joins en las queries del pipeline
   jobTitle: string;
   candidateName: string;
   candidateEmail: string;
