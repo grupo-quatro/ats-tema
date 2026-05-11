@@ -33,12 +33,12 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.auth = exports.storage = exports.db = void 0;
-const admin = __importStar(require("firebase-admin"));
-//establece la conexion con servicios de Firebase
-if (!admin.apps.length) {
-    admin.initializeApp();
-}
-exports.db = admin.firestore();
-exports.storage = admin.storage();
-exports.auth = admin.auth();
+exports.healthCheck = void 0;
+const functions = __importStar(require("firebase-functions"));
+exports.healthCheck = functions.https.onRequest((req, res) => {
+    res.status(200).json({
+        status: "healthy",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+    });
+});

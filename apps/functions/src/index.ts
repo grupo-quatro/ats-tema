@@ -1,1 +1,1 @@
-export {};
+export { healthCheck } from "./callables/health-check";
