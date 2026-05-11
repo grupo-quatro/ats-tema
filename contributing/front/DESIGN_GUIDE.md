@@ -2,13 +2,13 @@
 
 ## Stack
 
-| Librería | Versión | Uso |
-|---|---|---|
-| `@mui/material` | v5/v6 | Componentes base |
-| `@tanstack/react-query` | v5 | Fetching y caché de datos |
-| `@tanstack/react-form` | latest | Lógica y validación de formularios |
-| `lucide-react` | latest | Iconos (única fuente permitida) |
-| `@mui/material` `Box` / `Stack` / `Grid` | v5/v6 | Layout estructural |
+| Librería                                 | Versión | Uso                                |
+| ---------------------------------------- | ------- | ---------------------------------- |
+| `@mui/material`                          | v5/v6   | Componentes base                   |
+| `@tanstack/react-query`                  | v5      | Fetching y caché de datos          |
+| `@tanstack/react-form`                   | latest  | Lógica y validación de formularios |
+| `lucide-react`                           | latest  | Iconos (única fuente permitida)    |
+| `@mui/material` `Box` / `Stack` / `Grid` | v5/v6   | Layout estructural                 |
 
 ---
 
@@ -16,16 +16,16 @@
 
 **Regla estricta: no introducir ningún color fuera de esta lista.**
 
-| Token | Hex | Cuándo usarlo |
-|---|---|---|
-| `#2563eb` | Primary 600 | Botones principales, CTAs |
-| `#1d4ed8` | Primary 700 | Hover de botones |
-| `#f8fafc` | Background | Fondo de página |
-| `#ffffff` | Card BG | Superficies de tarjetas |
-| `#0f172a` | Slate 900 | Títulos |
-| `#334155` | Slate 700 | Cuerpo de texto, labels |
-| `#ef4444` | Red 500 | Errores y estados inválidos |
-| `#16a34a` | Green 600 | Éxito y confirmaciones |
+| Token     | Hex         | Cuándo usarlo               |
+| --------- | ----------- | --------------------------- |
+| `#2563eb` | Primary 600 | Botones principales, CTAs   |
+| `#1d4ed8` | Primary 700 | Hover de botones            |
+| `#f8fafc` | Background  | Fondo de página             |
+| `#ffffff` | Card BG     | Superficies de tarjetas     |
+| `#0f172a` | Slate 900   | Títulos                     |
+| `#334155` | Slate 700   | Cuerpo de texto, labels     |
+| `#ef4444` | Red 500     | Errores y estados inválidos |
+| `#16a34a` | Green 600   | Éxito y confirmaciones      |
 
 El tema MUI ya tiene estos valores configurados en `apps/web/app/lib/theme.ts`. Usa siempre las props semánticas de MUI (`color="primary"`, `color="error"`, etc.) en lugar de valores hardcodeados.
 
@@ -221,8 +221,16 @@ export function CandidateList() {
   if (isLoading) {
     return (
       <>
-        <Skeleton variant="rectangular" height={80} sx={{ borderRadius: 2, mb: 2 }} />
-        <Skeleton variant="rectangular" height={80} sx={{ borderRadius: 2, mb: 2 }} />
+        <Skeleton
+          variant="rectangular"
+          height={80}
+          sx={{ borderRadius: 2, mb: 2 }}
+        />
+        <Skeleton
+          variant="rectangular"
+          height={80}
+          sx={{ borderRadius: 2, mb: 2 }}
+        />
         <Skeleton variant="rectangular" height={80} sx={{ borderRadius: 2 }} />
       </>
     );
@@ -291,7 +299,7 @@ import Grid from "@mui/material/Grid";
   <Grid item xs={12} md={6}>
     {/* Columna derecha */}
   </Grid>
-</Grid>
+</Grid>;
 ```
 
 ### Tarjetas
@@ -302,20 +310,18 @@ import CardContent from "@mui/material/CardContent";
 
 // El tema ya aplica borderRadius: 16px
 <Card>
-  <CardContent sx={{ p: 4 }}>
-    Contenido
-  </CardContent>
-</Card>
+  <CardContent sx={{ p: 4 }}>Contenido</CardContent>
+</Card>;
 ```
 
 ### Reglas de espaciado
 
-| Prop MUI `sx` | Valor real | Cuándo |
-|---|---|---|
-| `p: 4` | 32px | Padding interno de tarjetas |
-| `spacing={3}` | 24px gap | Grid containers |
-| `borderRadius: 2` | 8px | Inputs y botones |
-| `borderRadius: 4` | 16px | Tarjetas y modales |
+| Prop MUI `sx`     | Valor real | Cuándo                      |
+| ----------------- | ---------- | --------------------------- |
+| `p: 4`            | 32px       | Padding interno de tarjetas |
+| `spacing={3}`     | 24px gap   | Grid containers             |
+| `borderRadius: 2` | 8px        | Inputs y botones            |
+| `borderRadius: 4` | 16px       | Tarjetas y modales          |
 
 ---
 
@@ -350,7 +356,7 @@ import Box from "@mui/material/Box";
   <Card>...</Card>
   <Card>...</Card>
   <Card>...</Card>
-</Box>
+</Box>;
 ```
 
 ### Grid — para layouts responsivos
@@ -365,16 +371,16 @@ import Grid from "@mui/material/Grid";
   <Grid item xs={12} md={6}>
     {/* Columna derecha */}
   </Grid>
-</Grid>
+</Grid>;
 ```
 
 ### Regla general
 
-| Necesidad | Componente |
-|---|---|
-| Fila o columna simple | `Stack` |
-| Contenedor con estilos custom | `Box` |
-| Layout responsivo de múltiples columnas | `Grid` |
+| Necesidad                               | Componente |
+| --------------------------------------- | ---------- |
+| Fila o columna simple                   | `Stack`    |
+| Contenedor con estilos custom           | `Box`      |
+| Layout responsivo de múltiples columnas | `Grid`     |
 
 ---
 

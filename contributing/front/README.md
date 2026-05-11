@@ -19,12 +19,12 @@ app/
 
 ### Archivos especiales
 
-| Archivo | Qué hace |
-|---|---|
-| `page.tsx` | La pantalla que ve el usuario |
-| `layout.tsx` | Envuelve a todas las rutas hijas (navbar, sidebar, etc.) |
-| `loading.tsx` | Se muestra automáticamente mientras carga la página |
-| `error.tsx` | Se muestra si la página tira un error |
+| Archivo       | Qué hace                                                 |
+| ------------- | -------------------------------------------------------- |
+| `page.tsx`    | La pantalla que ve el usuario                            |
+| `layout.tsx`  | Envuelve a todas las rutas hijas (navbar, sidebar, etc.) |
+| `loading.tsx` | Se muestra automáticamente mientras carga la página      |
+| `error.tsx`   | Se muestra si la página tira un error                    |
 
 ### Parámetros dinámicos
 
@@ -50,7 +50,7 @@ Usar siempre el `Link` de Next.js, nunca una etiqueta `<a>`:
 ```tsx
 import Link from "next/link";
 
-<Link href="/postulacion/abc-123">Ver postulación</Link>
+<Link href="/postulacion/abc-123">Ver postulación</Link>;
 ```
 
 ---
