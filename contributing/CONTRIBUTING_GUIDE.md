@@ -563,7 +563,7 @@ Before opening a PR for any UI change, verify every item:
   phone?: string
   cvStoragePath: string     # relative path in Firebase Storage
   parsedData: ParsedCV      # populated by Cloud Function after upload
-  cvParseStatus: 'pending' | 'processing' | 'done' | 'failed'
+  cvParseStatus: 'pending' | 'processing' | 'done' | 'failed' | 'not_required'
   registrationType: 'specific' | 'general'
   createdAt: string
 

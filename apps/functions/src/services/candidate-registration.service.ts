@@ -2,15 +2,11 @@ import type {
   CreateCandidateDTO,
   CvParseStatus,
   RegistrationType,
+  RegisterCandidatePayload,
+  RegisterCandidateResponse,
 } from "@ats/shared-types";
 
 import { CandidatesRepository } from "../repositories/candidates.repository";
-import type { ValidatedRegisterCandidatePayload } from "../validators/register-candidate.validator";
-
-export interface RegisterCandidateResult {
-  candidateId: string;
-  cvParseStatus: CvParseStatus;
-}
 
 export class CandidateRegistrationConflictError extends Error {
   constructor(message: string) {
@@ -20,7 +16,10 @@ export class CandidateRegistrationConflictError extends Error {
 }
 
 export class CandidateRegistrationServiceError extends Error {
-  constructor(message: string, public readonly cause?: unknown) {
+  constructor(
+    message: string,
+    public readonly cause?: unknown,
+  ) {
     super(message);
     this.name = "CandidateRegistrationServiceError";
   }
@@ -33,8 +32,8 @@ export class CandidateRegistrationService {
 
   async registerCandidate(
     candidateId: string,
-    payload: ValidatedRegisterCandidatePayload,
-  ): Promise<RegisterCandidateResult> {
+    payload: RegisterCandidatePayload,
+  ): Promise<RegisterCandidateResponse> {
     try {
       const existingCandidate = await this.candidatesRepository.findByEmail(
         payload.email,

@@ -1,18 +1,9 @@
+import type {
+  RegisterCandidatePayload,
+  RegisterCandidateResponse,
+} from "@ats/shared-types";
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-export interface RegisterCandidatePayload {
-  fullName: string;
-  email: string;
-  hasCv: boolean;
-  jobId?: string;
-}
-
-export interface ValidatedRegisterCandidatePayload {
-  fullName: string;
-  email: string;
-  hasCv: boolean;
-  jobId?: string;
-}
 
 export class RegisterCandidateValidationError extends Error {
   constructor(message: string) {
@@ -23,7 +14,7 @@ export class RegisterCandidateValidationError extends Error {
 
 export function validateRegisterCandidatePayload(
   payload: unknown,
-): ValidatedRegisterCandidatePayload {
+): RegisterCandidatePayload {
   if (!isObject(payload)) {
     throw new RegisterCandidateValidationError(
       "El payload de registerCandidate debe ser un objeto.",

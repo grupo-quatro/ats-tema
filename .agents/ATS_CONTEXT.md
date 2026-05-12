@@ -129,7 +129,7 @@ useEffect(() => {
   fullName, email, phone
   cvStoragePath            ← relative path in Firebase Storage
   parsedData: ParsedCV     ← populated by onCVUploaded function
-  cvParseStatus: pending|processing|done|failed
+  cvParseStatus: pending|processing|done|failed|not_required
   registrationType: specific|general
   createdAt
 
