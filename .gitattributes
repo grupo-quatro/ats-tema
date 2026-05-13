@@ -1,0 +1,12 @@
+# Detecta archivos de texto automáticamente y los normaliza a LF al hacer commit
+* text=auto eol=lf
+
+# Fuerza que los archivos de código siempre usen LF en el repo
+*.js text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+
+# Los archivos binarios no se tocan
+*.png binary
+*.jpg binary

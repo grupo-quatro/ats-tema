@@ -27,6 +27,6 @@ export interface Candidate {
 
 export type CreateCandidateDTO = Omit<
   Candidate,
-  "id" | "createdAt" | "updatedAt"
+  'id' | 'createdAt' | 'updatedAt'
 >;
-export type UpdateCandidateDTO = Partial<Omit<Candidate, "id" | "createdAt">>;
+export type UpdateCandidateDTO = Partial<Omit<Candidate, 'id' | 'createdAt'>>;

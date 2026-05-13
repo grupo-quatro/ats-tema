@@ -192,11 +192,11 @@ Example — replacing `FirebaseJobsRepository` with `PostgresJobsRepository`:
 
 ```typescript
 // apps/web/src/repositories/postgres/jobs.postgres.ts
-import { db } from "@/shared/lib/postgres";
-import { jobs } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import type { JobsRepository } from "../interfaces/jobs.repository";
-import type { Job, CreateJobDto, UpdateJobDto } from "@ats/shared-types";
+import { db } from '@/shared/lib/postgres';
+import { jobs } from '@/db/schema';
+import { eq } from 'drizzle-orm';
+import type { JobsRepository } from '../interfaces/jobs.repository';
+import type { Job, CreateJobDto, UpdateJobDto } from '@ats/shared-types';
 
 export class PostgresJobsRepository implements JobsRepository {
   async findAll(): Promise<Job[]> {
@@ -208,7 +208,7 @@ export class PostgresJobsRepository implements JobsRepository {
     return job ?? null;
   }
 
-  async findByStatus(status: Job["status"]): Promise<Job[]> {
+  async findByStatus(status: Job['status']): Promise<Job[]> {
     return db.select().from(jobs).where(eq(jobs.status, status));
   }
 
@@ -227,7 +227,7 @@ export class PostgresJobsRepository implements JobsRepository {
   }
 
   async archive(id: string): Promise<void> {
-    await db.update(jobs).set({ status: "archived" }).where(eq(jobs.id, id));
+    await db.update(jobs).set({ status: 'archived' }).where(eq(jobs.id, id));
   }
 }
 ```
@@ -240,11 +240,11 @@ Once all PostgreSQL repositories are implemented and tested, update `src/reposit
 
 ```typescript
 // Before migration
-import { FirebaseJobsRepository } from "./firebase/jobs.firebase";
+import { FirebaseJobsRepository } from './firebase/jobs.firebase';
 export const jobsRepository = new FirebaseJobsRepository();
 
 // After migration — single line change per repository
-import { PostgresJobsRepository } from "./postgres/jobs.postgres";
+import { PostgresJobsRepository } from './postgres/jobs.postgres';
 export const jobsRepository = new PostgresJobsRepository();
 ```
 
@@ -298,10 +298,10 @@ The `FilesRepository` interface stays the same. Only the implementation changes:
 export class FilesystemRepository implements FilesRepository {
   async uploadCV(file: File, candidateId: string): Promise<string> {
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("candidateId", candidateId);
-    const res = await fetch("/api/files/cv", {
-      method: "POST",
+    formData.append('file', file);
+    formData.append('candidateId', candidateId);
+    const res = await fetch('/api/files/cv', {
+      method: 'POST',
       body: formData,
     });
     const { path } = await res.json();

@@ -1,27 +1,27 @@
 {
-    "name": "@ats/functions",
-    "version": "0.0.0",
-    "private": true,
-    "main": "lib/index.js",
-    "scripts": {
-        "build": "tsc",
-        "build:watch": "tsc --watch",
-        "dev": "npm run build:watch",
-        "lint": "tsc --noEmit",
-        "serve": "npm run build && firebase emulators:start --only functions",
-        "deploy": "firebase deploy --only functions",
-        "test": "vitest run"
-    },
-    "engines": {
-        "node": "22"
-    },
-    "dependencies": {
-        "@ats/shared-types": "workspace:*",
-        "firebase-admin": "^12",
-        "firebase-functions": "^6"
-    },
-    "devDependencies": {
-        "typescript": "^5",
-        "vitest": "^3.2.0"
-    }
+  "name": "@ats/functions",
+  "version": "0.0.0",
+  "private": true,
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "dev": "npm run build:watch",
+    "lint": "tsc --noEmit",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "dependencies": {
+    "@ats/shared-types": "workspace:*",
+    "firebase-admin": "^12",
+    "firebase-functions": "^6"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "vitest": "^3.2.0"
+  }
 }

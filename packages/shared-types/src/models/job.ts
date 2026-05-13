@@ -1,6 +1,6 @@
-export type JobStatus = "draft" | "open" | "paused" | "closed";
+export type JobStatus = 'draft' | 'open' | 'paused' | 'closed';
 
-export type JobLocation = "remote" | "on-site" | "hybrid";
+export type JobLocation = 'remote' | 'on-site' | 'hybrid';
 
 export interface Job {
   id: string;
@@ -24,6 +24,6 @@ export interface Job {
 
 export type CreateJobDTO = Omit<
   Job,
-  "id" | "createdAt" | "updatedAt" | "closedAt" | "publishedAt"
+  'id' | 'createdAt' | 'updatedAt' | 'closedAt' | 'publishedAt'
 >;
-export type UpdateJobDTO = Partial<Omit<Job, "id" | "createdAt">>;
+export type UpdateJobDTO = Partial<Omit<Job, 'id' | 'createdAt'>>;

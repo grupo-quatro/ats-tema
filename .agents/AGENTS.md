@@ -107,16 +107,16 @@ If a file does not fit these locations, discuss before creating a new top-level 
 ```typescript
 // CORRECT
 const { data: jobs } = useQuery({
-  queryKey: ["jobs", "open"],
+  queryKey: ['jobs', 'open'],
   queryFn: () => jobsService.getOpenJobs(),
 });
 
 // WRONG — Firebase in component
 const { data: jobs } = useQuery({
-  queryKey: ["jobs", "open"],
+  queryKey: ['jobs', 'open'],
   queryFn: async () => {
     const snap = await getDocs(
-      query(collection(db, "jobs"), where("status", "==", "open")),
+      query(collection(db, 'jobs'), where('status', '==', 'open')),
     );
     return snap.docs.map((d) => d.data());
   },
@@ -135,7 +135,7 @@ const mutation = useMutation({
 // WRONG
 const mutation = useMutation({
   mutationFn: (data: UpdateApplicationDto) =>
-    updateDoc(doc(db, "applications", id), data), // Firebase in component
+    updateDoc(doc(db, 'applications', id), data), // Firebase in component
 });
 ```
 
@@ -153,7 +153,7 @@ useEffect(() => {
 
 // WRONG — Firebase in component
 useEffect(() => {
-  const q = query(collection(db, "applications"), where("jobId", "==", jobId));
+  const q = query(collection(db, 'applications'), where('jobId', '==', jobId));
   return onSnapshot(q, (snap) =>
     setApplications(snap.docs.map((d) => d.data())),
   );
@@ -168,8 +168,8 @@ class FirebaseApplicationsRepository implements ApplicationsRepository {
   async findByJob(jobId: string): Promise<Application[]> {
     const q = query(
       this.col,
-      where("jobId", "==", jobId),
-      orderBy("fitScore", "desc"),
+      where('jobId', '==', jobId),
+      orderBy('fitScore', 'desc'),
     );
     const snap = await getDocs(q);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Application);
@@ -179,7 +179,7 @@ class FirebaseApplicationsRepository implements ApplicationsRepository {
 // WRONG — business logic inside repository
 class FirebaseApplicationsRepository implements ApplicationsRepository {
   async findByJob(jobId: string): Promise<Application[]> {
-    const snap = await getDocs(query(this.col, where("jobId", "==", jobId)));
+    const snap = await getDocs(query(this.col, where('jobId', '==', jobId)));
     const apps = snap.docs.map(
       (d) => ({ id: d.id, ...d.data() }) as Application,
     );
@@ -196,7 +196,7 @@ class FirebaseApplicationsRepository implements ApplicationsRepository {
 
 ```typescript
 // ANY FILE outside src/repositories/firebase/ and src/shared/lib/
-import { collection, getDocs } from "firebase/firestore"; // NEVER
+import { collection, getDocs } from 'firebase/firestore'; // NEVER
 ```
 
 ### 2. Sending emails or calling OpenAI from the frontend
@@ -457,13 +457,13 @@ Services receive their repository dependency through the constructor. Tests expl
 This is the scaffolded sample. It defines the repository interface and service class inline so the test runs without any production files needing to exist first. When you add a real feature, extract the interface and class into their own files and update the imports accordingly.
 
 ```typescript
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { Job } from "@ats/shared-types";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Job } from '@ats/shared-types';
 
 interface JobsRepository {
   findAll(): Promise<Job[]>;
   findById(id: string): Promise<Job | null>;
-  create(data: Omit<Job, "id">): Promise<Job>;
+  create(data: Omit<Job, 'id'>): Promise<Job>;
   update(id: string, data: Partial<Job>): Promise<Job>;
 }
 
@@ -472,7 +472,7 @@ class JobsService {
 
   async getOpenJobs(): Promise<Job[]> {
     const jobs = await this.repo.findAll();
-    return jobs.filter((j) => j.status === "open");
+    return jobs.filter((j) => j.status === 'open');
   }
 
   async getJobById(id: string): Promise<Job> {
@@ -482,7 +482,7 @@ class JobsService {
   }
 }
 
-describe("JobsService", () => {
+describe('JobsService', () => {
   const mockRepo: JobsRepository = {
     findAll: vi.fn(),
     findById: vi.fn(),
@@ -494,26 +494,26 @@ describe("JobsService", () => {
     vi.resetAllMocks();
   });
 
-  it("returns only open jobs", async () => {
+  it('returns only open jobs', async () => {
     vi.mocked(mockRepo.findAll).mockResolvedValue([
-      { id: "1", title: "Frontend Developer", status: "open" } as Job,
-      { id: "2", title: "Backend Developer", status: "closed" } as Job,
+      { id: '1', title: 'Frontend Developer', status: 'open' } as Job,
+      { id: '2', title: 'Backend Developer', status: 'closed' } as Job,
     ]);
 
     const service = new JobsService(mockRepo);
     const openJobs = await service.getOpenJobs();
 
     expect(openJobs).toHaveLength(1);
-    expect(openJobs[0].title).toBe("Frontend Developer");
+    expect(openJobs[0].title).toBe('Frontend Developer');
   });
 
-  it("throws when job is not found", async () => {
+  it('throws when job is not found', async () => {
     vi.mocked(mockRepo.findById).mockResolvedValue(null);
 
     const service = new JobsService(mockRepo);
 
-    await expect(service.getJobById("missing-id")).rejects.toThrow(
-      "Job missing-id not found",
+    await expect(service.getJobById('missing-id')).rejects.toThrow(
+      'Job missing-id not found',
     );
   });
 });
@@ -523,10 +523,10 @@ Once `app/features/jobs/jobs.service.ts` and `app/repositories/interfaces/jobs.r
 
 ```typescript
 // app/features/jobs/__tests__/jobs.service.test.ts
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { JobsService } from "../jobs.service";
-import type { JobsRepository } from "../../repositories/interfaces/jobs.repository";
-import type { Job } from "@ats/shared-types";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { JobsService } from '../jobs.service';
+import type { JobsRepository } from '../../repositories/interfaces/jobs.repository';
+import type { Job } from '@ats/shared-types';
 ```
 
 #### Full example — `apps/functions/src/services/__tests__/sample.test.ts`
@@ -534,7 +534,7 @@ import type { Job } from "@ats/shared-types";
 This is the scaffolded sample. It defines the repository interface and service factory inline so the test runs without any production files needing to exist first. When you add a real service, extract these into their own files and update the imports.
 
 ```typescript
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi } from 'vitest';
 
 interface CandidateRepository {
   findById(id: string): Promise<{ id: string; name: string } | null>;
@@ -550,23 +550,23 @@ function createCandidateService(repo: CandidateRepository) {
   };
 }
 
-describe("CandidateService", () => {
-  it("returns candidate when repository resolves one", async () => {
+describe('CandidateService', () => {
+  it('returns candidate when repository resolves one', async () => {
     const mockRepo: CandidateRepository = {
-      findById: vi.fn().mockResolvedValue({ id: "1", name: "Ana" }),
+      findById: vi.fn().mockResolvedValue({ id: '1', name: 'Ana' }),
     };
     const service = createCandidateService(mockRepo);
-    const result = await service.getCandidate("1");
-    expect(result).toEqual({ id: "1", name: "Ana" });
+    const result = await service.getCandidate('1');
+    expect(result).toEqual({ id: '1', name: 'Ana' });
   });
 
-  it("throws when repository returns null", async () => {
+  it('throws when repository returns null', async () => {
     const mockRepo: CandidateRepository = {
       findById: vi.fn().mockResolvedValue(null),
     };
     const service = createCandidateService(mockRepo);
-    await expect(service.getCandidate("99")).rejects.toThrow(
-      "Candidate 99 not found",
+    await expect(service.getCandidate('99')).rejects.toThrow(
+      'Candidate 99 not found',
     );
   });
 });
@@ -576,9 +576,9 @@ Once `src/services/candidate.service.ts` exists, import from it instead of defin
 
 ```typescript
 // src/services/__tests__/candidate.service.test.ts
-import { describe, it, expect, vi } from "vitest";
-import { CandidateService } from "../candidate.service";
-import type { CandidateRepository } from "../interfaces/candidate.repository";
+import { describe, it, expect, vi } from 'vitest';
+import { CandidateService } from '../candidate.service';
+import type { CandidateRepository } from '../interfaces/candidate.repository';
 ```
 
 ---
@@ -589,7 +589,7 @@ Define the mock inline inside the `describe` block. Never create a shared `__moc
 
 ```typescript
 // Reset mocks between tests to avoid cross-test contamination
-import { beforeEach, vi } from "vitest";
+import { beforeEach, vi } from 'vitest';
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -609,14 +609,14 @@ vi.mocked(mockRepo.findById).mockResolvedValueOnce(null)  // only for the next c
 ### Component test pattern
 
 ```tsx
-import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
-import { JobForm } from "../JobForm";
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { JobForm } from '../JobForm';
 
-describe("JobForm", () => {
-  it("disables submit button when title is empty", () => {
+describe('JobForm', () => {
+  it('disables submit button when title is empty', () => {
     render(<JobForm onSubmit={vi.fn()} />);
-    expect(screen.getByRole("button", { name: /save/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /save/i })).toBeDisabled();
   });
 });
 ```

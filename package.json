@@ -14,13 +14,14 @@
   },
   "config": {
     "ghooks": {
-      "pre-commit": "CI=true pnpm lint && CI=true pnpm format && CI=true pnpm test",
+      "pre-commit": "cross-env CI=true pnpm lint && cross-env CI=true pnpm format && cross-env CI=true pnpm test",
       "commit-msg": "commitlint -e --verbose || (echo '\n❌ ERROR: El mensaje de commit no sigue el estándar.\n💡 Ejemplo válido: feat(auth): agregar validación de usuario\n📖 Más info en: https://www.conventionalcommits.org/es/\n' && exit 1)"
     }
   },
   "devDependencies": {
     "@commitlint/cli": "^20.5.3",
     "@commitlint/config-conventional": "^20.5.3",
+    "cross-env": "^10.1.0",
     "ghooks": "^2.0.4",
     "prettier": "^3.7.4",
     "turbo": "^2.9.7",

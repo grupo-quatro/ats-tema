@@ -1,13 +1,13 @@
 export type EmailTemplateStage =
-  | "application_received"
-  | "screening"
-  | "interview_hr"
-  | "interview_technical"
-  | "interview_final"
-  | "offer"
-  | "hired"
-  | "rejected"
-  | "withdrawn";
+  | 'application_received'
+  | 'screening'
+  | 'interview_hr'
+  | 'interview_technical'
+  | 'interview_final'
+  | 'offer'
+  | 'hired'
+  | 'rejected'
+  | 'withdrawn';
 
 export interface EmailTemplate {
   id: string;
@@ -22,8 +22,8 @@ export interface EmailTemplate {
 
 export type CreateEmailTemplateDTO = Omit<
   EmailTemplate,
-  "id" | "createdAt" | "updatedAt"
+  'id' | 'createdAt' | 'updatedAt'
 >;
 export type UpdateEmailTemplateDTO = Partial<
-  Omit<EmailTemplate, "id" | "createdAt">
+  Omit<EmailTemplate, 'id' | 'createdAt'>
 >;

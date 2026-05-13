@@ -4,6 +4,33 @@ El frontend está en `apps/web` y corre con **Next.js 16** usando App Router. No
 
 ---
 
+## Estructura de carpetas
+
+```
+apps/web/
+├── app/
+│   ├── layout.tsx                  # Layout raíz con providers MUI + TanStack
+│   ├── providers.tsx               # ThemeProvider + QueryClientProvider
+│   ├── lib/
+│   │   └── theme.ts                # Tema MUI (colores, tipografía, overrides)
+│   │
+│   ├── postulacion/[jobId]/
+│   │   └── page.tsx                # Ruta /postulacion/:jobId
+│   │
+│   └── features/
+│       └── postulacion/            # Una carpeta por feature
+│           ├── components/         # Componentes exclusivos de esta feature
+│           ├── hooks/              # useQuery y useForm de esta feature
+│           ├── services/           # Llamadas a Firebase/API
+│           └── __tests__/          # Tests de la feature
+│
+└── components/                     # Componentes reutilizables entre features
+```
+
+**Regla:** todo lo relacionado a una feature vive dentro de su carpeta en `features/`. Solo sube a `components/` si dos o más features lo comparten.
+
+---
+
 ## Ruteo
 
 La carpeta es la URL. Si dentro de esa carpeta hay un `page.tsx`, la ruta existe.
@@ -48,7 +75,7 @@ export default function PostulationPage({ params }) {
 Usar siempre el `Link` de Next.js, nunca una etiqueta `<a>`:
 
 ```tsx
-import Link from "next/link";
+import Link from 'next/link';
 
 <Link href="/postulacion/abc-123">Ver postulación</Link>;
 ```

@@ -131,12 +131,12 @@ Every data entity has three files:
 
 ```typescript
 // This file never changes — not during development, not during migration
-import type { Job, CreateJobDto, UpdateJobDto } from "@ats/shared-types";
+import type { Job, CreateJobDto, UpdateJobDto } from '@ats/shared-types';
 
 export interface JobsRepository {
   findAll(): Promise<Job[]>;
   findById(id: string): Promise<Job | null>;
-  findByStatus(status: Job["status"]): Promise<Job[]>;
+  findByStatus(status: Job['status']): Promise<Job[]>;
   create(data: CreateJobDto): Promise<Job>;
   update(id: string, data: UpdateJobDto): Promise<Job>;
   archive(id: string): Promise<void>;
@@ -156,13 +156,13 @@ import {
   updateDoc,
   query,
   where,
-} from "firebase/firestore";
-import { db } from "@/shared/lib/firebase";
-import type { JobsRepository } from "../interfaces/jobs.repository";
-import type { Job, CreateJobDto, UpdateJobDto } from "@ats/shared-types";
+} from 'firebase/firestore';
+import { db } from '@/shared/lib/firebase';
+import type { JobsRepository } from '../interfaces/jobs.repository';
+import type { Job, CreateJobDto, UpdateJobDto } from '@ats/shared-types';
 
 export class FirebaseJobsRepository implements JobsRepository {
-  private col = collection(db, "jobs");
+  private col = collection(db, 'jobs');
 
   async findAll(): Promise<Job[]> {
     const snap = await getDocs(this.col);
@@ -170,12 +170,12 @@ export class FirebaseJobsRepository implements JobsRepository {
   }
 
   async findById(id: string): Promise<Job | null> {
-    const snap = await getDoc(doc(db, "jobs", id));
+    const snap = await getDoc(doc(db, 'jobs', id));
     return snap.exists() ? ({ id: snap.id, ...snap.data() } as Job) : null;
   }
 
-  async findByStatus(status: Job["status"]): Promise<Job[]> {
-    const q = query(this.col, where("status", "==", status));
+  async findByStatus(status: Job['status']): Promise<Job[]> {
+    const q = query(this.col, where('status', '==', status));
     const snap = await getDocs(q);
     return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Job);
   }
@@ -189,12 +189,12 @@ export class FirebaseJobsRepository implements JobsRepository {
   }
 
   async update(id: string, data: UpdateJobDto): Promise<Job> {
-    await updateDoc(doc(db, "jobs", id), data as Record<string, unknown>);
+    await updateDoc(doc(db, 'jobs', id), data as Record<string, unknown>);
     return { id, ...data } as Job;
   }
 
   async archive(id: string): Promise<void> {
-    await updateDoc(doc(db, "jobs", id), { status: "archived" });
+    await updateDoc(doc(db, 'jobs', id), { status: 'archived' });
   }
 }
 ```
@@ -203,9 +203,9 @@ export class FirebaseJobsRepository implements JobsRepository {
 
 ```typescript
 // To migrate: swap Firebase implementations for Postgres implementations here
-import { FirebaseJobsRepository } from "./firebase/jobs.firebase";
-import { FirebaseCandidatesRepository } from "./firebase/candidates.firebase";
-import { FirebaseApplicationsRepository } from "./firebase/applications.firebase";
+import { FirebaseJobsRepository } from './firebase/jobs.firebase';
+import { FirebaseCandidatesRepository } from './firebase/candidates.firebase';
+import { FirebaseApplicationsRepository } from './firebase/applications.firebase';
 
 export const jobsRepository = new FirebaseJobsRepository();
 export const candidatesRepository = new FirebaseCandidatesRepository();
@@ -216,18 +216,18 @@ export const applicationsRepository = new FirebaseApplicationsRepository();
 
 ```typescript
 // This file is identical whether the backend is Firebase or PostgreSQL
-import { jobsRepository } from "@/repositories";
-import type { Job, CreateJobDto } from "@ats/shared-types";
+import { jobsRepository } from '@/repositories';
+import type { Job, CreateJobDto } from '@ats/shared-types';
 
 export const jobsService = {
   async getOpenJobs(): Promise<Job[]> {
-    return jobsRepository.findByStatus("open");
+    return jobsRepository.findByStatus('open');
   },
 
   async createJob(data: CreateJobDto): Promise<Job> {
     // Business logic lives here, not in the repository
     if (!data.skills || data.skills.length === 0) {
-      throw new Error("A job must have at least one skill defined");
+      throw new Error('A job must have at least one skill defined');
     }
     return jobsRepository.create(data);
   },
@@ -238,11 +238,11 @@ export const jobsService = {
 
 ```typescript
 // Components never know where data comes from
-import { jobsService } from "../jobs.service";
+import { jobsService } from '../jobs.service';
 
 export function JobsList() {
   const { data: jobs } = useQuery({
-    queryKey: ["jobs", "open"],
+    queryKey: ['jobs', 'open'],
     queryFn: () => jobsService.getOpenJobs(),
   });
   // ...
@@ -403,13 +403,13 @@ className="w-full px-4 py-3 rounded-lg border-2 border-red-300 bg-red-50
 
 ```tsx
 /* Main card */
-className = "bg-white rounded-2xl shadow-xl overflow-hidden";
+className = 'bg-white rounded-2xl shadow-xl overflow-hidden';
 
 /* Card header with gradient */
-className = "bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6";
+className = 'bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6';
 
 /* Informational card */
-className = "bg-blue-50 rounded-xl p-6 border border-blue-100";
+className = 'bg-blue-50 rounded-xl p-6 border border-blue-100';
 ```
 
 #### Alerts and badges
@@ -427,13 +427,13 @@ className = "bg-blue-50 rounded-xl p-6 border border-blue-100";
 </div>;
 
 /* Success badge */
-className = "px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs";
+className = 'px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs';
 
 /* Info badge */
-className = "px-4 py-2 rounded-lg bg-blue-50 text-blue-700 text-sm";
+className = 'px-4 py-2 rounded-lg bg-blue-50 text-blue-700 text-sm';
 
 /* Neutral badge */
-className = "px-4 py-2 rounded-lg bg-slate-50 text-slate-700 text-sm";
+className = 'px-4 py-2 rounded-lg bg-slate-50 text-slate-700 text-sm';
 ```
 
 #### Icon containers
@@ -686,11 +686,11 @@ Functions live in `apps/functions/src/triggers/`. Keep them thin — business lo
 
 ```typescript
 // triggers/on-stage-changed.ts
-import { onDocumentUpdated } from "firebase-functions/v2/firestore";
-import { emailService } from "../services/email.service";
+import { onDocumentUpdated } from 'firebase-functions/v2/firestore';
+import { emailService } from '../services/email.service';
 
 export const onStageChanged = onDocumentUpdated(
-  "applications/{id}",
+  'applications/{id}',
   async (event) => {
     const before = event.data?.before.data();
     const after = event.data?.after.data();
@@ -738,7 +738,7 @@ const jobs = await jobsService.getOpenJobs();
 
 // In a Client Component
 const { data, isLoading } = useQuery({
-  queryKey: ["jobs", jobId],
+  queryKey: ['jobs', jobId],
   queryFn: () => jobsService.getJobById(jobId),
 });
 
@@ -747,7 +747,7 @@ const mutation = useMutation({
   mutationFn: (stage: RecruiterStage) =>
     applicationsService.updateStage(appId, stage),
   onSuccess: () =>
-    queryClient.invalidateQueries({ queryKey: ["pipeline", jobId] }),
+    queryClient.invalidateQueries({ queryKey: ['pipeline', jobId] }),
 });
 ```
 
