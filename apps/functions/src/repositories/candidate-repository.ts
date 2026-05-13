@@ -1,7 +1,11 @@
 import * as admin from "firebase-admin";
 import { FieldValue, Timestamp } from "firebase-admin/firestore";
 
-import type { Candidate, CreateCandidateDTO } from "@ats/shared-types";
+import type {
+  Candidate,
+  CreateCandidateDTO,
+  CvParseStatus,
+} from "@ats/shared-types";
 
 import { db } from "../core/firebase-admin";
 
@@ -92,6 +96,38 @@ export class CandidatesRepository {
     } catch (error) {
       throw new CandidatesRepositoryError(
         `No se pudo crear o actualizar el candidato ${candidateId}.`,
+        error,
+      );
+    }
+  }
+
+  async updateCvUploadStatus(
+    candidateId: string,
+    cvStoragePath: string,
+  ): Promise<boolean> {
+    try {
+      const candidateRef = this.collection.doc(candidateId);
+      const snapshot = await candidateRef.get();
+
+      if (!snapshot.exists) {
+        return false;
+      }
+
+      const cvParseStatus: CvParseStatus = "processing";
+
+      await candidateRef.set(
+        {
+          cvStoragePath,
+          cvParseStatus,
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+
+      return true;
+    } catch (error) {
+      throw new CandidatesRepositoryError(
+        `No se pudo actualizar el estado del CV del candidato ${candidateId}.`,
         error,
       );
     }
