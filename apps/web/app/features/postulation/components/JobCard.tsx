@@ -2,25 +2,15 @@
 
 import { Card, Box, Typography, Stack, Button } from "@mui/material";
 import { Building2, MapPin, Clock, Calendar } from "lucide-react";
+import { Job } from "../../../../../../packages/shared-types/src/models/job";
 
 interface JobCardProps {
-    job: {
-        title: string;
-        description: string;
-        location: string;
-        modality: string;
-        creationDate: string;
-    };
+    job: Job;
 }
 
 export default function JobCard({ job }: JobCardProps) {
     return (
-        <Card sx={{
-            p: 3,
-            borderRadius: "16px",
-            border: "1px solid #e2e8f0",
-            boxShadow: "none",
-        }}>
+        <Card sx={{ p: 3, borderRadius: "16px", border: "1px solid #e2e8f0", boxShadow: "none" }}>
             <Stack
                 direction="row"
                 spacing={2}
@@ -44,6 +34,11 @@ export default function JobCard({ job }: JobCardProps) {
                         <Typography variant="h2" sx={{ fontWeight: 600, fontSize: "1.25rem" }}>
                             {job.title}
                         </Typography>
+                        {job.department && (
+                            <Typography variant="body2" color="text.secondary">
+                                {job.department}
+                            </Typography>
+                        )}
                     </Box>
                 </Stack>
 
@@ -55,11 +50,11 @@ export default function JobCard({ job }: JobCardProps) {
             <Stack direction="row" spacing={4} sx={{ mb: 2 }}>
                 <Stack direction="row" spacing={1} sx={{ alignItems: "center", color: "text.secondary" }}>
                     <MapPin size={16} />
-                    <Typography variant="body2">{job.location}</Typography>
+                    <Typography variant="body2">{job.city}</Typography>
                 </Stack>
                 <Stack direction="row" spacing={1} sx={{ alignItems: "center", color: "text.secondary" }}>
                     <Clock size={16} />
-                    <Typography variant="body2">{job.modality}</Typography>
+                    <Typography variant="body2">{job.location}</Typography>
                 </Stack>
             </Stack>
 
@@ -69,7 +64,9 @@ export default function JobCard({ job }: JobCardProps) {
 
             <Stack direction="row" spacing={1} sx={{ alignItems: "center", color: "text.secondary" }}>
                 <Calendar size={16} />
-                <Typography variant="caption">Publicada el {job.creationDate}</Typography>
+                <Typography variant="caption">
+                    Publicada el {job.publishedAt?.toLocaleDateString()}
+                </Typography>
             </Stack>
         </Card>
     );
