@@ -1,0 +1,17 @@
+[33mcommit c53cbe8b3631a64eacf494edf4ecd8129fbc5e2a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/copilot/understanding-codebase-structure[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Camila Ines Fernandez Garrido <camifernandezgarrido2@gmail.com>
+Date:   Mon May 11 19:38:10 2026 -0300
+
+    Fb 94 - chore: add front folder structure
+
+[33mcommit cba4a6674813461fc411867879037d0d5c09baee[m
+Author: Camila Ines Fernandez Garrido <camifernandezgarrido2@gmail.com>
+Date:   Mon May 4 00:10:35 2026 -0300
+
+    chore: add readme
+
+[33mcommit e905a3cd927ce1e9a87cbc7d7a566e7988a9e938[m
+Author: Camila Ines Fernandez Garrido <camifernandezgarrido2@gmail.com>
+Date:   Mon May 4 00:07:50 2026 -0300
+
+    chore: initial commit
