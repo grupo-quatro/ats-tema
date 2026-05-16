@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import * as admin from 'firebase-admin';
 
 //establece la conexion con servicios de Firebase
 if (!admin.apps.length) {

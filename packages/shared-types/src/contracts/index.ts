@@ -1,1 +1,2 @@
-export * from "./register-candidates";
+export * from './register-candidates-manual';
+export * from './register-candidates-cv';

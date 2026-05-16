@@ -1,28 +1,43 @@
-import { logger } from "firebase-functions";
+import { logger } from 'firebase-functions';
 
-import { CandidatesRepository } from "../repositories/candidate-repository";
+import { CandidatesRepository } from '../repositories/candidate-repository';
+import { CvParseStatus } from '@ats/shared-types';
 
 /**
- * Dado un candidateId y un path de Storage, actualiza el candidato a processing.
+ * Maneja la carga de un CV en Storage.
+ * Si la carga es manual el cv se guarda adjunto pero no se parsea.
+ * Si cargo directo con CV, el CV se marca como processing para el proceso.
  */
+
 export class CvUploadService {
   constructor(
     private readonly candidatesRepository: CandidatesRepository = new CandidatesRepository(),
   ) {}
 
-  async markCvAsProcessing(
+  async handleCvUploaded(
     candidateId: string,
     cvStoragePath: string,
   ): Promise<void> {
-    const wasUpdated = await this.candidatesRepository.updateCvUploadStatus(
-      candidateId,
-      cvStoragePath,
-    );
+    const candidate = await this.candidatesRepository.findById(candidateId);
 
-    if (!wasUpdated) {
+    if (!candidate) {
       logger.warn(
         `Se recibió un CV para un candidato inexistente. candidateId=${candidateId}, path=${cvStoragePath}`,
       );
+      return;
     }
+
+    const nextCvParseStatus: CvParseStatus =
+      candidate.registrationSource === 'manual' ? 'not_required' : 'processing';
+
+    await this.candidatesRepository.updateCvStoragePath(
+      candidateId,
+      cvStoragePath,
+      nextCvParseStatus,
+    );
+
+    logger.info(
+      `CV actualizado correctamente. candidateId=${candidateId}, registrationSource=${candidate.registrationSource}, cvParseStatus=${nextCvParseStatus}, path=${cvStoragePath}`,
+    );
   }
 }

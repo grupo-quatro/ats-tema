@@ -1,32 +1,59 @@
-import type { ParsedCV } from "./parsing";
+import type { ParsedCV } from './parsing';
 
 export type CvParseStatus =
-  | "not_required"
-  | "pending"
-  | "processing"
-  | "done"
-  | "failed";
-export type RegistrationType = "specific" | "general";
+  | 'not_required'
+  | 'pending'
+  | 'processing'
+  | 'done'
+  | 'failed';
+
+export type RegistrationType = 'specific' | 'general';
+export type RegistrationSource = 'manual' | 'cv_upload';
+
+export type CandidateProfileStatus = 'draft' | 'completed';
 
 export interface Candidate {
   id: string;
-  fullName: string;
-  email: string;
+
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+
+  email?: string;
   phone?: string;
-  cvStoragePath?: string;
+  location?: string;
+
+  yearsOfExperience?: number;
+  education?: string;
+  technicalSkills?: string[];
+  professionalSummary?: string;
+
+  profileStatus: CandidateProfileStatus;
+  registrationType: RegistrationType;
+  registrationSource: RegistrationSource;
   cvParseStatus: CvParseStatus;
-  parsedData?: ParsedCV;
+  cvStoragePath?: string | null;
+
   createdAt: Date;
   updatedAt: Date;
-
-  registrationType: RegistrationType;
-  cvFileName?: string;
-  linkedinUrl?: string;
-  portfolioUrl?: string;
 }
 
-export type CreateCandidateDTO = Omit<
-  Candidate,
-  'id' | 'createdAt' | 'updatedAt'
->;
-export type UpdateCandidateDTO = Partial<Omit<Candidate, 'id' | 'createdAt'>>;
+export interface CreateCandidateDTO {
+  firstName?: string;
+  lastName?: string;
+  fullName?: string;
+
+  email?: string;
+  phone?: string;
+  location?: string;
+
+  yearsOfExperience?: number;
+  education?: string;
+  technicalSkills?: string[];
+  professionalSummary?: string;
+
+  profileStatus: CandidateProfileStatus;
+  registrationType: RegistrationType;
+  registrationSource: RegistrationSource;
+  cvParseStatus: CvParseStatus;
+}

@@ -1,7 +1,7 @@
-import { logger } from "firebase-functions";
-import { onObjectFinalized } from "firebase-functions/v2/storage";
+import { logger } from 'firebase-functions';
+import { onObjectFinalized } from 'firebase-functions/v2/storage';
 
-import { CvUploadService } from "../services/cv-upload-service";
+import { CvUploadService } from '../services/cv-upload-service';
 
 const cvUploadService = new CvUploadService();
 
@@ -12,7 +12,7 @@ function extractCandidateIdFromPath(filePath: string): string | null {
 }
 
 function isPdf(contentType?: string): boolean {
-  return contentType === "application/pdf";
+  return contentType === 'application/pdf';
 }
 
 export const onCVUploaded = onObjectFinalized(async (event) => {
@@ -20,7 +20,7 @@ export const onCVUploaded = onObjectFinalized(async (event) => {
   const contentType = event.data.contentType;
 
   if (!filePath) {
-    logger.warn("Se recibió un evento de Storage sin filePath.");
+    logger.warn('Se recibió un evento de Storage sin filePath.');
     return;
   }
 
@@ -40,7 +40,7 @@ export const onCVUploaded = onObjectFinalized(async (event) => {
     return;
   }
 
-  await cvUploadService.markCvAsProcessing(candidateId, filePath);
+  await cvUploadService.handleCvUploaded(candidateId, filePath);
 
   logger.info(
     `CV recibido correctamente. candidateId=${candidateId}, path=${filePath}`,

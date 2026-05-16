@@ -21,6 +21,7 @@ import {
   Phone,
   User,
   X,
+  Upload,
 } from 'lucide-react';
 
 import type { MinimalFormFieldComponent } from './ManualProfileFormField';
@@ -39,6 +40,7 @@ type ManualCandidateValues = {
   education: string;
   technicalSkills: string;
   professionalSummary: string;
+  resume: string;
 };
 
 const defaultValues: ManualCandidateValues = {
@@ -52,6 +54,7 @@ const defaultValues: ManualCandidateValues = {
   education: '',
   technicalSkills: '',
   professionalSummary: '',
+  resume: '',
 };
 
 function requiredTrim(message: string) {
@@ -81,6 +84,7 @@ const v = {
   email: { onBlur: validateEmail, onSubmit: validateEmail },
   phone: { onBlur: validatePhone, onSubmit: validatePhone },
   desiredPosition: requiredTrim('La posición deseada es requerida'),
+  resume: requiredTrim('El CV es requerido'),
 };
 
 const PAGE_MAX_WIDTH = 900;
@@ -291,6 +295,18 @@ export function ManualCandidateForm({ jobId }: ManualCandidateFormProps) {
                 multiline
                 minRows={4}
                 placeholder="Contá tu experiencia y objetivos en pocas líneas."
+              />
+              <ManualProfileFormField
+                Field={Field}
+                name="resume"
+                label="CV / Currículum (PDF)"
+                Icon={Upload}
+                required
+                validators={v.resume}
+                gridColumnFull
+                fieldType="file"
+                accept=".pdf"
+                placeholder="Seleccionar archivo PDF"
               />
             </Box>
 

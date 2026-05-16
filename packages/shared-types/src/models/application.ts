@@ -1,4 +1,5 @@
 export type ApplicationStage =
+  | 'profile_pending'
   | 'applied'
   | 'screening'
   | 'interview_hr'
@@ -9,16 +10,21 @@ export type ApplicationStage =
   | 'rejected'
   | 'withdrawn';
 
-export type ApplicationStatus = 'active' | 'rejected' | 'withdrawn' | 'hired';
+export type ApplicationStatus =
+  | 'active'
+  | 'draft'
+  | 'rejected'
+  | 'withdrawn'
+  | 'hired';
 
 export interface Application {
   id: string;
   jobId: string;
   candidateId: string;
 
-  jobTitle: string;
-  candidateName: string;
-  candidateEmail: string;
+  jobTitle?: string;
+  candidateName?: string;
+  candidateEmail?: string;
 
   stage: ApplicationStage;
   status: ApplicationStatus;
