@@ -2,15 +2,24 @@ export type JobStatus = 'draft' | 'open' | 'paused' | 'closed';
 
 export type JobLocation = 'remote' | 'on-site' | 'hybrid';
 
+export type SkillType = 'mandatory' | 'desirable';
+
+export interface Skill {
+  name: string;
+  weight: number;
+  type: SkillType;
+}
+
 export interface Job {
   id: string;
   title: string;
   department: string;
+  seniority: string;
   location: JobLocation;
   city?: string;
   description: string;
-  requirements: string[];
-  niceToHave?: string[];
+  skills: Skill[];
+  observations?: string;
   salaryMin?: number;
   salaryMax?: number;
   currency?: string;
@@ -26,4 +35,5 @@ export type CreateJobDTO = Omit<
   Job,
   'id' | 'createdAt' | 'updatedAt' | 'closedAt' | 'publishedAt'
 >;
+
 export type UpdateJobDTO = Partial<Omit<Job, 'id' | 'createdAt'>>;

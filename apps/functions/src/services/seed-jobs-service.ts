@@ -1,4 +1,4 @@
-import type { JobLocation, JobStatus } from '@ats/shared-types';
+import type { JobLocation, JobStatus, Skill } from '@ats/shared-types';
 
 import {
   JobsRepository,
@@ -29,14 +29,31 @@ export class SeedJobsServiceError extends Error {
 
 const PUBLISHED_AT = new Date('2026-05-16T12:00:00.000Z');
 
+function buildSkills(
+  mandatory: Array<{ name: string; weight: number }>,
+  desirable: Array<{ name: string; weight: number }> = [],
+): Skill[] {
+  return [
+    ...mandatory.map((skill) => ({
+      ...skill,
+      type: 'mandatory' as const,
+    })),
+    ...desirable.map((skill) => ({
+      ...skill,
+      type: 'desirable' as const,
+    })),
+  ];
+}
+
 function buildJob(
   id: string,
   overrides: Partial<SeedJobInput> & {
     title: string;
     department: string;
+    seniority: string;
     location: JobLocation;
     description: string;
-    requirements: string[];
+    skills: Skill[];
     hiringManagerId: string;
     status: JobStatus;
   },
@@ -54,11 +71,23 @@ const JOB_SEEDS: SeedJobDefinition[] = [
   buildJob('frontend-ssr-developer', {
     title: 'Frontend SSR Developer',
     department: 'Engineering',
+    seniority: 'semi-senior',
     location: 'remote',
     description:
       'Buscamos un perfil frontend con foco en SSR, experiencia en React y buen criterio para interfaces de producto.',
-    requirements: ['React', 'Next.js', 'TypeScript', 'SSR', 'Consumo de APIs'],
-    niceToHave: ['Firebase', 'Testing Library', 'MUI'],
+    skills: buildSkills(
+      [
+        { name: 'React', weight: 5 },
+        { name: 'Next.js', weight: 5 },
+        { name: 'TypeScript', weight: 4 },
+        { name: 'SSR', weight: 4 },
+      ],
+      [
+        { name: 'Firebase', weight: 2 },
+        { name: 'Testing Library', weight: 2 },
+        { name: 'MUI', weight: 1 },
+      ],
+    ),
     salaryMin: 1800,
     salaryMax: 2500,
     status: 'open',
@@ -68,17 +97,23 @@ const JOB_SEEDS: SeedJobDefinition[] = [
   buildJob('backend-firebase-developer', {
     title: 'Backend Firebase Developer',
     department: 'Engineering',
+    seniority: 'senior',
     location: 'remote',
     description:
       'Rol orientado a Cloud Functions, Firestore y diseño de servicios backend para soportar flujos ATS.',
-    requirements: [
-      'Node.js',
-      'TypeScript',
-      'Firebase Functions',
-      'Firestore',
-      'Arquitectura por capas',
-    ],
-    niceToHave: ['OpenAI API', 'Vitest', 'Emulator Suite'],
+    skills: buildSkills(
+      [
+        { name: 'Node.js', weight: 5 },
+        { name: 'TypeScript', weight: 4 },
+        { name: 'Firebase Functions', weight: 5 },
+        { name: 'Firestore', weight: 4 },
+      ],
+      [
+        { name: 'OpenAI API', weight: 2 },
+        { name: 'Vitest', weight: 2 },
+        { name: 'Emulator Suite', weight: 2 },
+      ],
+    ),
     salaryMin: 2000,
     salaryMax: 2800,
     status: 'open',
@@ -88,17 +123,22 @@ const JOB_SEEDS: SeedJobDefinition[] = [
   buildJob('technical-recruiter', {
     title: 'Technical Recruiter',
     department: 'Talent Acquisition',
+    seniority: 'senior',
     location: 'hybrid',
     city: 'Buenos Aires',
     description:
       'Posición para gestionar búsquedas IT, screening inicial y coordinación con líderes técnicos.',
-    requirements: [
-      'Reclutamiento IT',
-      'Entrevistas iniciales',
-      'Seguimiento de pipeline',
-      'Comunicación con hiring managers',
-    ],
-    niceToHave: ['ATS', 'LinkedIn Recruiter'],
+    skills: buildSkills(
+      [
+        { name: 'Reclutamiento IT', weight: 5 },
+        { name: 'Entrevistas iniciales', weight: 4 },
+        { name: 'Seguimiento de pipeline', weight: 4 },
+      ],
+      [
+        { name: 'ATS', weight: 2 },
+        { name: 'LinkedIn Recruiter', weight: 2 },
+      ],
+    ),
     salaryMin: 1500,
     salaryMax: 2200,
     status: 'open',
@@ -108,16 +148,22 @@ const JOB_SEEDS: SeedJobDefinition[] = [
   buildJob('qa-automation-analyst', {
     title: 'QA Automation Analyst',
     department: 'Quality Assurance',
+    seniority: 'semi-senior',
     location: 'remote',
     description:
       'Perfil QA con experiencia en automatización, armado de suites de prueba y validación de flujos críticos.',
-    requirements: [
-      'Testing funcional',
-      'Automatización',
-      'APIs',
-      'Casos de prueba',
-    ],
-    niceToHave: ['Playwright', 'Cypress', 'CI/CD'],
+    skills: buildSkills(
+      [
+        { name: 'Testing funcional', weight: 4 },
+        { name: 'Automatización', weight: 5 },
+        { name: 'APIs', weight: 3 },
+      ],
+      [
+        { name: 'Playwright', weight: 3 },
+        { name: 'Cypress', weight: 2 },
+        { name: 'CI/CD', weight: 2 },
+      ],
+    ),
     salaryMin: 1700,
     salaryMax: 2400,
     status: 'paused',
@@ -126,12 +172,23 @@ const JOB_SEEDS: SeedJobDefinition[] = [
   buildJob('ux-ui-designer', {
     title: 'UX/UI Designer',
     department: 'Product Design',
+    seniority: 'semi-senior',
     location: 'hybrid',
     city: 'Cordoba',
     description:
       'Diseño de experiencias de producto con foco en claridad operativa, handoff a desarrollo y consistencia visual.',
-    requirements: ['Figma', 'Diseño UX', 'Diseño UI', 'Design systems'],
-    niceToHave: ['Research', 'Prototipado', 'Accesibilidad'],
+    skills: buildSkills(
+      [
+        { name: 'Figma', weight: 5 },
+        { name: 'Diseño UX', weight: 4 },
+        { name: 'Diseño UI', weight: 4 },
+      ],
+      [
+        { name: 'Research', weight: 2 },
+        { name: 'Prototipado', weight: 2 },
+        { name: 'Accesibilidad', weight: 1 },
+      ],
+    ),
     salaryMin: 1600,
     salaryMax: 2300,
     status: 'draft',
