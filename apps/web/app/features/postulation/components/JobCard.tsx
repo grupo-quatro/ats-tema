@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link";
 import { Card, Box, Typography, Stack, Button } from "@mui/material";
 import { Building2, MapPin, Clock, Calendar } from "lucide-react";
 import { Job } from "../../../../../../packages/shared-types/src/models/job";
@@ -42,9 +43,15 @@ export default function JobCard({ job }: JobCardProps) {
                     </Box>
                 </Stack>
 
-                <Button variant="contained" sx={{ px: 3, py: 1, textTransform: "none", borderRadius: "8px" }}>
-                    Ver detalles
-                </Button>
+                <Link href={`/postulation/${job.id}`}>
+                    <Button
+                        component="a"
+                        variant="contained"
+                        sx={{ px: 3, py: 1, textTransform: "none", borderRadius: "8px" }}
+                    >
+                        Ver detalles
+                    </Button>
+                </Link>
             </Stack>
 
             <Stack direction="row" spacing={4} sx={{ mb: 2 }}>

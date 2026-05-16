@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import {
     Box,
     Typography,
-    Stack,
     Container,
     Button,
     Chip,
@@ -22,12 +21,20 @@ import {
     CheckCircle2,
     Calendar,
     ArrowLeft,
+    DollarSign,
 } from "lucide-react";
 import { Job } from "../../../../../../packages/shared-types/src/models/job";
 
 interface JobDescriptionProps {
     job: Job;
 }
+
+const statusLabels: Record<Job["status"], string> = {
+    draft: "Borrador",
+    open: "Abierta",
+    paused: "Pausada",
+    closed: "Cerrada",
+};
 
 export default function JobDescription({ job }: JobDescriptionProps) {
     const router = useRouter();
@@ -37,6 +44,10 @@ export default function JobDescription({ job }: JobDescriptionProps) {
             : job.location === "on-site"
                 ? "Presencial"
                 : "Híbrido";
+
+    const salaryLabel = job.salaryMin || job.salaryMax
+        ? `${job.currency ?? "USD"} ${job.salaryMin?.toLocaleString(undefined, { maximumFractionDigits: 0 }) ?? "--"} - ${job.salaryMax?.toLocaleString(undefined, { maximumFractionDigits: 0 }) ?? "--"}`
+        : "No disponible";
 
     return (
         <Container maxWidth="md" sx={{ py: 4 }}>
@@ -48,81 +59,92 @@ export default function JobDescription({ job }: JobDescriptionProps) {
                 Volver al listado
             </Button>
 
-            <Paper elevation={0} sx={{ borderRadius: "16px", border: "1px solid #e2e8f0", overflow: "hidden" }}>
-                <Box sx={{ bgcolor: "primary.main", p: 4, color: "white" }}>
-                    <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "flex-start" }}>
-                        <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
+            <Paper elevation={0} sx={{ borderRadius: "20px", overflow: "hidden", border: "1px solid #e2e8f0" }}>
+                <Box sx={{ bgcolor: "primary.main", p: { xs: 4, md: 5 }, color: "white" }}>
+                    <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, justifyContent: "space-between", alignItems: "flex-start", gap: 3 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                             <Box sx={{ bgcolor: "white", p: 1.5, borderRadius: "50%", display: "flex", color: "primary.main" }}>
                                 <Building2 size={32} />
                             </Box>
                             <Box>
-                                <Typography variant="h4" sx={{ fontWeight: 600 }}>{job.title}</Typography>
-                                <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 400 }}>{job.department}</Typography>
+                                <Typography variant="h4" sx={{ fontWeight: 700 }}>{job.title}</Typography>
+                                <Typography variant="subtitle1" sx={{ opacity: 0.9, fontWeight: 400 }}>{job.department}</Typography>
                             </Box>
-                        </Stack>
+                        </Box>
+
                         <Chip
-                            label={job.status?.toUpperCase()}
+                            label={statusLabels[job.status]}
                             size="small"
-                            sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "white", fontWeight: 600, backdropFilter: "blur(4px)" }}
+                            sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "white", fontWeight: 700, backdropFilter: "blur(4px)" }}
                         />
-                    </Stack>
+                    </Box>
                 </Box>
 
-                <Box sx={{ p: 4 }}>
-                    <Stack direction={{ xs: "column", md: "row" }} spacing={4} sx={{ mb: 4 }}>
-                        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-                            <Box sx={{ bgcolor: "primary.light", p: 1, borderRadius: "8px", color: "primary.main", display: "flex" }}>
+                <Box sx={{ p: { xs: 4, md: 5 } }}>
+                    <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3, mb: 4 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                            <Box sx={{ bgcolor: "primary.light", p: 1, borderRadius: "12px", color: "primary.main", display: "flex" }}>
                                 <MapPin size={20} />
                             </Box>
                             <Box>
                                 <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>Ubicación</Typography>
-                                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                    {job.city ? `${job.city}` : "No especificada"}
+                                <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                    {job.city ?? "No especificada"}
                                 </Typography>
                             </Box>
-                        </Stack>
+                        </Box>
 
-                        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-                            <Box sx={{ bgcolor: "primary.light", p: 1, borderRadius: "8px", color: "primary.main", display: "flex" }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                            <Box sx={{ bgcolor: "primary.light", p: 1, borderRadius: "12px", color: "primary.main", display: "flex" }}>
                                 <Clock size={20} />
                             </Box>
                             <Box>
                                 <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>Tipo de empleo</Typography>
-                                <Typography variant="body2" sx={{ fontWeight: 600 }}>{jobTypeLabel}</Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 700 }}>{jobTypeLabel}</Typography>
                             </Box>
-                        </Stack>
-                    </Stack>
+                        </Box>
+
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                            <Box sx={{ bgcolor: "primary.light", p: 1, borderRadius: "12px", color: "primary.main", display: "flex" }}>
+                                <DollarSign size={20} />
+                            </Box>
+                            <Box>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>Rango salarial</Typography>
+                                <Typography variant="body2" sx={{ fontWeight: 700 }}>{salaryLabel}</Typography>
+                            </Box>
+                        </Box>
+                    </Box>
 
                     <Divider sx={{ mb: 4 }} />
 
-                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Descripción del puesto</Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ mb: 4, lineHeight: 1.7 }}>
+                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Descripción del puesto</Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 4, lineHeight: 1.8 }}>
                         {job.description}
                     </Typography>
 
-                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Requisitos</Typography>
-                    <List sx={{ mb: 4 }}>
-                        {job.requirements.map((req, index) => (
-                            <ListItem key={index} disableGutters sx={{ py: 0.5 }}>
-                                <ListItemIcon sx={{ minWidth: "32px", color: "#10b981" }}>
-                                    <CheckCircle2 size={18} />
-                                </ListItemIcon>
-                                <ListItemText
-                                    primary={<Typography variant="body2" color="text.secondary">{req}</Typography>}
-                                />
-                            </ListItem>
-                        ))}
-                    </List>
+                    <Box sx={{ display: "flex", flexDirection: { xs: "column", lg: "row" }, gap: 4 }}>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Requisitos</Typography>
+                            <List sx={{ mb: 0 }}>
+                                {job.requirements.map((req, index) => (
+                                    <ListItem key={index} disableGutters sx={{ py: 0.75 }}>
+                                        <ListItemIcon sx={{ minWidth: "34px", color: "#10b981" }}>
+                                            <CheckCircle2 size={18} />
+                                        </ListItemIcon>
+                                        <ListItemText
+                                            primary={<Typography variant="body2" color="text.secondary">{req}</Typography>}
+                                        />
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Box>
 
-                    <Divider sx={{ mb: 4 }} />
-
-                    {job.niceToHave?.length ? (
-                        <>
-                            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Deseable</Typography>
-                            <List sx={{ mb: 4 }}>
-                                {job.niceToHave.map((item, index) => (
-                                    <ListItem key={index} disableGutters sx={{ py: 0.5 }}>
-                                        <ListItemIcon sx={{ minWidth: "32px", color: "#2563eb" }}>
+                        <Box sx={{ flex: 1 }}>
+                            <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Responsabilidades</Typography>
+                            <List sx={{ mb: 0 }}>
+                                {job.responsabilities.map((item, index) => (
+                                    <ListItem key={index} disableGutters sx={{ py: 0.75 }}>
+                                        <ListItemIcon sx={{ minWidth: "34px", color: "#2563eb" }}>
                                             <CheckCircle2 size={18} />
                                         </ListItemIcon>
                                         <ListItemText
@@ -131,25 +153,37 @@ export default function JobDescription({ job }: JobDescriptionProps) {
                                     </ListItem>
                                 ))}
                             </List>
-                        </>
-                    ) : null}
+                        </Box>
+                    </Box>
 
-                    <Paper elevation={0} sx={{ mt: 3, p: 4, borderRadius: "16px", border: "1px solid #e2e8f0", textAlign: "center" }}>
-                        <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>¿Te interesa esta posición?</Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                            Completa el proceso de postulación y nos pondremos en contacto contigo.
-                        </Typography>
-                        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ justifyContent: "center" }}>
-                            <Button variant="contained" size="large" sx={{ px: 4, textTransform: "none", borderRadius: "8px" }}>
-                                Postularme ahora
-                            </Button>
-                            <Button variant="outlined" size="large" sx={{ px: 4, textTransform: "none", borderRadius: "8px" }}>
-                                Ver más ofertas
-                            </Button>
-                        </Stack>
+                    <Box sx={{ mt: 4, mb: 4 }}>
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Beneficios</Typography>
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                            {job.benefits.length ? (
+                                job.benefits.map((benefit, index) => (
+                                    <Chip
+                                        key={index}
+                                        label={benefit}
+                                        variant="outlined"
+                                        sx={{ borderRadius: "12px", textTransform: "none", mb: 1 }}
+                                    />
+                                ))
+                            ) : (
+                                <Typography variant="body2" color="text.secondary">No hay beneficios especificados.</Typography>
+                            )}
+                        </Box>
+                    </Box>
+
+                    <Paper elevation={0} sx={{ mt: 2, p: 4, borderRadius: "18px", border: "1px solid #e2e8f0", textAlign: "center" }}>
+                        <Typography variant="h6" sx={{ mb: 1, fontWeight: 700 }}>¿Te interesa esta posición?</Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>Completa el proceso de postulación y nos pondremos en contacto contigo.</Typography>
+                        <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2, justifyContent: "center" }}>
+                            <Button variant="contained" size="large" sx={{ px: 4, textTransform: "none", borderRadius: "12px" }}>Postularme ahora</Button>
+                            <Button variant="outlined" size="large" sx={{ px: 4, textTransform: "none", borderRadius: "12px" }}>Ver más ofertas</Button>
+                        </Box>
                     </Paper>
 
-                    <Box sx={{ mt: 3, p: 2, bgcolor: "#f8fafc", borderRadius: "8px", display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box sx={{ mt: 3, p: 3, bgcolor: "#f8fafc", borderRadius: "16px", display: "flex", alignItems: "center", gap: 1 }}>
                         <Calendar size={16} color="#64748b" />
                         <Typography variant="caption" sx={{ fontWeight: 700, color: "primary.main" }}>
                             Publicada: <Box component="span" sx={{ fontWeight: 400, color: "text.secondary" }}>
