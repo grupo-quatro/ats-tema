@@ -8,10 +8,17 @@ import Link from 'next/link';
 
 export default function Navbar() {
   return (
-    <AppBar position="sticky" elevation={0} sx={{ bgcolor: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+    <AppBar
+      position="sticky"
+      elevation={0}
+      sx={{ bgcolor: '#ffffff', borderBottom: '1px solid #e2e8f0' }}
+    >
       <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, md: 4 } }}>
         <Link href="/" style={{ textDecoration: 'none' }}>
-          <Typography variant="h2" sx={{ color: 'primary.main', fontSize: '20px' }}>
+          <Typography
+            variant="h2"
+            sx={{ color: 'primary.main', fontSize: '20px' }}
+          >
             ATS Platform
           </Typography>
         </Link>

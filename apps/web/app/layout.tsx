@@ -19,7 +19,13 @@ export default function RootLayout({
     <html lang="es">
       <body>
         <Providers>
-          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: '100vh',
+            }}
+          >
             <Navbar />
             <Box component="main" sx={{ flex: 1 }}>
               {children}
