@@ -11,7 +11,10 @@ import { db } from '../core/firebase-admin';
 
 const JOBS_COLLECTION = 'jobs';
 
-type FirestoreJob = Omit<Job, 'createdAt' | 'updatedAt' | 'closedAt' | 'publishedAt'> & {
+type FirestoreJob = Omit<
+  Job,
+  'createdAt' | 'updatedAt' | 'closedAt' | 'publishedAt'
+> & {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   closedAt?: Timestamp;
@@ -147,13 +150,14 @@ export class JobsRepository implements JobsRepositoryContract {
         return 'created';
       }
 
-      await jobRef.set(
-        {
-          ...jobData,
-          updatedAt: now,
-        },
-        { merge: true },
-      );
+      const existingData = existingSnapshot.data() as FirestoreJob;
+
+      await jobRef.set({
+        id: jobId,
+        ...jobData,
+        createdAt: existingData.createdAt,
+        updatedAt: now,
+      });
 
       return 'updated';
     } catch (error) {
