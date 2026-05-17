@@ -53,12 +53,7 @@ export function CvUploadView({ jobId }: CvUploadViewProps) {
     // Ejemplo:
     //   const parsed = await parseCvService.parse(selectedFile);
     //   <ManualCandidateForm jobId={jobId} preloadedFile={selectedFile} initialValues={parsed} />
-    return (
-      <ManualCandidateForm
-        jobId={jobId}
-        preloadedFile={selectedFile}
-      />
-    );
+    return <ManualCandidateForm jobId={jobId} preloadedFile={selectedFile} />;
   }
 
   return (
@@ -96,7 +91,12 @@ export function CvUploadView({ jobId }: CvUploadViewProps) {
         >
           <Box>
             <Typography
-              sx={{ fontSize: { xs: 22, sm: 24 }, fontWeight: 500, color: 'primary.contrastText', mb: 0.5 }}
+              sx={{
+                fontSize: { xs: 22, sm: 24 },
+                fontWeight: 500,
+                color: 'primary.contrastText',
+                mb: 0.5,
+              }}
             >
               Subir CV
             </Typography>
@@ -165,7 +165,9 @@ export function CvUploadView({ jobId }: CvUploadViewProps) {
             </Alert>
           )}
 
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}
+          >
             <Button
               variant="outlined"
               component={Link}

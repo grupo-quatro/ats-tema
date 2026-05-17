@@ -16,21 +16,25 @@ export class CandidateFirebaseRepository implements ICandidateRepository {
     await signInAnonymously(auth);
   }
 
-  async registerCandidate(payload: RegisterCandidatePayload): Promise<RegisterCandidateResponse> {
+  async registerCandidate(
+    payload: RegisterCandidatePayload,
+  ): Promise<RegisterCandidateResponse> {
     await this.ensureAuth();
-    const result = await callFunction<RegisterCandidatePayload, RegisterCandidateResponse>(
-      'registerCandidate',
-      payload,
-    );
+    const result = await callFunction<
+      RegisterCandidatePayload,
+      RegisterCandidateResponse
+    >('registerCandidate', payload);
     return result.data;
   }
 
-  async registerCandidateCV(payload: RegisterCandidateCVPayload): Promise<RegisterCandidateCVResponse> {
+  async registerCandidateCV(
+    payload: RegisterCandidateCVPayload,
+  ): Promise<RegisterCandidateCVResponse> {
     await this.ensureAuth();
-    const result = await callFunction<RegisterCandidateCVPayload, RegisterCandidateCVResponse>(
-      'registerCandidateCV',
-      payload,
-    );
+    const result = await callFunction<
+      RegisterCandidateCVPayload,
+      RegisterCandidateCVResponse
+    >('registerCandidateCV', payload);
     return result.data;
   }
 

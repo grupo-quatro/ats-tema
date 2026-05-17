@@ -95,7 +95,11 @@ type ManualCandidateFormProps = {
   preloadedFile?: File;
 };
 
-export function ManualCandidateForm({ jobId, initialValues, preloadedFile }: ManualCandidateFormProps) {
+export function ManualCandidateForm({
+  jobId,
+  initialValues,
+  preloadedFile,
+}: ManualCandidateFormProps) {
   const router = useRouter();
   const backHref = `/postulation/${jobId}`;
   const { mutateAsync, isPending, isError, error } = useRegisterManual();
@@ -117,13 +121,18 @@ export function ManualCandidateForm({ jobId, initialValues, preloadedFile }: Man
               : undefined,
             education: value.education.trim() || undefined,
             technicalSkills: value.technicalSkills
-              ? value.technicalSkills.split(',').map((s) => s.trim()).filter(Boolean)
+              ? value.technicalSkills
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean)
               : undefined,
             professionalSummary: value.professionalSummary.trim() || undefined,
           },
           file: preloadedFile,
         });
-        router.push(`/postulation/${jobId}/success?status=${result.cvParseStatus}`);
+        router.push(
+          `/postulation/${jobId}/success?status=${result.cvParseStatus}`,
+        );
       } catch {
         // el error queda en isError/error del hook
       }
@@ -325,7 +334,9 @@ export function ManualCandidateForm({ jobId, initialValues, preloadedFile }: Man
 
             {isError && (
               <Alert severity="error" sx={{ mb: 2 }}>
-                {error instanceof Error ? error.message : 'Ocurrió un error al registrar. Intentá de nuevo.'}
+                {error instanceof Error
+                  ? error.message
+                  : 'Ocurrió un error al registrar. Intentá de nuevo.'}
               </Alert>
             )}
 
@@ -355,7 +366,11 @@ export function ManualCandidateForm({ jobId, initialValues, preloadedFile }: Man
                     type="submit"
                     variant="contained"
                     disabled={isSubmitting || isPending}
-                    startIcon={isPending ? <CircularProgress size={16} color="inherit" /> : null}
+                    startIcon={
+                      isPending ? (
+                        <CircularProgress size={16} color="inherit" />
+                      ) : null
+                    }
                   >
                     {isPending ? 'Registrando...' : 'Finalizar registro'}
                   </Button>

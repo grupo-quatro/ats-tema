@@ -11,8 +11,13 @@ const service = new PostulationService(new CandidateFirebaseRepository());
 
 export function useRegisterManual() {
   return useMutation({
-    mutationFn: ({ payload, file }: { payload: RegisterCandidatePayload; file?: File }) =>
-      service.registerManual(payload, file),
+    mutationFn: ({
+      payload,
+      file,
+    }: {
+      payload: RegisterCandidatePayload;
+      file?: File;
+    }) => service.registerManual(payload, file),
   });
 }
 

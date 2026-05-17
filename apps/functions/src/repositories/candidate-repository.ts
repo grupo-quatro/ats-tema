@@ -1,17 +1,17 @@
-import * as admin from "firebase-admin";
-import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import * as admin from 'firebase-admin';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
 import type {
   Candidate,
   CreateCandidateDTO,
   CvParseStatus,
-} from "@ats/shared-types";
+} from '@ats/shared-types';
 
-import { db } from "../core/firebase-admin";
+import { db } from '../core/firebase-admin';
 
-const CANDIDATES_COLLECTION = "candidates";
+const CANDIDATES_COLLECTION = 'candidates';
 
-type FirestoreCandidate = Omit<Candidate, "createdAt" | "updatedAt"> & {
+type FirestoreCandidate = Omit<Candidate, 'createdAt' | 'updatedAt'> & {
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };
@@ -22,7 +22,7 @@ export class CandidatesRepositoryError extends Error {
     public readonly cause?: unknown,
   ) {
     super(message);
-    this.name = "CandidatesRepositoryError";
+    this.name = 'CandidatesRepositoryError';
   }
 }
 
@@ -49,7 +49,7 @@ export class CandidatesRepository {
   async findByEmail(email: string): Promise<Candidate | null> {
     try {
       const snapshot = await this.collection
-        .where("email", "==", email)
+        .where('email', '==', email)
         .limit(1)
         .get();
 

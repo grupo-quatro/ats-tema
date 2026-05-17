@@ -1,5 +1,9 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
+import {
+  getFunctions,
+  httpsCallable,
+  connectFunctionsEmulator,
+} from 'firebase/functions';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 import { getAuth, connectAuthEmulator } from 'firebase/auth';
 
@@ -13,7 +17,10 @@ const firebaseConfig = {
 const isNew = getApps().length === 0;
 const app = isNew ? initializeApp(firebaseConfig) : getApps()[0];
 
-export const functions = getFunctions(app, process.env.NEXT_PUBLIC_FUNCTIONS_REGION ?? 'us-central1');
+export const functions = getFunctions(
+  app,
+  process.env.NEXT_PUBLIC_FUNCTIONS_REGION ?? 'us-central1',
+);
 export const storage = getStorage(app);
 export const auth = getAuth(app);
 
