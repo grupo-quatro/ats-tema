@@ -37,7 +37,7 @@ exports.healthCheck = void 0;
 const functions = __importStar(require("firebase-functions"));
 exports.healthCheck = functions.https.onRequest((req, res) => {
     res.status(200).json({
-        status: "healthy",
+        status: 'healthy',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
     });

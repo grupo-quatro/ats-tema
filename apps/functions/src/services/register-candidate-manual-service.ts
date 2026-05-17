@@ -5,7 +5,7 @@ import type {
   RegistrationType,
   RegisterCandidatePayload,
   RegisterCandidateResponse,
-} from '@ats/shared-types';
+} from "@ats/shared-types";
 
 import { CandidatesRepository } from '../repositories/candidate-repository';
 import { ApplicationRegistrationService } from './application-registration-service';
@@ -13,7 +13,7 @@ import { ApplicationRegistrationService } from './application-registration-servi
 export class CandidateRegistrationConflictError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'CandidateRegistrationConflictError';
+    this.name = "CandidateRegistrationConflictError";
   }
 }
 
@@ -23,7 +23,7 @@ export class CandidateRegistrationServiceError extends Error {
     public readonly cause?: unknown,
   ) {
     super(message);
-    this.name = 'CandidateRegistrationServiceError';
+    this.name = "CandidateRegistrationServiceError";
   }
 }
 
@@ -44,7 +44,7 @@ export class CandidateRegistrationService {
 
       if (existingCandidate && existingCandidate.id !== candidateId) {
         throw new CandidateRegistrationConflictError(
-          'Ya existe un candidato con ese email asociado a otro identificador.',
+          "Ya existe un candidato con ese email asociado a otro identificador.",
         );
       }
 
