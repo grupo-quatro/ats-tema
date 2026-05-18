@@ -1,0 +1,90 @@
+'use client';
+
+import { Box, Dialog, DialogContent, IconButton, Typography } from '@mui/material';
+import { FileText, X } from 'lucide-react';
+
+interface CvViewerModalProps {
+  open: boolean;
+  onClose: () => void;
+  cvUrl?: string | null;
+  candidateName: string;
+}
+
+export function CvViewerModal({ open, onClose, cvUrl, candidateName }: CvViewerModalProps) {
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{ sx: { overflow: 'hidden' } }}
+    >
+      <Box
+        sx={(theme) => ({
+          px: 4,
+          py: 2.5,
+          background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        })}
+      >
+        <Box>
+          <Typography sx={{ color: 'white', fontWeight: 500, fontSize: 18 }}>
+            CV Original
+          </Typography>
+          <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 13 }}>
+            {candidateName}
+          </Typography>
+        </Box>
+        <IconButton onClick={onClose} sx={{ color: 'white' }} aria-label="Cerrar">
+          <X size={20} />
+        </IconButton>
+      </Box>
+
+      <DialogContent sx={{ p: 0, minHeight: 520, bgcolor: '#f1f5f9' }}>
+        {cvUrl ? (
+          <iframe
+            src={cvUrl}
+            style={{ width: '100%', height: '600px', border: 'none', display: 'block' }}
+            title={`CV de ${candidateName}`}
+          />
+        ) : (
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: 520,
+              gap: 2,
+            }}
+          >
+            <Box
+              sx={(theme) => ({
+                bgcolor: theme.palette.primary.light,
+                p: 2.5,
+                borderRadius: '50%',
+                color: 'primary.main',
+                display: 'flex',
+              })}
+            >
+              <FileText size={40} />
+            </Box>
+            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+              Vista previa del CV
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ textAlign: 'center', maxWidth: 320 }}
+            >
+              El archivo PDF del candidato se visualizará aquí una vez integrado con el
+              almacenamiento.
+            </Typography>
+          </Box>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}

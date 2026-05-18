@@ -1,0 +1,372 @@
+'use client';
+
+import { useState } from 'react';
+import {
+  Box,
+  Button,
+  Card,
+  Chip,
+  Container,
+  Divider,
+  IconButton,
+  Menu,
+  MenuItem,
+  Rating,
+  Typography,
+} from '@mui/material';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Info,
+  MessageSquare,
+  MoreVertical,
+  Sparkles,
+} from 'lucide-react';
+import Link from 'next/link';
+import type { CandidateMockProfile } from '../mock/candidateMock';
+import { CandidateInfoCard } from './CandidateInfoCard';
+import { CvViewerModal } from './CvViewerModal';
+import { InterviewModal } from './InterviewModal';
+
+interface CandidateProfileViewProps {
+  candidate: CandidateMockProfile;
+}
+
+export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
+  const [cvModalOpen, setCvModalOpen] = useState(false);
+  const [interviewModalOpen, setInterviewModalOpen] = useState(false);
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+
+  return (
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: { xs: 3, md: 5 } }}>
+      <Container maxWidth="xl">
+        <Button
+          component={Link}
+          href="/candidates"
+          startIcon={<ArrowLeft size={18} />}
+          sx={{ color: 'text.secondary', mb: 3, textTransform: 'none' }}
+        >
+          Volver a candidatos
+        </Button>
+
+        {/* Page header */}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            justifyContent: 'space-between',
+            alignItems: { xs: 'flex-start', md: 'center' },
+            gap: 2,
+            mb: 4,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box
+              sx={(theme) => ({
+                width: 56,
+                height: 56,
+                borderRadius: '50%',
+                bgcolor: theme.palette.primary.main,
+                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 20,
+                fontWeight: 700,
+                flexShrink: 0,
+              })}
+            >
+              {candidate.initials}
+            </Box>
+            <Box>
+              <Typography variant="h2" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
+                {candidate.fullName}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {candidate.title}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                Estado actual:
+              </Typography>
+              <Chip
+                label={candidate.currentStage}
+                size="small"
+                sx={{
+                  bgcolor: '#e0f2fe',
+                  color: '#0369a1',
+                  fontWeight: 600,
+                  fontSize: 12,
+                  borderRadius: '6px',
+                  height: 26,
+                }}
+              />
+            </Box>
+
+            <Button
+              variant="contained"
+              onClick={() => setInterviewModalOpen(true)}
+              sx={{ bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' } }}
+            >
+              Realizar Entrevista
+            </Button>
+
+            <IconButton
+              onClick={(e) => setMenuAnchor(e.currentTarget)}
+              aria-label="Más opciones"
+              size="small"
+            >
+              <MoreVertical size={20} />
+            </IconButton>
+            <Menu
+              anchorEl={menuAnchor}
+              open={Boolean(menuAnchor)}
+              onClose={() => setMenuAnchor(null)}
+            >
+              <MenuItem onClick={() => setMenuAnchor(null)}>Cambiar etapa</MenuItem>
+              <MenuItem onClick={() => setMenuAnchor(null)}>Editar perfil</MenuItem>
+              <Divider />
+              <MenuItem onClick={() => setMenuAnchor(null)} sx={{ color: 'error.main' }}>
+                Rechazar candidato
+              </MenuItem>
+            </Menu>
+          </Box>
+        </Box>
+
+        {/* Two-column layout */}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', lg: '340px 1fr' },
+            gap: 3,
+            alignItems: 'flex-start',
+          }}
+        >
+          {/* Left column */}
+          <CandidateInfoCard candidate={candidate} onViewCv={() => setCvModalOpen(true)} />
+
+          {/* Right column */}
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* Scoring card */}
+            <Card>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <Sparkles size={16} color="#64748b" />
+                <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                  Scoring Inicial de IA
+                </Typography>
+              </Box>
+
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.25 }}>
+                % FIT
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, mb: 2.5 }}>
+                <Typography
+                  sx={{
+                    fontSize: 52,
+                    fontWeight: 700,
+                    color: 'primary.main',
+                    lineHeight: 1,
+                  }}
+                >
+                  {candidate.fitScore}%
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  compatibilidad general con la posición
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'column', sm: 'row' },
+                  gap: { xs: 2, sm: 4 },
+                }}
+              >
+                <Box>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontWeight: 600, display: 'block', mb: 1 }}
+                  >
+                    Skills detectadas
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                    {candidate.detectedSkills.map((skill) => (
+                      <Chip
+                        key={skill}
+                        label={skill}
+                        size="small"
+                        sx={{
+                          bgcolor: '#dcfce7',
+                          color: '#15803d',
+                          fontWeight: 500,
+                          fontSize: 12,
+                          borderRadius: '6px',
+                          height: 24,
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+
+                <Box>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontWeight: 600, display: 'block', mb: 1 }}
+                  >
+                    Gap (faltantes)
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                    {candidate.gapSkills.map((skill) => (
+                      <Chip
+                        key={skill}
+                        label={skill}
+                        size="small"
+                        sx={{
+                          bgcolor: '#fee2e2',
+                          color: '#dc2626',
+                          fontWeight: 500,
+                          fontSize: 12,
+                          borderRadius: '6px',
+                          height: 24,
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              </Box>
+            </Card>
+
+            {/* Strengths card */}
+            <Card>
+              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
+                Fortalezas de la candidatura
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {candidate.strengths.map((strength, i) => (
+                  <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                    <CheckCircle2
+                      size={18}
+                      color="#16a34a"
+                      style={{ marginTop: 1, flexShrink: 0 }}
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                      {strength}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Card>
+
+            {/* Interview notes card */}
+            <Card>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <MessageSquare size={16} color="#64748b" />
+                <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                  Notas de las entrevistas
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                {candidate.interviewNotes.map((note, i) => (
+                  <Box key={i}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        mb: 1,
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                        <Box
+                          sx={(theme) => ({
+                            width: 32,
+                            height: 32,
+                            borderRadius: '50%',
+                            bgcolor: theme.palette.primary.light,
+                            color: theme.palette.primary.main,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 11,
+                            fontWeight: 700,
+                            flexShrink: 0,
+                          })}
+                        >
+                          {note.authorName
+                            .split(' ')
+                            .map((n) => n[0])
+                            .join('')
+                            .slice(0, 2)
+                            .toUpperCase()}
+                        </Box>
+                        <Box>
+                          <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
+                            {note.authorName}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {note.date}
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Rating value={note.rating} readOnly size="small" />
+                    </Box>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: 13 }}>
+                      {note.note}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Card>
+
+            {/* Stage management info box */}
+            <Box
+              sx={{
+                bgcolor: '#eff6ff',
+                border: '1px solid #bfdbfe',
+                borderRadius: '12px',
+                p: 2.5,
+                display: 'flex',
+                gap: 1.5,
+              }}
+            >
+              <Info size={18} color="#2563eb" style={{ marginTop: 2, flexShrink: 0 }} />
+              <Box>
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 600, color: 'primary.main', mb: 0.5 }}
+                >
+                  Gestión de Etapa
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ fontSize: 13 }}>
+                  Utilizá el menú de acciones (tres puntos en el header) para cambiar la etapa del
+                  candidato. Al cambiar a ciertas etapas se activarán flujos automáticos de
+                  comunicación.
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+      </Container>
+
+      <CvViewerModal
+        open={cvModalOpen}
+        onClose={() => setCvModalOpen(false)}
+        cvUrl={candidate.cvMockUrl}
+        candidateName={candidate.fullName}
+      />
+
+      <InterviewModal
+        open={interviewModalOpen}
+        onClose={() => setInterviewModalOpen(false)}
+        candidateName={candidate.fullName}
+      />
+    </Box>
+  );
+}
