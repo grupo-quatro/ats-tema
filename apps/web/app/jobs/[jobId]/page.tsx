@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import JobDescription from "@/features/postulation/components/JobDescription";
-import { JOBS_DATA } from "@/features/postulation/services/jobs";
+import JobDescription from "@/features/jobs/components/JobDescription";
+import { JOBS_DATA } from "@/features/jobs/services/jobs";
 
 interface JobPageProps {
   // Aseguramos que params sea una Promesa
@@ -12,7 +12,7 @@ interface JobPageProps {
 // Transformamos la función en async
 export default async function PostulationPage({ params }: JobPageProps) {
   // Resolvemos la promesa de params
-  const resolvedParams = await params; 
+  const resolvedParams = await params;
   const jobId = resolvedParams.jobId;
   const normalizedJobId = jobId?.toString().trim();
 

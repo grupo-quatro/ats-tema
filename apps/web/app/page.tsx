@@ -1,4 +1,4 @@
-import JobPortal from "./features/postulation/components/JobPortal";
+import JobPortal from "./features/jobs/components/JobPortal";
 
 export default function Home() {
   return (

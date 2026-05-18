@@ -43,7 +43,7 @@ export default function JobCard({ job }: JobCardProps) {
                     </Box>
                 </Stack>
 
-                <Link href={`/postulation/${job.id}`}>
+                <Link href={`/jobs/${job.id}`}>
                     <Button
                         component="a"
                         variant="contained"

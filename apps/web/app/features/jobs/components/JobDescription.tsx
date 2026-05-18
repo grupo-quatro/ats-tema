@@ -179,7 +179,7 @@ export default function JobDescription({ job }: JobDescriptionProps) {
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>Completa el proceso de postulación y nos pondremos en contacto contigo.</Typography>
                         <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2, justifyContent: "center" }}>
                             <Button variant="contained" size="large" sx={{ px: 4, textTransform: "none", borderRadius: "12px" }}>Postularme ahora</Button>
-                            <Button variant="outlined" size="large" sx={{ px: 4, textTransform: "none", borderRadius: "12px" }}>Ver más ofertas</Button>
+                            <Button onClick={() => router.push("/")} variant="outlined" size="large" sx={{ px: 4, textTransform: "none", borderRadius: "12px" }}>Ver más ofertas</Button>
                         </Box>
                     </Paper>
 
