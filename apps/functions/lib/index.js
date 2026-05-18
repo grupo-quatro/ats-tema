@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.registerCandidateCV = exports.onCVUploaded = exports.registerCandidate = exports.healthCheck = exports.submitApplication = void 0;
+exports.submitApplication = exports.onCVUploaded = exports.registerCandidateCV = exports.registerCandidate = exports.healthCheck = void 0;
 var health_check_1 = require("./callables/health-check");
 Object.defineProperty(exports, "healthCheck", { enumerable: true, get: function () { return health_check_1.healthCheck; } });
 var register_candidate_manual_1 = require("./callables/register-candidate-manual");
