@@ -20,21 +20,21 @@ export default function RootLayout({
     <html lang="es">
       <body>
         <AppRouterCacheProvider>
-        <Providers>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              minHeight: '100vh',
-            }}
-          >
-            <Navbar />
-            <Box component="main" sx={{ flex: 1 }}>
-              {children}
+          <Providers>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: '100vh',
+              }}
+            >
+              <Navbar />
+              <Box component="main" sx={{ flex: 1 }}>
+                {children}
+              </Box>
+              <Footer />
             </Box>
-            <Footer />
-          </Box>
-        </Providers>
+          </Providers>
         </AppRouterCacheProvider>
       </body>
     </html>

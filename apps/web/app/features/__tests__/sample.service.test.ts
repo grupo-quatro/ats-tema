@@ -45,7 +45,7 @@ describe('JobsService', () => {
     const openJobs = await service.getOpenJobs();
 
     expect(openJobs).toHaveLength(1);
-    expect(openJobs[0].title).toBe('Frontend Developer');
+    expect(openJobs[0]?.title).toBe('Frontend Developer');
   });
 
   it('throws when job is not found', async () => {

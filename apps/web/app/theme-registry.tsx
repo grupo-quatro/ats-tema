@@ -5,7 +5,11 @@ import { useServerInsertedHTML } from 'next/navigation';
 import { CacheProvider } from '@emotion/react';
 import { useState } from 'react';
 
-export default function ThemeRegistry({ children }: { children: React.ReactNode }) {
+export default function ThemeRegistry({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [{ cache, flush }] = useState(() => {
     const cache = createCache({ key: 'css' });
     cache.compat = true;

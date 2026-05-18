@@ -39,7 +39,10 @@ export const getApplicationsByJob = onCall(async (request) => {
       throw new HttpsError('not-found', error.message);
     }
 
-    logger.error('Error inesperado obteniendo postulaciones por posición', error);
+    logger.error(
+      'Error inesperado obteniendo postulaciones por posición',
+      error,
+    );
 
     throw new HttpsError(
       'internal',

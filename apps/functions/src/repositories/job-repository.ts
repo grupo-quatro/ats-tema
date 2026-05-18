@@ -6,7 +6,10 @@ import { db } from '../core/firebase-admin';
 
 const JOBS_COLLECTION = 'jobs';
 
-type FirestoreJob = Omit<Job, 'createdAt' | 'updatedAt' | 'closedAt' | 'publishedAt'> & {
+type FirestoreJob = Omit<
+  Job,
+  'createdAt' | 'updatedAt' | 'closedAt' | 'publishedAt'
+> & {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   closedAt?: Timestamp;
@@ -22,7 +25,6 @@ export class JobsRepositoryError extends Error {
     this.name = 'JobsRepositoryError';
   }
 }
-
 
 export class JobsRepository {
   private readonly collection = db.collection(JOBS_COLLECTION);

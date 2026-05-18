@@ -56,6 +56,8 @@ function buildJob(
     skills: Skill[];
     hiringManagerId: string;
     status: JobStatus;
+    responsabilities: string[];
+    benefits: string[];
   },
 ): SeedJobDefinition {
   return {
@@ -63,7 +65,7 @@ function buildJob(
     data: {
       currency: 'USD',
       ...overrides,
-    },
+    } as SeedJobInput,
   };
 }
 
@@ -93,6 +95,12 @@ const JOB_SEEDS: SeedJobDefinition[] = [
     status: 'open',
     hiringManagerId: 'hr-demo-01',
     publishedAt: PUBLISHED_AT,
+    responsabilities: [
+      'Desarrollar componentes React con SSR usando Next.js',
+      'Optimizar rendimiento de aplicaciones web',
+      'Colaborar con diseño en implementación de interfaces',
+    ],
+    benefits: ['Home office', 'Horario flexible', 'Capacitación continua'],
   }),
   buildJob('backend-firebase-developer', {
     title: 'Backend Firebase Developer',
@@ -119,6 +127,12 @@ const JOB_SEEDS: SeedJobDefinition[] = [
     status: 'open',
     hiringManagerId: 'hr-demo-02',
     publishedAt: PUBLISHED_AT,
+    responsabilities: [
+      'Diseñar y desarrollar Cloud Functions',
+      'Gestionar base de datos Firestore',
+      'Implementar servicios backend escalables',
+    ],
+    benefits: ['Home office total', 'Flexible schedule', 'Learning budget'],
   }),
   buildJob('technical-recruiter', {
     title: 'Technical Recruiter',
@@ -144,6 +158,12 @@ const JOB_SEEDS: SeedJobDefinition[] = [
     status: 'open',
     hiringManagerId: 'hr-demo-03',
     publishedAt: PUBLISHED_AT,
+    responsabilities: [
+      'Gestionar búsquedas IT',
+      'Screening de candidatos',
+      'Coordinación con líderes técnicos',
+    ],
+    benefits: ['Oficina en Buenos Aires', 'Flexibilidad horaria', 'Bonos'],
   }),
   buildJob('qa-automation-analyst', {
     title: 'QA Automation Analyst',
@@ -168,6 +188,12 @@ const JOB_SEEDS: SeedJobDefinition[] = [
     salaryMax: 2400,
     status: 'paused',
     hiringManagerId: 'hr-demo-04',
+    responsabilities: [
+      'Desarrollar suites de automatización',
+      'Validar flujos críticos',
+      'Reportar defectos',
+    ],
+    benefits: ['Home office', 'Horario flexible', 'Testing tools'],
   }),
   buildJob('ux-ui-designer', {
     title: 'UX/UI Designer',
@@ -193,6 +219,12 @@ const JOB_SEEDS: SeedJobDefinition[] = [
     salaryMax: 2300,
     status: 'draft',
     hiringManagerId: 'hr-demo-05',
+    responsabilities: [
+      'Diseñar interfaces de usuario',
+      'Crear prototipos en Figma',
+      'Colaborar con product y desarrollo',
+    ],
+    benefits: ['Oficina en Córdoba', 'Flexibilidad horaria', 'Mentoring'],
   }),
 ];
 
