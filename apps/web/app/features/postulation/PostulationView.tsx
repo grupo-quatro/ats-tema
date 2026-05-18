@@ -9,6 +9,7 @@ const FALLBACK_JOB_ID = 'demo';
 
 export default function PostulationView({ jobId }: { jobId?: string }) {
   const effectiveJobId = jobId ?? FALLBACK_JOB_ID;
+  const cvHref = `/postulation/${effectiveJobId}/cv`;
   const manualHref = `/postulation/${effectiveJobId}/manual`;
 
   return (
@@ -49,6 +50,7 @@ export default function PostulationView({ jobId }: { jobId?: string }) {
         sx={{ width: '100%', justifyContent: 'center', mb: 6 }}
       >
         <MethodCard
+          href={cvHref}
           Icon={Upload}
           title="Subir CV"
           description="Carga tu currículum y extraeremos automáticamente tu información"

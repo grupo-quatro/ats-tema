@@ -1,9 +1,20 @@
 'use client';
 import { Card, Container, Box, Typography, Button } from '@mui/material';
-import { BadgeCheck, Mail, User } from 'lucide-react';
+import { BadgeCheck, Clock, Mail } from 'lucide-react';
+import type { CvParseStatus } from '@ats/shared-types';
 import { StatusInfoBlock } from './StatusInfoBlock';
 
-export default function SuccessView() {
+const CV_STATUS_LABELS: Record<CvParseStatus, string> = {
+  pending: 'Tu CV está en cola para ser procesado.',
+  processing: 'Tu CV se está procesando. Te notificaremos cuando esté listo.',
+  done: 'Tu CV fue procesado correctamente.',
+  failed: 'Hubo un problema al procesar tu CV. El equipo lo revisará.',
+  not_required: 'No se requiere CV para esta postulación.',
+};
+
+type Props = { cvParseStatus: CvParseStatus };
+
+export default function SuccessView({ cvParseStatus }: Props) {
   return (
     <Container sx={{ py: 8, display: 'flex', justifyContent: 'center' }}>
       <Card
@@ -58,9 +69,9 @@ export default function SuccessView() {
             description="Hemos enviado un correo de confirmación a tu dirección de email. Por favor, verifica tu bandeja de entrada."
           />
           <StatusInfoBlock
-            Icon={User}
-            title="Perfil Creado"
-            description="Tu perfil ya está disponible para los reclutadores. Recibirás notificaciones sobre oportunidades."
+            Icon={Clock}
+            title="Estado del CV"
+            description={CV_STATUS_LABELS[cvParseStatus]}
           />
         </Box>
 
