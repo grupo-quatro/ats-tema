@@ -15,6 +15,8 @@ export interface Job {
   salaryMax?: number;
   currency?: string;
   status: JobStatus;
+  responsabilities: string[];
+  benefits: string[];
   hiringManagerId: string;
   createdAt: Date;
   updatedAt: Date;
