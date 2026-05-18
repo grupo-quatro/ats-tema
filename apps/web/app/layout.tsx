@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 import Providers from './providers';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -18,6 +19,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body>
+        <AppRouterCacheProvider>
         <Providers>
           <Box
             sx={{
@@ -33,6 +35,7 @@ export default function RootLayout({
             <Footer />
           </Box>
         </Providers>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );
