@@ -1,6 +1,10 @@
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
-import type { Application, CreateApplicationDTO } from '@ats/shared-types';
+import type {
+  Application,
+  CreateApplicationDTO,
+  QueryOptions,
+} from '@ats/shared-types';
 
 import { db } from '../core/firebase-admin';
 
@@ -55,6 +59,43 @@ export class ApplicationsRepository {
     } catch (error) {
       throw new ApplicationsRepositoryError(
         `No se pudo buscar la postulación para candidateId=${candidateId} y jobId=${jobId}.`,
+        error,
+      );
+    }
+  }
+
+  async findByJobId(
+    jobId: string,
+    options?: QueryOptions,
+  ): Promise<Application[]> {
+    try {
+      const {
+        orderBy = 'createdAt',
+        orderDirection = 'desc',
+        limit,
+      } = options ?? {};
+
+      // fitScore requiere índice compuesto en Firestore: jobId ASC + fitScore DESC
+      let query = this.collection
+        .where('jobId', '==', jobId)
+        .orderBy(orderBy, orderDirection);
+
+      if (limit !== undefined) {
+        query = query.limit(limit);
+      }
+
+      const snapshot = await query.get();
+
+      if (snapshot.empty) {
+        return [];
+      }
+
+      return snapshot.docs.map((doc) =>
+        this.mapToApplication(doc.data() as FirestoreApplication),
+      );
+    } catch (error) {
+      throw new ApplicationsRepositoryError(
+        `No se pudieron obtener las postulaciones para jobId=${jobId}.`,
         error,
       );
     }
