@@ -15,7 +15,8 @@ export default function Footer() {
       }}
     >
       <Typography variant="body2" color="text.secondary">
-        © {new Date().getFullYear()} ATS Recruiting Platform. Todos los derechos reservados.
+        © {new Date().getFullYear()} ATS Recruiting Platform. Todos los derechos
+        reservados.
       </Typography>
     </Box>
   );

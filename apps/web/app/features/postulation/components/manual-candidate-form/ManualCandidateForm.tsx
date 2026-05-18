@@ -3,10 +3,12 @@
 import { useForm } from '@tanstack/react-form';
 import {
   alpha,
+  Alert,
   Box,
   Button,
   Card,
   CardContent,
+  CircularProgress,
   IconButton,
   Typography,
 } from '@mui/material';
@@ -21,11 +23,11 @@ import {
   Phone,
   User,
   X,
-  Upload,
 } from 'lucide-react';
 
 import type { MinimalFormFieldComponent } from './ManualProfileFormField';
 import { ManualProfileFormField } from './ManualProfileFormField';
+import { useRegisterManual } from '../../hooks/usePostulation';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -40,7 +42,6 @@ type ManualCandidateValues = {
   education: string;
   technicalSkills: string;
   professionalSummary: string;
-  resume: string;
 };
 
 const defaultValues: ManualCandidateValues = {
@@ -54,7 +55,6 @@ const defaultValues: ManualCandidateValues = {
   education: '',
   technicalSkills: '',
   professionalSummary: '',
-  resume: '',
 };
 
 function requiredTrim(message: string) {
@@ -71,7 +71,6 @@ function validateEmail({ value }: { value: string }): string | undefined {
 
 function validatePhone({ value }: { value: string }): string | undefined {
   const trimmed = value?.trim() ?? '';
-  console.log('archivo de arriba');
   if (!trimmed) return 'El teléfono es requerido';
   if (!/^[0-9]+$/.test(trimmed)) return 'Solo se permiten dígitos';
   if (trimmed.length < 8 || trimmed.length > 15) return 'Número inválido';
@@ -84,28 +83,62 @@ const v = {
   email: { onBlur: validateEmail, onSubmit: validateEmail },
   phone: { onBlur: validatePhone, onSubmit: validatePhone },
   desiredPosition: requiredTrim('La posición deseada es requerida'),
-  resume: requiredTrim('El CV es requerido'),
 };
 
 const PAGE_MAX_WIDTH = 900;
 const CARD_SHADOW =
   '0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.06)';
 
-type ManualCandidateFormProps = { jobId: string };
+type ManualCandidateFormProps = {
+  jobId: string;
+  initialValues?: Partial<ManualCandidateValues>;
+  preloadedFile?: File;
+};
 
-export function ManualCandidateForm({ jobId }: ManualCandidateFormProps) {
+export function ManualCandidateForm({
+  jobId,
+  initialValues,
+  preloadedFile,
+}: ManualCandidateFormProps) {
   const router = useRouter();
   const backHref = `/postulation/${jobId}`;
+  const { mutateAsync, isPending, isError, error } = useRegisterManual();
+
   const form = useForm({
-    defaultValues,
+    defaultValues: { ...defaultValues, ...initialValues },
     onSubmit: async ({ value }) => {
-      await Promise.resolve();
-      void value;
-      router.push(backHref);
+      try {
+        const result = await mutateAsync({
+          payload: {
+            jobId,
+            firstName: value.firstName.trim(),
+            lastName: value.lastName.trim(),
+            email: value.email.trim(),
+            phone: value.phone.trim(),
+            location: value.location.trim() || undefined,
+            yearsOfExperience: value.experienceYears
+              ? parseInt(value.experienceYears, 10) || undefined
+              : undefined,
+            education: value.education.trim() || undefined,
+            technicalSkills: value.technicalSkills
+              ? value.technicalSkills
+                  .split(',')
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+              : undefined,
+            professionalSummary: value.professionalSummary.trim() || undefined,
+          },
+          file: preloadedFile,
+        });
+        router.push(
+          `/postulation/${jobId}/success?status=${result.cvParseStatus}`,
+        );
+      } catch {
+        // el error queda en isError/error del hook
+      }
     },
   });
 
-  /* Narrowing estable: coincide con uso real de cada campo como string controlado */
   const Field: MinimalFormFieldComponent =
     form.Field as MinimalFormFieldComponent;
 
@@ -269,7 +302,8 @@ export function ManualCandidateForm({ jobId }: ManualCandidateFormProps) {
                 name="experienceYears"
                 label="Años de experiencia"
                 Icon={Briefcase}
-                placeholder="Ej. 5 años"
+                placeholder="Ej. 5"
+                fieldType="number"
               />
               <ManualProfileFormField
                 Field={Field}
@@ -296,19 +330,15 @@ export function ManualCandidateForm({ jobId }: ManualCandidateFormProps) {
                 minRows={4}
                 placeholder="Contá tu experiencia y objetivos en pocas líneas."
               />
-              <ManualProfileFormField
-                Field={Field}
-                name="resume"
-                label="CV / Currículum (PDF)"
-                Icon={Upload}
-                required
-                validators={v.resume}
-                gridColumnFull
-                fieldType="file"
-                accept=".pdf"
-                placeholder="Seleccionar archivo PDF"
-              />
             </Box>
+
+            {isError && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error instanceof Error
+                  ? error.message
+                  : 'Ocurrió un error al registrar. Intentá de nuevo.'}
+              </Alert>
+            )}
 
             <Box
               sx={{
@@ -325,6 +355,7 @@ export function ManualCandidateForm({ jobId }: ManualCandidateFormProps) {
                 component={Link}
                 href={backHref}
                 sx={{ px: 3 }}
+                disabled={isPending}
               >
                 Cancelar
               </Button>
@@ -334,9 +365,14 @@ export function ManualCandidateForm({ jobId }: ManualCandidateFormProps) {
                   <Button
                     type="submit"
                     variant="contained"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isPending}
+                    startIcon={
+                      isPending ? (
+                        <CircularProgress size={16} color="inherit" />
+                      ) : null
+                    }
                   >
-                    Finalizar registro
+                    {isPending ? 'Registrando...' : 'Finalizar registro'}
                   </Button>
                 )}
               </form.Subscribe>

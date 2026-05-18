@@ -44,6 +44,7 @@ type ManualProfileFormFieldProps = {
   autoComplete?: string;
   slotProps?: TextFieldProps['slotProps'];
   accept?: string;
+  onFileSelect?: (file: File) => void;
 };
 
 export function ManualProfileFormField({
@@ -60,6 +61,7 @@ export function ManualProfileFormField({
   placeholder,
   autoComplete,
   accept,
+  onFileSelect,
   slotProps,
 }: ManualProfileFormFieldProps) {
   const boxSx = gridColumnFull
@@ -75,6 +77,7 @@ export function ManualProfileFormField({
     const file = e.target.files?.[0];
     if (file) {
       handleChange(file.name);
+      onFileSelect?.(file);
     }
   };
 
