@@ -75,7 +75,7 @@ export default function PostulationPage({ params }) {
 Usar siempre el `Link` de Next.js, nunca una etiqueta `<a>`:
 
 ```tsx
-import Link from "next/link";
+import Link from 'next/link';
 
 <Link href="/postulacion/abc-123">Ver postulación</Link>;
 ```

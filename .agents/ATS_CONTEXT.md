@@ -70,7 +70,7 @@ Firebase implementation  → apps/web/src/repositories/firebase/  ← Firebase o
 export interface JobsRepository {
   findAll(): Promise<Job[]>;
   findById(id: string): Promise<Job | null>;
-  findByStatus(status: Job["status"]): Promise<Job[]>;
+  findByStatus(status: Job['status']): Promise<Job[]>;
   create(data: CreateJobDto): Promise<Job>;
   update(id: string, data: UpdateJobDto): Promise<Job>;
   archive(id: string): Promise<void>;
@@ -81,14 +81,14 @@ export const jobsRepository = new FirebaseJobsRepository();
 // swap to: new PostgresJobsRepository() or new MongoJobsRepository()
 
 // features/jobs/jobs.service.ts — identical regardless of backend
-import { jobsRepository } from "@/repositories";
+import { jobsRepository } from '@/repositories';
 export const jobsService = {
-  getOpenJobs: () => jobsRepository.findByStatus("open"),
+  getOpenJobs: () => jobsRepository.findByStatus('open'),
 };
 
 // Component — never knows where data comes from
 const { data } = useQuery({
-  queryKey: ["jobs"],
+  queryKey: ['jobs'],
   queryFn: jobsService.getOpenJobs,
 });
 ```
@@ -129,7 +129,7 @@ useEffect(() => {
   fullName, email, phone
   cvStoragePath            ← relative path in Firebase Storage
   parsedData: ParsedCV     ← populated by onCVUploaded function
-  cvParseStatus: pending|processing|done|failed
+  cvParseStatus: pending|processing|done|failed|not_required
   registrationType: specific|general
   createdAt
 
@@ -273,37 +273,37 @@ Only weights: `font-normal` (400) and `font-medium` (500). Never `font-bold` or 
 
 ```tsx
 // Primary button
-"px-8 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl";
+'px-8 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl';
 
 // Secondary button
-"px-6 py-3 rounded-lg border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors";
+'px-6 py-3 rounded-lg border-2 border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors';
 
 // Input — normal
-"w-full px-4 py-3 rounded-lg border-2 border-slate-200 bg-slate-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-colors";
+'w-full px-4 py-3 rounded-lg border-2 border-slate-200 bg-slate-50 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-colors';
 
 // Input — error
-"w-full px-4 py-3 rounded-lg border-2 border-red-300 bg-red-50 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-colors";
+'w-full px-4 py-3 rounded-lg border-2 border-red-300 bg-red-50 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-colors';
 
 // Main card
-"bg-white rounded-2xl shadow-xl overflow-hidden";
+'bg-white rounded-2xl shadow-xl overflow-hidden';
 
 // Card header
-"bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6";
+'bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6';
 
 // Info card
-"bg-blue-50 rounded-xl p-6 border border-blue-100";
+'bg-blue-50 rounded-xl p-6 border border-blue-100';
 
 // Success badge
-"px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs";
+'px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs';
 
 // Info badge
-"px-4 py-2 rounded-lg bg-blue-50 text-blue-700 text-sm";
+'px-4 py-2 rounded-lg bg-blue-50 text-blue-700 text-sm';
 
 // Large icon container
-"w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center"; // icon: w-8 h-8 text-white
+'w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center'; // icon: w-8 h-8 text-white
 
 // Medium icon container
-"w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center"; // icon: w-5 h-5 text-blue-600
+'w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center'; // icon: w-5 h-5 text-blue-600
 ```
 
 ### Layout
@@ -393,7 +393,7 @@ w-10 h-10 large card icons
 ```typescript
 // Read — TanStack Query, always via service
 const { data } = useQuery({
-  queryKey: ["jobs", id],
+  queryKey: ['jobs', id],
   queryFn: () => jobsService.getJobById(id),
 });
 
@@ -401,7 +401,7 @@ const { data } = useQuery({
 const mutation = useMutation({
   mutationFn: (stage) => applicationsService.updateStage(appId, stage),
   onSuccess: () =>
-    queryClient.invalidateQueries({ queryKey: ["pipeline", jobId] }),
+    queryClient.invalidateQueries({ queryKey: ['pipeline', jobId] }),
 });
 
 // Server Component

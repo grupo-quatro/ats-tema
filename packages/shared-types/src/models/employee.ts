@@ -1,7 +1,7 @@
-export type EmployeeRole = "hr" | "tech_lead" | "hiring_manager" | "admin";
+export type EmployeeRole = 'hr' | 'tech_lead' | 'hiring_manager' | 'admin';
 
 export interface Employee {
-  id: string; // mismo uid que Firebase Auth
+  id: string;
   name: string;
   email: string;
   role: EmployeeRole;
@@ -11,5 +11,5 @@ export interface Employee {
   updatedAt: Date;
 }
 
-export type CreateEmployeeDTO = Omit<Employee, "createdAt" | "updatedAt">;
-export type UpdateEmployeeDTO = Partial<Omit<Employee, "id" | "createdAt">>;
+export type CreateEmployeeDTO = Omit<Employee, 'createdAt' | 'updatedAt'>;
+export type UpdateEmployeeDTO = Partial<Omit<Employee, 'id' | 'createdAt'>>;

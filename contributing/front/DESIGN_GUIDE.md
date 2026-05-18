@@ -83,17 +83,17 @@ Toda la lógica de formularios vive en TanStack Form. MUI provee solo la UI.
 ### Setup básico
 
 ```tsx
-"use client";
+'use client';
 
-import { useForm } from "@tanstack/react-form";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
+import { useForm } from '@tanstack/react-form';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
 
 export function CandidateForm() {
   const form = useForm({
     defaultValues: {
-      fullName: "",
-      email: "",
+      fullName: '',
+      email: '',
     },
     onSubmit: async ({ value }) => {
       // Llamar a la mutación o API aquí
@@ -112,7 +112,7 @@ export function CandidateForm() {
         name="fullName"
         validators={{
           onChange: ({ value }) =>
-            !value ? "El nombre es requerido" : undefined,
+            !value ? 'El nombre es requerido' : undefined,
         }}
         children={(field) => (
           <TextField
@@ -134,9 +134,9 @@ export function CandidateForm() {
         validators={{
           onChange: ({ value }) =>
             !value
-              ? "El email es requerido"
+              ? 'El email es requerido'
               : !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
-                ? "Email inválido"
+                ? 'Email inválido'
                 : undefined,
         }}
         children={(field) => (
@@ -163,7 +163,7 @@ export function CandidateForm() {
             variant="contained"
             disabled={!canSubmit || isSubmitting}
           >
-            {isSubmitting ? "Guardando..." : "Guardar candidato"}
+            {isSubmitting ? 'Guardando...' : 'Guardar candidato'}
           </Button>
         )}
       />
@@ -188,17 +188,17 @@ Crea los hooks en `apps/web/app/features/<feature>/hooks/`.
 
 ```tsx
 // app/features/candidates/hooks/useCandidates.ts
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query';
 
 async function fetchCandidates() {
-  const res = await fetch("/api/candidates");
-  if (!res.ok) throw new Error("Error al obtener candidatos");
+  const res = await fetch('/api/candidates');
+  if (!res.ok) throw new Error('Error al obtener candidatos');
   return res.json();
 }
 
 export function useCandidates() {
   return useQuery({
-    queryKey: ["candidates"],
+    queryKey: ['candidates'],
     queryFn: fetchCandidates,
   });
 }
@@ -209,11 +209,11 @@ export function useCandidates() {
 Siempre implementar el estado `isLoading` con `Skeleton` de MUI y el estado de error con `Alert`.
 
 ```tsx
-"use client";
+'use client';
 
-import Skeleton from "@mui/material/Skeleton";
-import Alert from "@mui/material/Alert";
-import { useCandidates } from "./hooks/useCandidates";
+import Skeleton from '@mui/material/Skeleton';
+import Alert from '@mui/material/Alert';
+import { useCandidates } from './hooks/useCandidates';
 
 export function CandidateList() {
   const { data, isLoading, isError } = useCandidates();
@@ -290,7 +290,7 @@ import ButtonBase from "@mui/material/ButtonBase";
 ### Grid
 
 ```tsx
-import Grid from "@mui/material/Grid";
+import Grid from '@mui/material/Grid';
 
 <Grid container spacing={3}>
   <Grid item xs={12} md={6}>
@@ -305,8 +305,8 @@ import Grid from "@mui/material/Grid";
 ### Tarjetas
 
 ```tsx
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
 
 // El tema ya aplica borderRadius: 16px
 <Card>
@@ -350,7 +350,7 @@ import Stack from "@mui/material/Stack";
 ### Box — para contenedores genéricos
 
 ```tsx
-import Box from "@mui/material/Box";
+import Box from '@mui/material/Box';
 
 <Box display="grid" gridTemplateColumns="repeat(3, 1fr)" gap={3}>
   <Card>...</Card>
@@ -362,7 +362,7 @@ import Box from "@mui/material/Box";
 ### Grid — para layouts responsivos
 
 ```tsx
-import Grid from "@mui/material/Grid";
+import Grid from '@mui/material/Grid';
 
 <Grid container spacing={3}>
   <Grid item xs={12} md={6}>

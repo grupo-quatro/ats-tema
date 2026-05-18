@@ -38,6 +38,9 @@ const statusLabels: Record<Job["status"], string> = {
 
 export default function JobDescription({ job }: JobDescriptionProps) {
     const router = useRouter();
+    const requirements = job.requirements ?? [];
+    const responsabilities = job.responsabilities ?? [];
+    const benefits = job.benefits ?? [];
     const jobTypeLabel =
         job.location === "remote"
             ? "Remoto"
@@ -126,7 +129,7 @@ export default function JobDescription({ job }: JobDescriptionProps) {
                         <Box sx={{ flex: 1 }}>
                             <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Requisitos</Typography>
                             <List sx={{ mb: 0 }}>
-                                {job.requirements.map((req, index) => (
+                                {requirements.map((req, index) => (
                                     <ListItem key={index} disableGutters sx={{ py: 0.75 }}>
                                         <ListItemIcon sx={{ minWidth: "34px", color: "#10b981" }}>
                                             <CheckCircle2 size={18} />
@@ -142,7 +145,7 @@ export default function JobDescription({ job }: JobDescriptionProps) {
                         <Box sx={{ flex: 1 }}>
                             <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Responsabilidades</Typography>
                             <List sx={{ mb: 0 }}>
-                                {job.responsabilities.map((item, index) => (
+                                {responsabilities.map((item, index) => (
                                     <ListItem key={index} disableGutters sx={{ py: 0.75 }}>
                                         <ListItemIcon sx={{ minWidth: "34px", color: "#2563eb" }}>
                                             <CheckCircle2 size={18} />
@@ -159,8 +162,8 @@ export default function JobDescription({ job }: JobDescriptionProps) {
                     <Box sx={{ mt: 4, mb: 4 }}>
                         <Typography variant="h6" sx={{ mb: 2, fontWeight: 700 }}>Beneficios</Typography>
                         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                            {job.benefits.length ? (
-                                job.benefits.map((benefit, index) => (
+                            {benefits.length ? (
+                                benefits.map((benefit, index) => (
                                     <Chip
                                         key={index}
                                         label={benefit}
