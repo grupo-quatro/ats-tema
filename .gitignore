@@ -39,6 +39,6 @@ firebase-debug.log
 
 #Turborepo
 .turbo
-
+apps/functions/lib/*
 #Local
 .pnpm-store/
