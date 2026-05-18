@@ -5,7 +5,10 @@ import type {
   RegisterCandidateCVResponse,
 } from '@ats/shared-types';
 
-import { PostulationService, PostulationServiceError } from '../postulation/postulation.service';
+import {
+  PostulationService,
+  PostulationServiceError,
+} from '../postulation/postulation.service';
 import type { ICandidateRepository } from '../../repositories/interfaces/candidate.repository';
 
 const mockRepo: ICandidateRepository = {
@@ -69,21 +72,32 @@ describe('PostulationService.registerManual', () => {
 
     await service.registerManual(payload, mockFile);
 
-    expect(mockRepo.uploadCv).toHaveBeenCalledWith(manualResponse.candidateId, mockFile);
+    expect(mockRepo.uploadCv).toHaveBeenCalledWith(
+      manualResponse.candidateId,
+      mockFile,
+    );
   });
 
   it('lanza PostulationServiceError si registerCandidate falla', async () => {
-    vi.mocked(mockRepo.registerCandidate).mockRejectedValue(new Error('Firebase error'));
+    vi.mocked(mockRepo.registerCandidate).mockRejectedValue(
+      new Error('Firebase error'),
+    );
 
-    await expect(service.registerManual(payload)).rejects.toThrow(PostulationServiceError);
-    await expect(service.registerManual(payload)).rejects.toThrow('No se pudo completar el registro manual.');
+    await expect(service.registerManual(payload)).rejects.toThrow(
+      PostulationServiceError,
+    );
+    await expect(service.registerManual(payload)).rejects.toThrow(
+      'No se pudo completar el registro manual.',
+    );
   });
 
   it('lanza PostulationServiceError si uploadCv falla', async () => {
     vi.mocked(mockRepo.registerCandidate).mockResolvedValue(manualResponse);
     vi.mocked(mockRepo.uploadCv).mockRejectedValue(new Error('Storage error'));
 
-    await expect(service.registerManual(payload, mockFile)).rejects.toThrow(PostulationServiceError);
+    await expect(service.registerManual(payload, mockFile)).rejects.toThrow(
+      PostulationServiceError,
+    );
   });
 });
 
@@ -94,7 +108,9 @@ describe('PostulationService.registerCvFlow', () => {
 
     const result = await service.registerCvFlow('job-123', mockFile);
 
-    expect(mockRepo.registerCandidateCV).toHaveBeenCalledWith({ jobId: 'job-123' });
+    expect(mockRepo.registerCandidateCV).toHaveBeenCalledWith({
+      jobId: 'job-123',
+    });
     expect(result).toEqual(cvResponse);
   });
 
@@ -104,7 +120,10 @@ describe('PostulationService.registerCvFlow', () => {
 
     await service.registerCvFlow('job-123', mockFile);
 
-    expect(mockRepo.uploadCv).toHaveBeenCalledWith(cvResponse.candidateId, mockFile);
+    expect(mockRepo.uploadCv).toHaveBeenCalledWith(
+      cvResponse.candidateId,
+      mockFile,
+    );
   });
 
   it('siempre llama a uploadCv después de registerCandidateCV', async () => {
@@ -118,21 +137,31 @@ describe('PostulationService.registerCvFlow', () => {
   });
 
   it('lanza PostulationServiceError si registerCandidateCV falla', async () => {
-    vi.mocked(mockRepo.registerCandidateCV).mockRejectedValue(new Error('Firebase error'));
+    vi.mocked(mockRepo.registerCandidateCV).mockRejectedValue(
+      new Error('Firebase error'),
+    );
 
-    await expect(service.registerCvFlow('job-123', mockFile)).rejects.toThrow(PostulationServiceError);
-    await expect(service.registerCvFlow('job-123', mockFile)).rejects.toThrow('No se pudo completar el registro con CV.');
+    await expect(service.registerCvFlow('job-123', mockFile)).rejects.toThrow(
+      PostulationServiceError,
+    );
+    await expect(service.registerCvFlow('job-123', mockFile)).rejects.toThrow(
+      'No se pudo completar el registro con CV.',
+    );
   });
 
   it('lanza PostulationServiceError si uploadCv falla', async () => {
     vi.mocked(mockRepo.registerCandidateCV).mockResolvedValue(cvResponse);
     vi.mocked(mockRepo.uploadCv).mockRejectedValue(new Error('Storage error'));
 
-    await expect(service.registerCvFlow('job-123', mockFile)).rejects.toThrow(PostulationServiceError);
+    await expect(service.registerCvFlow('job-123', mockFile)).rejects.toThrow(
+      PostulationServiceError,
+    );
   });
 
   it('no llama a uploadCv si registerCandidateCV falla', async () => {
-    vi.mocked(mockRepo.registerCandidateCV).mockRejectedValue(new Error('Firebase error'));
+    vi.mocked(mockRepo.registerCandidateCV).mockRejectedValue(
+      new Error('Firebase error'),
+    );
 
     await expect(service.registerCvFlow('job-123', mockFile)).rejects.toThrow();
     expect(mockRepo.uploadCv).not.toHaveBeenCalled();
