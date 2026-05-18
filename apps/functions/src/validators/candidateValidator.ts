@@ -1,9 +1,23 @@
-import type { RegisterCandidatePayload } from '@ats/shared-types';
+import type {
+  CandidatePostulationCVPayload,
+  CandidatePostulationPayload,
+} from '@ats/shared-types';
 import { HttpsError } from 'firebase-functions/v2/https';
 
+export function validateStartApplicationWithCVPayload(
+  payload: Partial<CandidatePostulationCVPayload>,
+): asserts payload is CandidatePostulationCVPayload {
+  if (!payload.jobId || payload.jobId.trim().length === 0) {
+    throw new HttpsError(
+      'invalid-argument',
+      'La posición asociada a la postulación es obligatoria.',
+    );
+  }
+}
+
 export function validateRegisterCandidatePayload(
-  payload: Partial<RegisterCandidatePayload>,
-): asserts payload is RegisterCandidatePayload {
+  payload: Partial<CandidatePostulationPayload>,
+): asserts payload is CandidatePostulationPayload {
   if (!payload.jobId || payload.jobId.trim().length === 0) {
     throw new HttpsError(
       'invalid-argument',

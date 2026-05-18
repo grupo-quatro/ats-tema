@@ -1,16 +1,16 @@
 import type {
-  RegisterCandidatePayload,
-  RegisterCandidateResponse,
-  RegisterCandidateCVPayload,
-  RegisterCandidateCVResponse,
+  CandidatePostulationPayload,
+  CandidatePostulationResponse,
+  CandidatePostulationCVPayload,
+  CandidatePostulationCVResponse,
 } from '@ats/shared-types';
 
 export interface ICandidateRepository {
   registerCandidate(
-    payload: RegisterCandidatePayload,
-  ): Promise<RegisterCandidateResponse>;
+    payload: CandidatePostulationPayload,
+  ): Promise<CandidatePostulationResponse>;
   registerCandidateCV(
-    payload: RegisterCandidateCVPayload,
-  ): Promise<RegisterCandidateCVResponse>;
+    payload: CandidatePostulationCVPayload,
+  ): Promise<CandidatePostulationCVResponse>;
   uploadCv(candidateId: string, file: File): Promise<void>;
 }

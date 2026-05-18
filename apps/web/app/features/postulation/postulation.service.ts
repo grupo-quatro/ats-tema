@@ -1,7 +1,7 @@
 import type {
-  RegisterCandidatePayload,
-  RegisterCandidateResponse,
-  RegisterCandidateCVResponse,
+  CandidatePostulationPayload,
+  CandidatePostulationResponse,
+  CandidatePostulationCVResponse,
 } from '@ats/shared-types';
 import type { ICandidateRepository } from '../../repositories/interfaces/candidate.repository';
 
@@ -19,9 +19,9 @@ export class PostulationService {
   constructor(private readonly repo: ICandidateRepository) {}
 
   async registerManual(
-    payload: RegisterCandidatePayload,
+    payload: CandidatePostulationPayload,
     file?: File,
-  ): Promise<RegisterCandidateResponse> {
+  ): Promise<CandidatePostulationResponse> {
     try {
       const response = await this.repo.registerCandidate(payload);
       if (file) await this.repo.uploadCv(response.candidateId, file);
@@ -37,7 +37,7 @@ export class PostulationService {
   async registerCvFlow(
     jobId: string,
     file: File,
-  ): Promise<RegisterCandidateCVResponse> {
+  ): Promise<CandidatePostulationCVResponse> {
     try {
       const response = await this.repo.registerCandidateCV({ jobId });
       await this.repo.uploadCv(response.candidateId, file);
