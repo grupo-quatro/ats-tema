@@ -19,11 +19,37 @@ export interface CandidateInterviewNote {
 
 export type CandidateStageStatus = 'completed' | 'current' | 'pending';
 
+export type CandidateStageKey =
+  | 'postulacion_recibida'
+  | 'en_revision'
+  | 'cv_presentado_area'
+  | 'entrevista1_agendada'
+  | 'entrevista1_evaluacion'
+  | 'entrevista2_agendada'
+  | 'entrevista2_evaluacion'
+  | 'oferta_enviada'
+  | 'contratado'
+  | 'descartado';
+
+export const STAGE_LABELS: Record<CandidateStageKey, string> = {
+  postulacion_recibida: 'Postulación recibida',
+  en_revision: 'En revisión',
+  cv_presentado_area: 'CV presentado al área',
+  entrevista1_agendada: 'Entrevista 1 agendada',
+  entrevista1_evaluacion: 'Entrevista 1 – Evaluación',
+  entrevista2_agendada: 'Entrevista 2 agendada',
+  entrevista2_evaluacion: 'Entrevista 2 – Evaluación',
+  oferta_enviada: 'Oferta enviada',
+  contratado: 'Contratado',
+  descartado: 'Descartado',
+};
+
 export interface CandidateStageEntry {
-  label: string;
+  key: CandidateStageKey;
   date?: string;
   status: CandidateStageStatus;
   description?: string;
+  discardReason?: string;
 }
 
 export interface CandidateMockProfile {
@@ -91,37 +117,43 @@ export const CANDIDATES_MOCK: CandidateMockProfile[] = [
     ],
     stageHistory: [
       {
-        label: 'Postulación recibida',
+        key: 'postulacion_recibida',
         date: '15/03/2026',
         status: 'completed',
         description: 'CV enviado por el candidato a través del portal.',
       },
       {
-        label: 'Revisión de perfil',
+        key: 'en_revision',
         date: '17/03/2026',
         status: 'completed',
-        description: 'Perfil evaluado y calificado por el equipo de Recursos Humanos.',
+        description: 'Perfil evaluado por el equipo de Recursos Humanos.',
       },
       {
-        label: 'Primera entrevista',
+        key: 'cv_presentado_area',
+        date: '19/03/2026',
+        status: 'completed',
+        description: 'Perfil derivado al área solicitante para su revisión.',
+      },
+      {
+        key: 'entrevista1_agendada',
         date: '22/03/2026',
+        status: 'completed',
+      },
+      {
+        key: 'entrevista1_evaluacion',
+        date: '28/03/2026',
         status: 'completed',
         description: 'Entrevista técnica realizada con Carlos Méndez.',
       },
       {
-        label: 'Segunda entrevista',
+        key: 'entrevista2_agendada',
         date: '05/04/2026',
         status: 'current',
         description: 'Entrevista agendada con el equipo de liderazgo técnico.',
       },
-      {
-        label: 'Evaluación final',
-        status: 'pending',
-      },
-      {
-        label: 'Oferta laboral',
-        status: 'pending',
-      },
+      { key: 'entrevista2_evaluacion', status: 'pending' },
+      { key: 'oferta_enviada', status: 'pending' },
+      { key: 'contratado', status: 'pending' },
     ],
     currentStage: 'Entrevista 2 agendada',
     cvMockUrl: null,

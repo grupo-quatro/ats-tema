@@ -24,7 +24,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
-import type { CandidateMockProfile } from '../mock/candidateMock';
+import { STAGE_LABELS, type CandidateMockProfile } from '../mock/candidateMock';
 import { CandidateInfoCard } from './CandidateInfoCard';
 import { CvViewerModal } from './CvViewerModal';
 import { InterviewModal } from './InterviewModal';
@@ -232,7 +232,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                               lineHeight: 1.4,
                             }}
                           >
-                            {stage.label}
+                            {STAGE_LABELS[stage.key]}
                           </Typography>
                           <Typography
                             variant="caption"
