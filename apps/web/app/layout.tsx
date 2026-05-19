@@ -7,8 +7,8 @@ import Footer from './components/Footer';
 import Box from '@mui/material/Box';
 
 export const metadata: Metadata = {
-  title: 'ATS Recruiting Platform',
-  description: 'Applicant Tracking System',
+  title: 'Trabaja con Nosotros',
+  description: 'Tema Consulting',
 };
 
 export default function RootLayout({

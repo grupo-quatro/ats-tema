@@ -70,6 +70,43 @@ export default function PostulationPage({ params }) {
 }
 ```
 
+### Metadata por página
+
+Cada `page.tsx` debe exportar su propia metadata para que el título del navegador refleje el contenido. El `layout.tsx` raíz define el fallback general.
+
+**Páginas estáticas:**
+
+```tsx
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Posiciones abiertas | Tema Consulting',
+};
+```
+
+**Páginas dinámicas** (con parámetros en la URL):
+
+```tsx
+import type { Metadata } from 'next';
+import { JOBS_DATA } from '@/features/jobs/services/jobs';
+
+type Props = { params: Promise<{ jobId: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { jobId } = await params;
+  const job = JOBS_DATA.find((j) => j.id === jobId);
+  return {
+    title: job
+      ? `${job.title} | Tema Consulting`
+      : 'Posición | Tema Consulting',
+  };
+}
+```
+
+**Regla:** toda página nueva debe definir `metadata` o `generateMetadata`. Nunca dejar el título genérico del layout para páginas con contenido propio.
+
+---
+
 ### Navegación entre rutas
 
 Usar siempre el `Link` de Next.js, nunca una etiqueta `<a>`:

@@ -1,20 +1,12 @@
 'use client';
 import { Card, Container, Box, Typography, Button } from '@mui/material';
-import { BadgeCheck, Clock, Mail } from 'lucide-react';
+import { BadgeCheck } from 'lucide-react';
+import Link from 'next/link';
 import type { CvParseStatus } from '@ats/shared-types';
-import { StatusInfoBlock } from './StatusInfoBlock';
 
-const CV_STATUS_LABELS: Record<CvParseStatus, string> = {
-  pending: 'Tu CV está en cola para ser procesado.',
-  processing: 'Tu CV se está procesando. Te notificaremos cuando esté listo.',
-  done: 'Tu CV fue procesado correctamente.',
-  failed: 'Hubo un problema al procesar tu CV. El equipo lo revisará.',
-  not_required: 'No se requiere CV para esta postulación.',
-};
+type Props = { cvParseStatus?: CvParseStatus; jobTitle?: string };
 
-type Props = { cvParseStatus: CvParseStatus };
-
-export default function SuccessView({ cvParseStatus }: Props) {
+export default function SuccessView({ jobTitle }: Props) {
   return (
     <Container sx={{ py: 8, display: 'flex', justifyContent: 'center' }}>
       <Card
@@ -49,34 +41,23 @@ export default function SuccessView({ cvParseStatus }: Props) {
             ¡Registro Exitoso!
           </Typography>
           <Typography variant="body1">
-            Tu perfil ha sido creado correctamente en nuestro sistema
+            Tu perfil ha sido creado correctamente en nuestro sistema para
           </Typography>
-        </Box>
-
-        <Box
-          sx={{
-            bgcolor: 'background.default',
-            p: 3,
-            borderRadius: 2,
-            width: '100%',
-            textAlign: 'left',
-            border: '1px solid #e2e8f0',
-          }}
-        >
-          <StatusInfoBlock
-            Icon={Mail}
-            title="Email de Confirmación"
-            description="Hemos enviado un correo de confirmación a tu dirección de email. Por favor, verifica tu bandeja de entrada."
-          />
-          <StatusInfoBlock
-            Icon={Clock}
-            title="Estado del CV"
-            description={CV_STATUS_LABELS[cvParseStatus]}
-          />
+          {jobTitle && (
+            <Typography variant="body1" sx={{ fontWeight: 700, mt: 0.5 }}>
+              {jobTitle}
+            </Typography>
+          )}
+          <Typography variant="body2">
+            Recibirás actualizaciones sobre el estado de tu postulación a través
+            de tu correo
+          </Typography>
         </Box>
 
         <Button
           variant="outlined"
+          component={Link}
+          href="/"
           size="large"
           fullWidth
           sx={{
@@ -85,7 +66,7 @@ export default function SuccessView({ cvParseStatus }: Props) {
             color: 'white',
           }}
         >
-          Nuevo Registro
+          Ver más ofertas
         </Button>
       </Card>
     </Container>

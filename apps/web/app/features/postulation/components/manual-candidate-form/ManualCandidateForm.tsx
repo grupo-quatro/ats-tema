@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef, useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 import {
   alpha,
@@ -21,6 +22,8 @@ import {
   Mail,
   MapPin,
   Phone,
+  Sparkles,
+  Upload,
   User,
   X,
 } from 'lucide-react';
@@ -91,18 +94,33 @@ const CARD_SHADOW =
 
 type ManualCandidateFormProps = {
   jobId: string;
+  jobTitle?: string;
   initialValues?: Partial<ManualCandidateValues>;
   preloadedFile?: File;
 };
 
 export function ManualCandidateForm({
   jobId,
+  jobTitle,
   initialValues,
   preloadedFile,
 }: ManualCandidateFormProps) {
   const router = useRouter();
-  const backHref = `/postulation/${jobId}`;
+  const backHref = `/jobs/${jobId}`;
   const { mutateAsync, isPending, isError, error } = useRegisterManual();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [cvFile, setCvFile] = useState<File | null>(preloadedFile ?? null);
+  const [fileError, setFileError] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    setFileError(null);
+    if (file && !file.name.toLowerCase().endsWith('.pdf')) {
+      setFileError('Solo se aceptan archivos PDF.');
+      return;
+    }
+    setCvFile(file);
+  };
 
   const form = useForm({
     defaultValues: { ...defaultValues, ...initialValues },
@@ -128,7 +146,7 @@ export function ManualCandidateForm({
               : undefined,
             professionalSummary: value.professionalSummary.trim() || undefined,
           },
-          file: preloadedFile,
+          file: cvFile ?? undefined,
         });
         router.push(
           `/postulation/${jobId}/success?status=${result.cvParseStatus}`,
@@ -154,22 +172,6 @@ export function ManualCandidateForm({
         alignItems: 'center',
       })}
     >
-      <Box
-        sx={{
-          width: '100%',
-          maxWidth: PAGE_MAX_WIDTH,
-          mb: 3,
-          textAlign: 'center',
-        }}
-      >
-        <Typography variant="h2" sx={{ mb: 0.5 }}>
-          Formulario de carga manual
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Completá los campos para registrar tu perfil profesional
-        </Typography>
-      </Box>
-
       <Card
         sx={{
           width: '100%',
@@ -205,7 +207,7 @@ export function ManualCandidateForm({
                   mb: 0.5,
                 }}
               >
-                Completa tu perfil
+                {jobTitle ?? 'Completa tu perfil'}
               </Typography>
               <Typography
                 sx={{
@@ -247,6 +249,71 @@ export function ManualCandidateForm({
                 mb: 3,
               }}
             >
+              <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+                CV *
+              </Typography>
+              <Box
+                sx={{
+                  border: '2px dashed',
+                  borderColor: cvFile ? 'primary.main' : 'divider',
+                  borderRadius: 2,
+                  p: 3,
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  transition: 'border-color 0.2s',
+                  mb: 2,
+                  '&:hover': { borderColor: 'primary.main' },
+                }}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf"
+                  style={{ display: 'none' }}
+                  onChange={handleFileChange}
+                />
+                {cvFile ? (
+                  <>
+                    <FileText size={28} style={{ marginBottom: 6 }} />
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {cvFile.name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {(cvFile.size / 1024).toFixed(0)} KB — Clic para cambiar
+                    </Typography>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={28} style={{ marginBottom: 6 }} />
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      Adjuntá tu CV en PDF
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Hacé clic o arrastrá el archivo aquí
+                    </Typography>
+                  </>
+                )}
+              </Box>
+
+              {fileError && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  {fileError}
+                </Alert>
+              )}
+
+              {cvFile && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<Sparkles size={16} />}
+                  disabled
+                  sx={{ mb: 2, textTransform: 'none', borderRadius: '10px' }}
+                >
+                  Autocompletar desde CV
+                </Button>
+              )}
+
               <ManualProfileFormField
                 Field={Field}
                 name="firstName"
@@ -288,14 +355,6 @@ export function ManualCandidateForm({
                 name="location"
                 label="Ubicación"
                 Icon={MapPin}
-              />
-              <ManualProfileFormField
-                Field={Field}
-                name="desiredPosition"
-                label="Posición deseada"
-                Icon={Briefcase}
-                required
-                validators={v.desiredPosition}
               />
               <ManualProfileFormField
                 Field={Field}
@@ -365,7 +424,7 @@ export function ManualCandidateForm({
                   <Button
                     type="submit"
                     variant="contained"
-                    disabled={isSubmitting || isPending}
+                    disabled={isSubmitting || isPending || !cvFile}
                     startIcon={
                       isPending ? (
                         <CircularProgress size={16} color="inherit" />
