@@ -18,7 +18,11 @@ export default function Navbar() {
         <Link href="/" style={{ textDecoration: 'none' }}>
           <Image src={logo} alt="TEMA" height={40} />
         </Link>
-        <Box />
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Link href="/dashboard/positions" style={{ textDecoration: 'none' }}>
+            <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>Dashboard</Typography>
+          </Link>
+        </Box>
       </Toolbar>
     </AppBar>
   );

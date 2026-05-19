@@ -23,6 +23,8 @@ export interface Job {
   salaryMin?: number;
   salaryMax?: number;
   currency?: string;
+  type?: string; // e.g. Full-time, Part-time
+  candidates?: number;
   status: JobStatus;
   responsabilities: string[];
   benefits: string[];
