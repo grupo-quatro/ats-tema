@@ -109,7 +109,14 @@ export default function JobDescription({ job }: JobDescriptionProps) {
               </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: { xs: 'flex-start', sm: 'flex-end' }, gap: 1.5 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: { xs: 'flex-start', sm: 'flex-end' },
+                gap: 1.5,
+              }}
+            >
               <Chip
                 label={statusLabels[job.status]}
                 size="small"

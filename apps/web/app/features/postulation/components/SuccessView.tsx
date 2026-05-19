@@ -41,7 +41,7 @@ export default function SuccessView({ jobTitle }: Props) {
             ¡Registro Exitoso!
           </Typography>
           <Typography variant="body1">
-            Tu perfil ha sido creado correctamente en nuestro sistema para 
+            Tu perfil ha sido creado correctamente en nuestro sistema para
           </Typography>
           {jobTitle && (
             <Typography variant="body1" sx={{ fontWeight: 700, mt: 0.5 }}>
@@ -49,7 +49,8 @@ export default function SuccessView({ jobTitle }: Props) {
             </Typography>
           )}
           <Typography variant="body2">
-            Recibirás actualizaciones sobre el estado de tu postulación a través de tu correo
+            Recibirás actualizaciones sobre el estado de tu postulación a través
+            de tu correo
           </Typography>
         </Box>
 

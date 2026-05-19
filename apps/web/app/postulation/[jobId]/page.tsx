@@ -16,7 +16,9 @@ function getJobDetailUrl(jobId: string): string {
   return `https://${region}-${projectId}.cloudfunctions.net/getJobDetail?jobId=${jobId}`;
 }
 
-export async function generateMetadata({ params }: PostulationPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PostulationPageProps): Promise<Metadata> {
   const { jobId } = await params;
   try {
     const res = await fetch(getJobDetailUrl(jobId), { cache: 'no-store' });
@@ -30,7 +32,9 @@ export async function generateMetadata({ params }: PostulationPageProps): Promis
   return { title: 'Postulación | Tema Consulting' };
 }
 
-export default async function PostulationPage({ params }: PostulationPageProps) {
+export default async function PostulationPage({
+  params,
+}: PostulationPageProps) {
   const { jobId } = await params;
 
   let jobTitle: string | undefined;

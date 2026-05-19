@@ -96,7 +96,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { jobId } = await params;
   const job = JOBS_DATA.find((j) => j.id === jobId);
   return {
-    title: job ? `${job.title} | Tema Consulting` : 'Posición | Tema Consulting',
+    title: job
+      ? `${job.title} | Tema Consulting`
+      : 'Posición | Tema Consulting',
   };
 }
 ```

@@ -20,7 +20,7 @@ export default function Footer() {
       }}
     >
       <Typography variant="body2" color="text.secondary">
-        © {new Date().getFullYear()} {' '}
+        © {new Date().getFullYear()}{' '}
         <MuiLink
           href="https://www.temaconsulting.com.ar/"
           target="_blank"

@@ -25,11 +25,15 @@ async function fetchJob(jobId: string): Promise<Job | null> {
   return res.json();
 }
 
-export async function generateMetadata({ params }: JobPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: JobPageProps): Promise<Metadata> {
   const { jobId } = await params;
   const job = await fetchJob(jobId);
   return {
-    title: job ? `${job.title} | Tema Consulting` : 'Posición | Tema Consulting',
+    title: job
+      ? `${job.title} | Tema Consulting`
+      : 'Posición | Tema Consulting',
   };
 }
 
