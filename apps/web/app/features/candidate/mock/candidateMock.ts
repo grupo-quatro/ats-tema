@@ -17,6 +17,15 @@ export interface CandidateInterviewNote {
   note: string;
 }
 
+export type CandidateStageStatus = 'completed' | 'current' | 'pending';
+
+export interface CandidateStageEntry {
+  label: string;
+  date?: string;
+  status: CandidateStageStatus;
+  description?: string;
+}
+
 export interface CandidateMockProfile {
   id: string;
   fullName: string;
@@ -32,6 +41,7 @@ export interface CandidateMockProfile {
   gapSkills: string[];
   strengths: string[];
   interviewNotes: CandidateInterviewNote[];
+  stageHistory: CandidateStageEntry[];
   currentStage: string;
   cvMockUrl: string | null;
 }
@@ -77,6 +87,40 @@ export const CANDIDATES_MOCK: CandidateMockProfile[] = [
         date: '31/04/2026',
         rating: 5,
         note: 'Excelente conocimiento técnico, muy buena comunicación y experiencia alineada con nuestras necesidades.',
+      },
+    ],
+    stageHistory: [
+      {
+        label: 'Postulación recibida',
+        date: '15/03/2026',
+        status: 'completed',
+        description: 'CV enviado por el candidato a través del portal.',
+      },
+      {
+        label: 'Revisión de perfil',
+        date: '17/03/2026',
+        status: 'completed',
+        description: 'Perfil evaluado y calificado por el equipo de Recursos Humanos.',
+      },
+      {
+        label: 'Primera entrevista',
+        date: '22/03/2026',
+        status: 'completed',
+        description: 'Entrevista técnica realizada con Carlos Méndez.',
+      },
+      {
+        label: 'Segunda entrevista',
+        date: '05/04/2026',
+        status: 'current',
+        description: 'Entrevista agendada con el equipo de liderazgo técnico.',
+      },
+      {
+        label: 'Evaluación final',
+        status: 'pending',
+      },
+      {
+        label: 'Oferta laboral',
+        status: 'pending',
       },
     ],
     currentStage: 'Entrevista 2 agendada',

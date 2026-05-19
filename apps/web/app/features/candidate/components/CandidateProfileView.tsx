@@ -17,6 +17,7 @@ import {
 import {
   ArrowLeft,
   CheckCircle2,
+  Clock,
   Info,
   MessageSquare,
   MoreVertical,
@@ -147,7 +148,115 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
           }}
         >
           {/* Left column */}
-          <CandidateInfoCard candidate={candidate} onViewCv={() => setCvModalOpen(true)} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <CandidateInfoCard candidate={candidate} onViewCv={() => setCvModalOpen(true)} />
+
+            <Card>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
+                <Clock size={14} color="#64748b" />
+                <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                  Seguimiento de la candidatura
+                </Typography>
+              </Box>
+
+              <Box>
+                {candidate.stageHistory.map((stage, i) => {
+                  const isLast = i === candidate.stageHistory.length - 1;
+                  const isCompleted = stage.status === 'completed';
+                  const isCurrent = stage.status === 'current';
+
+                  return (
+                    <Box key={i} sx={{ display: 'flex', gap: 1.5 }}>
+                      {/* Rail */}
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          width: 14,
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: '50%',
+                            flexShrink: 0,
+                            ...(isCompleted && { bgcolor: 'primary.main' }),
+                            ...(isCurrent && {
+                              bgcolor: 'white',
+                              border: '2.5px solid',
+                              borderColor: 'primary.main',
+                              boxShadow: '0 0 0 3px #dbeafe',
+                            }),
+                            ...(!isCompleted && !isCurrent && {
+                              bgcolor: 'white',
+                              border: '2px solid #cbd5e1',
+                            }),
+                          }}
+                        />
+                        {!isLast && (
+                          <Box
+                            sx={{
+                              flex: 1,
+                              width: '2px',
+                              bgcolor: isCompleted ? 'primary.main' : '#e2e8f0',
+                              mt: 0.5,
+                              minHeight: 20,
+                            }}
+                          />
+                        )}
+                      </Box>
+
+                      {/* Content */}
+                      <Box sx={{ pb: isLast ? 0 : 2, flex: 1, minWidth: 0 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'baseline',
+                            gap: 0.5,
+                            mb: stage.description ? 0.25 : 0,
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              fontSize: 13,
+                              fontWeight: isCurrent ? 600 : 500,
+                              color: isCurrent
+                                ? 'primary.main'
+                                : isCompleted
+                                  ? 'text.primary'
+                                  : 'text.secondary',
+                              lineHeight: 1.4,
+                            }}
+                          >
+                            {stage.label}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              flexShrink: 0,
+                              fontSize: 11,
+                              color: stage.date ? 'text.secondary' : '#cbd5e1',
+                            }}
+                          >
+                            {stage.date ?? 'Pendiente'}
+                          </Typography>
+                        </Box>
+                        {stage.description && (
+                          <Typography sx={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.4 }}>
+                            {stage.description}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </Box>
+            </Card>
+          </Box>
 
           {/* Right column */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
