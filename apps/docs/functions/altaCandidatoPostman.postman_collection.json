@@ -1,0 +1,729 @@
+{
+  "info": {
+    "_postman_id": "460bdbe1-f51d-44db-832d-a7656eda628c",
+    "name": "altaCandidatoPostman",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "7969977"
+  },
+  "item": [
+    {
+      "name": "registro manual",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJwcm92aWRlcl9pZCI6ImFub255bW91cyIsImF1dGhfdGltZSI6MTc3OTEzNzA4OSwidXNlcl9pZCI6ImZEbG9QRzlBbWducEN3aHRTd2JiNEdUN3VwY2IiLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7fSwic2lnbl9pbl9wcm92aWRlciI6ImFub255bW91cyJ9LCJpYXQiOjE3NzkxMzcwODksImV4cCI6MTc3OTE0MDY4OSwiYXVkIjoiYXRzLXRlbWEtb3J0IiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL2F0cy10ZW1hLW9ydCIsInN1YiI6ImZEbG9QRzlBbWducEN3aHRTd2JiNEdUN3VwY2IifQ.",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"data\": {\n        \"jobId\": \"backend-firebase-developer\",\n        \"firstName\": \"Soria\",\n        \"lastName\": \"Loria\",\n        \"email\": \"sofia.manual.001@example.com\",\n        \"phone\": \"+54 11 1234-5678\",\n        \"location\": \"Buenos Aires, Argentina\",\n        \"yearsOfExperience\": 3,\n        \"education\": \"Analista en Sistemas\",\n        \"technicalSkills\": [\n            \"Java\",\n            \"React\",\n            \"Firebase\"\n        ],\n        \"professionalSummary\": \"Desarrolladora con experiencia en backend y frontend.\"\n    }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/registerCandidate",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5001",
+          "path": [
+            "ats-tema-ort",
+            "us-central1",
+            "registerCandidate"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "register-candidate-initial",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"data\": {\n        \"fullName\": \"Sofia Loria\",\n        \"email\": \"sofia.test@example.com\",\n        \"hasCv\": true,\n        \"jobId\": \"job-123\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/registerCandidate",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "registerCandidate"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "83"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"53-xXsyVWkqpjDaXQJivXU9AXBdUNk\""
+            },
+            {
+              "key": "date",
+              "value": "Wed, 13 May 2026 13:55:19 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"result\": {\n        \"candidateId\": \"0SQH3qTB9lpqYamKc9olMTeq0n5h\",\n        \"cvParseStatus\": \"pending\"\n    }\n}"
+        },
+        {
+          "name": "register-candidate-manual",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"data\": {\n        \"jobId\": \"job-manual-001\",\n        \"firstName\": \"Sofia\",\n        \"lastName\": \"Loria\",\n        \"email\": \"sofia.manual.001@example.com\",\n        \"phone\": \"+54 11 1234-5678\",\n        \"location\": \"Buenos Aires, Argentina\",\n        \"yearsOfExperience\": 3,\n        \"education\": \"Analista en Sistemas\",\n        \"technicalSkills\": [\n            \"Java\",\n            \"React\",\n            \"Firebase\"\n        ],\n        \"professionalSummary\": \"Desarrolladora con experiencia en backend y frontend.\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/registerCandidate",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "registerCandidate"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "179"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"b3-4uqaGMyVs37t8Cf/bdsCO8KHfeA\""
+            },
+            {
+              "key": "date",
+              "value": "Fri, 15 May 2026 23:54:21 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"result\": {\n        \"candidateId\": \"EJwq3UrCBhu7iVUlfFjSUIEPyr3k\",\n        \"applicationId\": \"EJwq3UrCBhu7iVUlfFjSUIEPyr3k_job-manual-001\",\n        \"cvParseStatus\": \"not_required\",\n        \"applicationStatus\": \"active\"\n    }\n}"
+        },
+        {
+          "name": "register-candidate-same-application-email",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"data\": {\n        \"jobId\": \"job-manual-001\",\n        \"firstName\": \"Soria\",\n        \"lastName\": \"Lofia\",\n        \"email\": \"sofia.manual.001@example.com\",\n        \"phone\": \"+54 11 1234-5678\",\n        \"location\": \"Buenos Aires, Argentina\",\n        \"yearsOfExperience\": 3,\n        \"education\": \"Analista en Sistemas\",\n        \"technicalSkills\": [\n            \"Java\",\n            \"React\",\n            \"Firebase\"\n        ],\n        \"professionalSummary\": \"Desarrolladora con experiencia en backend y frontend.\"\n    }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/registerCandidate",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "registerCandidate"
+              ]
+            }
+          },
+          "status": "Conflict",
+          "code": 409,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "117"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"75-KjtsvUaJJcdo4qVOzZQwRNsitPA\""
+            },
+            {
+              "key": "date",
+              "value": "Sat, 16 May 2026 00:05:55 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"error\": {\n        \"message\": \"Ya existe un candidato con ese email asociado a otro identificador.\",\n        \"status\": \"ALREADY_EXISTS\"\n    }\n}"
+        }
+      ]
+    },
+    {
+      "name": "anonymAuth - necesario",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{   \n  \"returnSecureToken\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=fake-api-key",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "9099",
+          "path": [
+            "identitytoolkit.googleapis.com",
+            "v1",
+            "accounts:signUp"
+          ],
+          "query": [
+            {
+              "key": "key",
+              "value": "fake-api-key"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "registro cv",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJwcm92aWRlcl9pZCI6ImFub255bW91cyIsImF1dGhfdGltZSI6MTc3OTIzOTk0OCwidXNlcl9pZCI6IjdqS3R0dDFlR3U3Tlg5Q1ZUTFB5VnJEdWhiRjgiLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7fSwic2lnbl9pbl9wcm92aWRlciI6ImFub255bW91cyJ9LCJpYXQiOjE3NzkyMzk5NDgsImV4cCI6MTc3OTI0MzU0OCwiYXVkIjoiYXRzLXRlbWEtb3J0IiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL2F0cy10ZW1hLW9ydCIsInN1YiI6IjdqS3R0dDFlR3U3Tlg5Q1ZUTFB5VnJEdWhiRjgifQ.",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"data\": {\n    \"jobId\": \"backend-firebase-developer\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/registerCandidateCV",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5001",
+          "path": [
+            "ats-tema-ort",
+            "us-central1",
+            "registerCandidateCV"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "registerCandidateWCV",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"jobId\": \"job-cv-001\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/registerCandidateCV",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "registerCandidateCV"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "222"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"de-gXmEglwzwIut2W6EPzARtDNJJvw\""
+            },
+            {
+              "key": "date",
+              "value": "Sat, 16 May 2026 05:18:29 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"result\": {\n        \"candidateId\": \"z9zSbdcyzmm6kMcYB7CfnqRt0NXK\",\n        \"applicationId\": \"z9zSbdcyzmm6kMcYB7CfnqRt0NXK_job-cv-001\",\n        \"uploadBasePath\": \"cvs/z9zSbdcyzmm6kMcYB7CfnqRt0NXK/\",\n        \"cvParseStatus\": \"pending\",\n        \"applicationStatus\": \"draft\"\n    }\n}"
+        },
+        {
+          "name": "registerCandidateWCV",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"jobId\": \"backend-firebase-developer\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/registerCandidateCV",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "registerCandidateCV"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "238"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"ee-ewVQmzL+UsuMZoUaSVvkp5onCEo\""
+            },
+            {
+              "key": "date",
+              "value": "Wed, 20 May 2026 01:15:21 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"result\": {\n        \"candidateId\": \"lnMgK6fm1kcSpsC70vnnYg7uEBbH\",\n        \"applicationId\": \"lnMgK6fm1kcSpsC70vnnYg7uEBbH_backend-firebase-developer\",\n        \"uploadBasePath\": \"cvs/lnMgK6fm1kcSpsC70vnnYg7uEBbH/\",\n        \"cvParseStatus\": \"pending\",\n        \"applicationStatus\": \"draft\"\n    }\n}"
+        }
+      ]
+    },
+    {
+      "name": "confirmarPostulacion - carga cv",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJwcm92aWRlcl9pZCI6ImFub255bW91cyIsImF1dGhfdGltZSI6MTc3OTEzNzc0MiwidXNlcl9pZCI6IlFBenAySU5ldUkzeEJ6QWVvM2Z4QW93Y1Zha1QiLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7fSwic2lnbl9pbl9wcm92aWRlciI6ImFub255bW91cyJ9LCJpYXQiOjE3NzkxMzc3NDIsImV4cCI6MTc3OTE0MTM0MiwiYXVkIjoiYXRzLXRlbWEtb3J0IiwiaXNzIjoiaHR0cHM6Ly9zZWN1cmV0b2tlbi5nb29nbGUuY29tL2F0cy10ZW1hLW9ydCIsInN1YiI6IlFBenAySU5ldUkzeEJ6QWVvM2Z4QW93Y1Zha1QifQ.",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          {
+            "key": "",
+            "value": "",
+            "type": "text",
+            "disabled": true
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"data\": {\n    \"candidateId\": \"lnMgK6fm1kcSpsC70vnnYg7uEBbH\",\n    \"applicationId\": \"lnMgK6fm1kcSpsC70vnnYg7uEBbH_backend-firebase-developer\",\n    \"profile\": {\n      \"firstName\": \"Sofía\",\n      \"lastName\": \"Loria\",\n      \"email\": \"sofia.test@tema.com\",\n      \"phone\": \"+54 11 1234-5678\",\n      \"location\": \"Buenos Aires, Argentina\",\n      \"yearsOfExperience\": 3,\n      \"education\": \"Analista de Sistemas\",\n      \"technicalSkills\": [\"React\", \"TypeScript\", \"Node.js\"],\n      \"professionalSummary\": \"Desarrolladora Fullstack con experiencia en metodologías ágiles.\"\n    }\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/confirmCandidateProfile",
+          "protocol": "http",
+          "host": [
+            "127",
+            "0",
+            "0",
+            "1"
+          ],
+          "port": "5001",
+          "path": [
+            "ats-tema-ort",
+            "us-central1",
+            "confirmCandidateProfile"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "confirmarPostulacion",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "",
+                "value": "",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"candidateId\": \"QAzp2INeuI3xBzAeo3fxAowcVakT\",\n    \"applicationId\": \"QAzp2INeuI3xBzAeo3fxAowcVakT_job-cv-002\",\n    \"profile\": {\n      \"firstName\": \"Sofía\",\n      \"lastName\": \"Loria\",\n      \"email\": \"sofia.test@tema.com\",\n      \"phone\": \"+54 11 1234-5678\",\n      \"location\": \"Buenos Aires, Argentina\",\n      \"yearsOfExperience\": 3,\n      \"education\": \"Analista de Sistemas\",\n      \"technicalSkills\": [\"React\", \"TypeScript\", \"Node.js\"],\n      \"professionalSummary\": \"Desarrolladora Fullstack con experiencia en metodologías ágiles.\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/confirmCandidateProfile",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "confirmCandidateProfile"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "230"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"e6-YjPZvU6LIC3XYaYI0SwclOgUzKI\""
+            },
+            {
+              "key": "date",
+              "value": "Wed, 20 May 2026 01:03:06 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"result\": {\n        \"candidateId\": \"QAzp2INeuI3xBzAeo3fxAowcVakT\",\n        \"applicationId\": \"QAzp2INeuI3xBzAeo3fxAowcVakT_job-cv-002\",\n        \"profileStatus\": \"completed\",\n        \"applicationStatus\": \"active\",\n        \"applicationStage\": \"applied\",\n        \"cvParseStatus\": \"processing\"\n    }\n}"
+        },
+        {
+          "name": "confirmarPostulacion",
+          "originalRequest": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "",
+                "value": "",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": {\n    \"candidateId\": \"lnMgK6fm1kcSpsC70vnnYg7uEBbH\",\n    \"applicationId\": \"lnMgK6fm1kcSpsC70vnnYg7uEBbH_backend-firebase-developer\",\n    \"profile\": {\n      \"firstName\": \"Sofía\",\n      \"lastName\": \"Loria\",\n      \"email\": \"sofia.test@tema.com\",\n      \"phone\": \"+54 11 1234-5678\",\n      \"location\": \"Buenos Aires, Argentina\",\n      \"yearsOfExperience\": 3,\n      \"education\": \"Analista de Sistemas\",\n      \"technicalSkills\": [\"React\", \"TypeScript\", \"Node.js\"],\n      \"professionalSummary\": \"Desarrolladora Fullstack con experiencia en metodologías ágiles.\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/confirmCandidateProfile",
+              "protocol": "http",
+              "host": [
+                "127",
+                "0",
+                "0",
+                "1"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "confirmCandidateProfile"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "246"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"f6-Y+w7mKH7orqotXNCGn/OyHUitrE\""
+            },
+            {
+              "key": "date",
+              "value": "Wed, 20 May 2026 01:17:13 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"result\": {\n        \"candidateId\": \"lnMgK6fm1kcSpsC70vnnYg7uEBbH\",\n        \"applicationId\": \"lnMgK6fm1kcSpsC70vnnYg7uEBbH_backend-firebase-developer\",\n        \"profileStatus\": \"completed\",\n        \"applicationStatus\": \"active\",\n        \"applicationStage\": \"applied\",\n        \"cvParseStatus\": \"processing\"\n    }\n}"
+        }
+      ]
+    }
+  ]
+}
