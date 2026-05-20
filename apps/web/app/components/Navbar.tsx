@@ -21,7 +21,9 @@ export default function Navbar() {
         </Link>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Link href="/dashboard/positions" style={{ textDecoration: 'none' }}>
-            <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>Dashboard</Typography>
+            <Typography sx={{ color: 'text.secondary', fontSize: 14 }}>
+              Dashboard
+            </Typography>
           </Link>
         </Box>
       </Toolbar>
