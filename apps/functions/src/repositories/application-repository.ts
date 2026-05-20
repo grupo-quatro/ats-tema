@@ -4,6 +4,7 @@ import type {
   Application,
   CreateApplicationDTO,
   QueryOptions,
+  UpdateApplicationDTO,
 } from '@ats/shared-types';
 
 import { db } from '../core/firebase-admin';
@@ -131,6 +132,30 @@ export class ApplicationsRepository {
   private buildApplicationId(candidateId: string, jobId: string): string {
     const safeJobId = encodeURIComponent(jobId);
     return `${candidateId}_${safeJobId}`;
+  }
+
+  async update(id: string, data: UpdateApplicationDTO): Promise<void> {
+    try {
+      const cleanData = JSON.parse(
+        JSON.stringify(data),
+      ) as UpdateApplicationDTO;
+
+      const updateData: Record<string, unknown> = {
+        ...cleanData,
+        updatedAt: FieldValue.serverTimestamp(),
+      };
+
+      if (data.stage) {
+        updateData.stageUpdatedAt = FieldValue.serverTimestamp();
+      }
+
+      await this.collection.doc(id).update(updateData);
+    } catch (error) {
+      throw new ApplicationsRepositoryError(
+        `No se pudo actualizar la postulación ${id}.`,
+        error,
+      );
+    }
   }
 
   private mapToApplication(application: FirestoreApplication): Application {

@@ -15,10 +15,13 @@ import type {
   CandidatePostulationPayload,
   CandidatePostulationResponse,
   RegistrationType,
+  ConfirmCandidateProfilePayload,
+  ConfirmCandidateProfileResponse,
 } from '@ats/shared-types';
 
 import { CandidatesRepository } from '../repositories/candidate-repository';
 import { ApplicationRegistrationService } from './application-registration-service';
+import { ApplicationsRepository } from '../repositories/application-repository';
 
 export class CandidateRegistrationCVServiceError extends Error {
   constructor(
@@ -101,6 +104,7 @@ export class CandidateRegistrationService {
   constructor(
     private readonly candidatesRepository: CandidatesRepository = new CandidatesRepository(),
     private readonly applicationRegistrationService: ApplicationRegistrationService = new ApplicationRegistrationService(),
+    private readonly applicationRepository: ApplicationsRepository = new ApplicationsRepository(),
   ) {}
 
   async registerCandidate(
@@ -176,5 +180,60 @@ export class CandidateRegistrationService {
 
   private resolveRegistrationType(jobId: string): RegistrationType {
     return jobId ? 'specific' : 'general';
+  }
+
+  async confirmCandidateProfile(
+    payload: ConfirmCandidateProfilePayload,
+  ): Promise<ConfirmCandidateProfileResponse> {
+    const { candidateId, applicationId, profile } = payload;
+
+    // 1. Validar que el candidato exista
+    const currentCandidate =
+      await this.candidatesRepository.findById(candidateId);
+    if (!currentCandidate) {
+      throw new Error(
+        `CANDIDATE_NOT_FOUND: El candidato con ID ${candidateId} no existe.`,
+      );
+    }
+
+    // 2. Mapear y actualizar los datos limpios del candidato
+    // Conservamos las URLs del CV y metadata previa generada por el Storage/Trigger
+    await this.candidatesRepository.update(candidateId, {
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      email: profile.email,
+      phone: profile.phone,
+      location: profile.location,
+      yearsOfExperience: profile.yearsOfExperience,
+      education: profile.education,
+      technicalSkills: profile.technicalSkills,
+      professionalSummary: profile.professionalSummary,
+
+      profileStatus: 'completed',
+      cvParseStatus:
+        currentCandidate.cvParseStatus === 'not_required'
+          ? 'not_required'
+          : 'done',
+    });
+
+    // 3. Si viene un applicationId, actualizamos el estado de la postulación en el pipeline core
+    if (applicationId) {
+      await this.applicationRepository.update(applicationId, {
+        stage: 'applied', // Mapeado al tipo estricto ApplicationStage de shared-types
+        status: 'active',
+        candidateName: `${profile.firstName} ${profile.lastName}`.trim(),
+        candidateEmail: profile.email,
+      });
+    }
+
+    // 4. Retornar la respuesta estructurada que espera el contrato
+    return {
+      candidateId,
+      applicationId,
+      profileStatus: 'completed',
+      applicationStatus: applicationId ? 'active' : undefined,
+      applicationStage: applicationId ? 'applied' : undefined, // Label para UI si se requiere
+      cvParseStatus: (currentCandidate as any).cvParseStatus || 'not_required',
+    };
   }
 }

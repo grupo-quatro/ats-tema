@@ -4,9 +4,9 @@ export interface ConfirmCandidateProfileResponse {
   candidateId: string;
   applicationId?: string;
 
-  profileStatus: 'confirmed';
+  profileStatus: 'completed';
   applicationStatus?: 'active';
-  applicationStage?: 'postulacion_recibida';
+  applicationStage?: 'applied';
 
   cvParseStatus?: 'not_required' | 'pending' | 'processing' | 'done' | 'failed';
 }

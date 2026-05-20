@@ -3,6 +3,7 @@ import { logger } from 'firebase-functions';
 import {
   CandidatePostulationCVPayload,
   CandidatePostulationPayload,
+  ConfirmCandidateProfilePayload,
 } from '@ats/shared-types';
 
 import { CandidateRegistrationCVService } from '../services/candidateService';
@@ -114,3 +115,62 @@ export const registerCandidate = onCall(async (request) => {
     throw new HttpsError('internal', 'No se pudo registrar el candidato.');
   }
 });
+
+export const confirmCandidateProfile = onCall<ConfirmCandidateProfilePayload>(
+  {
+    memory: '256MiB',
+    maxInstances: 5, // Seguro de vida presupuestario contra bucles infinitos
+  },
+  async (request) => {
+    // 1. Validación de sesión / Seguridad obligatoria
+    if (!request.auth) {
+      throw new HttpsError(
+        'unauthenticated',
+        'El usuario debe estar autenticado para confirmar su postulación.',
+      );
+    }
+
+    logger.info('Iniciando confirmación de perfil de candidato', {
+      uid: request.auth.uid,
+      candidateId: request.data.candidateId,
+      applicationId: request.data.applicationId,
+    });
+
+    // 2. Validación defensiva del payload mínimo
+    if (!request.data.candidateId || !request.data.profile) {
+      throw new HttpsError(
+        'invalid-argument',
+        'Faltan argumentos mandatorios: candidateId y profile son requeridos.',
+      );
+    }
+
+    try {
+      // 3. Delegación a la capa de servicio
+      const result = await candidateRegistrationService.confirmCandidateProfile(
+        request.data,
+      );
+
+      logger.info('Perfil de candidato confirmado con éxito', {
+        candidateId: result.candidateId,
+        applicationId: result.applicationId,
+      });
+
+      return result;
+    } catch (error: any) {
+      logger.error('Error fatal al confirmar el perfil del candidato', {
+        error: error.message,
+        payload: request.data,
+      });
+
+      // Mapeo controlado de excepciones de negocio a HttpsError académicos
+      if (error.message.includes('CANDIDATE_NOT_FOUND')) {
+        throw new HttpsError('not-found', error.message);
+      }
+
+      throw new HttpsError(
+        'internal',
+        'Ocurrió un error interno en el servidor al procesar la confirmación.',
+      );
+    }
+  },
+);
