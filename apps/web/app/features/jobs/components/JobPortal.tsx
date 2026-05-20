@@ -8,12 +8,24 @@ import {
   TextField,
   InputAdornment,
   Stack,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
-import { Briefcase, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { useState } from 'react';
 import JobCard from './JobCard';
-import { JOBS_DATA } from '../services/jobs';
+import { useJobs } from '../hooks/useJobs';
 
 export default function JobPortal() {
+  const { data: jobs, isLoading, isError } = useJobs();
+  const [search, setSearch] = useState('');
+
+  const filtered = (jobs ?? []).filter(
+    (job) =>
+      job.title.toLowerCase().includes(search.toLowerCase()) ||
+      job.department?.toLowerCase().includes(search.toLowerCase()),
+  );
+
   return (
     <Container>
       <Box
@@ -26,29 +38,14 @@ export default function JobPortal() {
           marginBottom: '50px',
         }}
       >
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            p: 2,
-            bgcolor: 'primary.main',
-            color: 'white',
-            borderRadius: '50%',
-          }}
-        >
-          <Briefcase size={40} />
-        </Box>
-        <Typography variant="h1">Portal de Empleo</Typography>
-        <Typography variant="body1">
-          Descubre oportunidades que se ajusten a tu perfil
-        </Typography>
+        <Typography variant="h1">Trabaja con Nosotros</Typography>
       </Box>
       <Card sx={{ p: 2 }}>
         <TextField
           fullWidth
           placeholder="Buscar por título o área..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
           slotProps={{
             input: {
               startAdornment: (
@@ -60,16 +57,28 @@ export default function JobPortal() {
           }}
         />
       </Card>
-      <Box
-        sx={{
-          margin: '50px',
-        }}
-      >
-        <Stack spacing={3}>
-          {JOBS_DATA.map((job) => (
-            <JobCard key={job.id} job={job} />
-          ))}
-        </Stack>
+      <Box sx={{ margin: '50px' }}>
+        {isLoading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+            <CircularProgress />
+          </Box>
+        )}
+        {isError && (
+          <Alert severity="error">
+            No se pudieron cargar las posiciones. Intentá de nuevo más tarde.
+          </Alert>
+        )}
+        {!isLoading && !isError && (
+          <Stack spacing={3}>
+            {filtered.length === 0 ? (
+              <Typography color="text.secondary" sx={{ textAlign: 'center' }}>
+                No se encontraron posiciones.
+              </Typography>
+            ) : (
+              filtered.map((job) => <JobCard key={job.id} job={job} />)
+            )}
+          </Stack>
+        )}
       </Box>
     </Container>
   );

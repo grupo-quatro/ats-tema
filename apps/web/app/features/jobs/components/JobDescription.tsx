@@ -109,16 +109,41 @@ export default function JobDescription({ job }: JobDescriptionProps) {
               </Box>
             </Box>
 
-            <Chip
-              label={statusLabels[job.status]}
-              size="small"
+            <Box
               sx={{
-                bgcolor: 'rgba(255,255,255,0.2)',
-                color: 'white',
-                fontWeight: 700,
-                backdropFilter: 'blur(4px)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: { xs: 'flex-start', sm: 'flex-end' },
+                gap: 1.5,
               }}
-            />
+            >
+              <Chip
+                label={statusLabels[job.status]}
+                size="small"
+                sx={{
+                  bgcolor: 'rgba(255,255,255,0.2)',
+                  color: 'white',
+                  fontWeight: 700,
+                  backdropFilter: 'blur(4px)',
+                }}
+              />
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => router.push(`/postulation/${job.id}`)}
+                sx={{
+                  bgcolor: 'white',
+                  color: 'primary.main',
+                  fontWeight: 700,
+                  px: 3,
+                  borderRadius: '12px',
+                  textTransform: 'none',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
+                }}
+              >
+                Postularme
+              </Button>
+            </Box>
           </Box>
         </Box>
 
@@ -359,6 +384,7 @@ export default function JobDescription({ job }: JobDescriptionProps) {
                 variant="contained"
                 size="large"
                 sx={{ px: 4, textTransform: 'none', borderRadius: '12px' }}
+                onClick={() => router.push(`/postulation/${job.id}`)}
               >
                 Postularme ahora
               </Button>
@@ -395,7 +421,7 @@ export default function JobDescription({ job }: JobDescriptionProps) {
                 sx={{ fontWeight: 400, color: 'text.secondary' }}
               >
                 {job.publishedAt
-                  ? job.publishedAt.toLocaleDateString('es-AR', {
+                  ? new Date(job.publishedAt).toLocaleDateString('es-AR', {
                       day: 'numeric',
                       month: 'long',
                       year: 'numeric',

@@ -103,7 +103,10 @@ export default function JobCard({ job }: JobCardProps) {
       >
         <Calendar size={16} />
         <Typography variant="caption">
-          Publicada el {job.publishedAt?.toLocaleDateString()}
+          Publicada el{' '}
+          {job.publishedAt
+            ? new Date(job.publishedAt).toLocaleDateString()
+            : ''}
         </Typography>
       </Stack>
     </Card>

@@ -2,9 +2,10 @@
 
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Link from 'next/link';
+import Image from 'next/image';
+import logo from '../images/LOGO-ANIVERSARIO-TEMA-2025.png';
 
 export default function Navbar() {
   return (
@@ -15,12 +16,7 @@ export default function Navbar() {
     >
       <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, md: 4 } }}>
         <Link href="/" style={{ textDecoration: 'none' }}>
-          <Typography
-            variant="h2"
-            sx={{ color: 'primary.main', fontSize: '20px' }}
-          >
-            ATS Platform
-          </Typography>
+          <Image src={logo} alt="TEMA" height={40} />
         </Link>
         <Box />
       </Toolbar>
