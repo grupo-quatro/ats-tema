@@ -3,7 +3,8 @@ import { Job } from '../../../../../../packages/shared-types/src/models/job';
 export const JOBS_DATA: Job[] = [
     {
         id: '1',
-        title: 'Backend Developer Node.js',
+        slug: 'senior-frontend-developer',
+        title: 'Senior Frontend Developer',
         department: 'Tecnología',
         seniority: 'senior',
         location: 'remote',
@@ -13,30 +14,37 @@ export const JOBS_DATA: Job[] = [
         description:
             'Sumate para escalar microservicios y optimizar bases de datos en MongoDB. Valoramos conocimientos en arquitecturas limpias.',
         skills: [
-            { name: 'Node.js', weight: 5, type: 'mandatory' },
-            { name: 'Express', weight: 4, type: 'mandatory' },
-            { name: 'MongoDB', weight: 5, type: 'mandatory' },
-            { name: 'TypeScript', weight: 4, type: 'mandatory' },
-            { name: 'Docker', weight: 3, type: 'desirable' },
-            { name: 'AWS', weight: 2, type: 'desirable' },
+            { name: 'React', weight: 5, type: 'mandatory' },
+            { name: 'TypeScript', weight: 5, type: 'mandatory' },
+            { name: 'Next.js', weight: 5, type: 'mandatory' },
+            { name: 'Performance audits', weight: 4, type: 'desirable' },
+            { name: 'Testing Library', weight: 3, type: 'desirable' },
         ],
         salaryMin: 2500,
         salaryMax: 4000,
         currency: 'USD',
         status: 'open',
         hiringManagerId: 'mgr-01',
-        responsabilities: [
-            'Diseñar y mantener APIs REST escalables',
-            'Optimizar consultas y modelado de datos',
-            'Revisar código y mentorizar a desarrolladores junior',
+        observations: 'Se valorará portfolio con proyectos open source. Entrevista técnica incluye pair programming.',
+        additionalCriteria: [
+            'Disponibilidad para trabajar en horario flexible.',
+            'Se requiere inglés técnico intermedio para lectura de documentación.',
         ],
-        benefits: ['Work from home', 'Capacitación anual', 'Seguro médico'],
+        responsabilities: [
+            'Desarrollar y mantener componentes frontend de alta calidad',
+            'Colaborar con el equipo de diseño para implementar interfaces intuitivas',
+            'Optimizar aplicaciones para máximo rendimiento y escalabilidad',
+            'Participar en revisiones de código y mentoría de desarrolladores junior',
+            'Contribuir a la arquitectura técnica del producto',
+        ],
+        benefits: ['Trabajo remoto u híbrido', 'Seguro médico premium', '20 días de vacaciones + feriados', 'Presupuesto para capacitación y conferencias', 'Equipamiento de última generación'],
         createdAt: new Date('2026-05-01'),
         updatedAt: new Date('2026-05-12'),
         publishedAt: new Date('2026-05-12'),
     },
     {
         id: '2',
+        slug: 'ux-ui-designer',
         title: 'UX/UI Designer',
         department: 'Diseño',
         seniority: 'semi-senior',
@@ -74,6 +82,7 @@ export const JOBS_DATA: Job[] = [
     },
     {
         id: '3',
+        slug: 'fullstack-developer-react-python',
         title: 'Fullstack Developer (React/Python)',
         department: 'Tecnología',
         seniority: 'senior',
@@ -111,6 +120,7 @@ export const JOBS_DATA: Job[] = [
     },
     {
         id: '4',
+        slug: 'qa-automation-engineer',
         title: 'QA Automation Engineer',
         department: 'Tecnología',
         seniority: 'semi-senior',
@@ -144,6 +154,7 @@ export const JOBS_DATA: Job[] = [
     },
     {
         id: '5',
+        slug: 'data-analyst',
         title: 'Data Analyst',
         department: 'Data',
         seniority: 'mid-level',
@@ -177,3 +188,9 @@ export const JOBS_DATA: Job[] = [
         publishedAt: new Date('2026-05-08'),
     },
 ];
+
+export function getJobBySlug(slug: string) {
+    const normalizedSlug = slug?.toString().trim().toLowerCase();
+    return JOBS_DATA.find((job) => job.slug?.toLowerCase() === normalizedSlug);
+}
+

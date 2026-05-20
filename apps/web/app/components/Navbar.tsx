@@ -2,6 +2,7 @@
 
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
+import { Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import Link from 'next/link';
 import Image from 'next/image';

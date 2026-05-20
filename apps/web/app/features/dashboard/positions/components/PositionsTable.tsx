@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
     Table,
     TableBody,
@@ -66,9 +67,11 @@ export default function PositionsTable({ jobs }: Props) {
                             </TableCell>
                             <TableCell>{job.publishedAt ? job.publishedAt.toLocaleDateString('es-AR') : '-'}</TableCell>
                             <TableCell align="right">
-                                <IconButton size="small">
-                                    <Eye size={16} />
-                                </IconButton>
+                                <Link href={`/dashboard/positions/${job.slug}`} style={{ display: 'inline-flex' }}>
+                                    <IconButton size="small">
+                                        <Eye size={16} />
+                                    </IconButton>
+                                </Link>
                                 <IconButton size="small">
                                     <Edit2 size={16} />
                                 </IconButton>
