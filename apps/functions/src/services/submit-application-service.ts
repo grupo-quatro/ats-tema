@@ -4,7 +4,7 @@ import type {
 } from '@ats/shared-types';
 
 import { ApplicationsRepository } from '../repositories/application-repository';
-import { CandidatesRepository } from '../repositories/candidate-repository';
+import { CandidatesRepository } from '../repositories/candidateRepository';
 import { JobsRepository } from '../repositories/job-repository';
 import {
   ApplicationAlreadyExistsError,

@@ -19,7 +19,7 @@ import type {
   ConfirmCandidateProfileResponse,
 } from '@ats/shared-types';
 
-import { CandidatesRepository } from '../repositories/candidate-repository';
+import { CandidatesRepository } from '../repositories/candidateRepository';
 import { ApplicationRegistrationService } from './application-registration-service';
 import { ApplicationsRepository } from '../repositories/application-repository';
 
