@@ -117,12 +117,7 @@ export const registerCandidate = onCall(async (request) => {
 });
 
 export const confirmCandidateProfile = onCall<ConfirmCandidateProfilePayload>(
-  {
-    memory: '256MiB',
-    maxInstances: 5, // Seguro de vida presupuestario contra bucles infinitos
-  },
   async (request) => {
-    // 1. Validación de sesión / Seguridad obligatoria
     if (!request.auth) {
       throw new HttpsError(
         'unauthenticated',
@@ -136,7 +131,6 @@ export const confirmCandidateProfile = onCall<ConfirmCandidateProfilePayload>(
       applicationId: request.data.applicationId,
     });
 
-    // 2. Validación defensiva del payload mínimo
     if (!request.data.candidateId || !request.data.profile) {
       throw new HttpsError(
         'invalid-argument',
@@ -145,7 +139,6 @@ export const confirmCandidateProfile = onCall<ConfirmCandidateProfilePayload>(
     }
 
     try {
-      // 3. Delegación a la capa de servicio
       const result = await candidateRegistrationService.confirmCandidateProfile(
         request.data,
       );
@@ -162,7 +155,6 @@ export const confirmCandidateProfile = onCall<ConfirmCandidateProfilePayload>(
         payload: request.data,
       });
 
-      // Mapeo controlado de excepciones de negocio a HttpsError académicos
       if (error.message.includes('CANDIDATE_NOT_FOUND')) {
         throw new HttpsError('not-found', error.message);
       }

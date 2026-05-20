@@ -187,7 +187,6 @@ export class CandidateRegistrationService {
   ): Promise<ConfirmCandidateProfileResponse> {
     const { candidateId, applicationId, profile } = payload;
 
-    // 1. Validar que el candidato exista
     const currentCandidate =
       await this.candidatesRepository.findById(candidateId);
     if (!currentCandidate) {
@@ -196,8 +195,6 @@ export class CandidateRegistrationService {
       );
     }
 
-    // 2. Mapear y actualizar los datos limpios del candidato
-    // Conservamos las URLs del CV y metadata previa generada por el Storage/Trigger
     await this.candidatesRepository.update(candidateId, {
       firstName: profile.firstName,
       lastName: profile.lastName,
@@ -216,23 +213,21 @@ export class CandidateRegistrationService {
           : 'done',
     });
 
-    // 3. Si viene un applicationId, actualizamos el estado de la postulación en el pipeline core
     if (applicationId) {
       await this.applicationRepository.update(applicationId, {
-        stage: 'applied', // Mapeado al tipo estricto ApplicationStage de shared-types
+        stage: 'applied',
         status: 'active',
         candidateName: `${profile.firstName} ${profile.lastName}`.trim(),
         candidateEmail: profile.email,
       });
     }
 
-    // 4. Retornar la respuesta estructurada que espera el contrato
     return {
       candidateId,
       applicationId,
       profileStatus: 'completed',
       applicationStatus: applicationId ? 'active' : undefined,
-      applicationStage: applicationId ? 'applied' : undefined, // Label para UI si se requiere
+      applicationStage: applicationId ? 'applied' : undefined,
       cvParseStatus: (currentCandidate as any).cvParseStatus || 'not_required',
     };
   }
