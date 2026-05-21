@@ -7,11 +7,18 @@ import {
   Card,
   Chip,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
   IconButton,
   Menu,
   MenuItem,
   Rating,
+  Stack,
+  TextField,
   Typography,
 } from '@mui/material';
 import {
@@ -22,6 +29,7 @@ import {
   MessageSquare,
   MoreVertical,
   Sparkles,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { STAGE_LABELS, type CandidateMockProfile } from '../mock/candidateMock';
@@ -36,7 +44,50 @@ interface CandidateProfileViewProps {
 export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
   const [cvModalOpen, setCvModalOpen] = useState(false);
   const [interviewModalOpen, setInterviewModalOpen] = useState(false);
+  const [newNoteModalOpen, setNewNoteModalOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [interviewNotes, setInterviewNotes] = useState(candidate.interviewNotes);
+  const [newNoteAuthor, setNewNoteAuthor] = useState('');
+  const [newNoteDate, setNewNoteDate] = useState('');
+  const [newNoteRating, setNewNoteRating] = useState(0);
+  const [newNoteText, setNewNoteText] = useState('');
+
+  const resetNewNoteForm = () => {
+    setNewNoteAuthor('');
+    setNewNoteDate('');
+    setNewNoteRating(0);
+    setNewNoteText('');
+  };
+
+  const openNewNoteModal = () => {
+    resetNewNoteForm();
+    setNewNoteModalOpen(true);
+  };
+
+  const formatDateToSpanish = (value: string) => {
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return value;
+    return parsed.toLocaleDateString('es-ES');
+  };
+
+  const handleSaveNewNote = () => {
+    const parsedDate = new Date(newNoteDate);
+    if (!newNoteAuthor || !newNoteDate || !newNoteText || Number.isNaN(parsedDate.getTime())) {
+      return;
+    }
+
+    setInterviewNotes((current) => [
+      ...current,
+      {
+        authorName: newNoteAuthor,
+        date: formatDateToSpanish(newNoteDate),
+        rating: newNoteRating || 0,
+        note: newNoteText,
+      },
+    ]);
+    setNewNoteModalOpen(false);
+    resetNewNoteForm();
+  };
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: { xs: 3, md: 5 } }}>
@@ -374,63 +425,74 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
 
             {/* Interview notes card */}
             <Card>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <MessageSquare size={16} color="#64748b" />
-                <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-                  Notas de las entrevistas
-                </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <MessageSquare size={16} color="#64748b" />
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                    Notas de las entrevistas
+                  </Typography>
+                </Box>
+                <Button size="small" variant="outlined" onClick={openNewNoteModal}>
+                  Añadir nota
+                </Button>
               </Box>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-                {candidate.interviewNotes.map((note, i) => (
-                  <Box key={i}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        mb: 1,
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-                        <Box
-                          sx={(theme) => ({
-                            width: 32,
-                            height: 32,
-                            borderRadius: '50%',
-                            bgcolor: theme.palette.primary.light,
-                            color: theme.palette.primary.main,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: 11,
-                            fontWeight: 700,
-                            flexShrink: 0,
-                          })}
-                        >
-                          {note.authorName
-                            .split(' ')
-                            .map((n) => n[0])
-                            .join('')
-                            .slice(0, 2)
-                            .toUpperCase()}
+                {interviewNotes.length === 0 ? (
+                  <Typography variant="body2" color="text.secondary">
+                    Aún no hay notas de entrevistas.
+                  </Typography>
+                ) : (
+                  interviewNotes.map((note, i) => (
+                    <Box key={i}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          mb: 1,
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                          <Box
+                            sx={(theme) => ({
+                              width: 32,
+                              height: 32,
+                              borderRadius: '50%',
+                              bgcolor: theme.palette.primary.light,
+                              color: theme.palette.primary.main,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: 11,
+                              fontWeight: 700,
+                              flexShrink: 0,
+                            })}
+                          >
+                            {note.authorName
+                              .split(' ')
+                              .map((n) => n[0])
+                              .join('')
+                              .slice(0, 2)
+                              .toUpperCase()}
+                          </Box>
+                          <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
+                              {note.authorName}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {note.date}
+                            </Typography>
+                          </Box>
                         </Box>
-                        <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
-                            {note.authorName}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {note.date}
-                          </Typography>
-                        </Box>
+                        <Rating value={note.rating} readOnly size="small" />
                       </Box>
-                      <Rating value={note.rating} readOnly size="small" />
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: 13 }}>
+                        {note.note}
+                      </Typography>
                     </Box>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: 13 }}>
-                      {note.note}
-                    </Typography>
-                  </Box>
-                ))}
+                  ))
+                )}
               </Box>
             </Card>
 
@@ -476,6 +538,71 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
         onClose={() => setInterviewModalOpen(false)}
         candidateName={candidate.fullName}
       />
+
+      <Dialog open={newNoteModalOpen} onClose={() => setNewNoteModalOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Añadir nueva nota de entrevista</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2, color: 'text.secondary' }}>
+            Completa los datos de la nota para agregarla a la ficha del candidato.
+          </DialogContentText>
+          <Stack spacing={2}>
+            <TextField
+              label="Autor"
+              value={newNoteAuthor}
+              onChange={(event) => setNewNoteAuthor(event.target.value)}
+              fullWidth
+            />
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                Fecha
+              </Typography>
+              <TextField
+                type="date"
+                value={newNoteDate}
+                onChange={(event) => setNewNoteDate(event.target.value)}
+                fullWidth
+                error={Boolean(newNoteDate && Number.isNaN(new Date(newNoteDate).getTime()))}
+                helperText={
+                  newNoteDate && Number.isNaN(new Date(newNoteDate).getTime())
+                    ? 'Fecha inválida'
+                    : ''
+                }
+              />
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                Calificación:
+              </Typography>
+              <Rating
+                value={newNoteRating}
+                onChange={(_, value) => setNewNoteRating(value || 0)}
+                size="small"
+              />
+            </Box>
+            <TextField
+              label="Nota"
+              value={newNoteText}
+              onChange={(event) => setNewNoteText(event.target.value)}
+              fullWidth
+              multiline
+              minRows={3}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button onClick={() => setNewNoteModalOpen(false)}>Cancelar</Button>
+          <Button
+            variant="contained"
+            onClick={handleSaveNewNote}
+            disabled={
+              !newNoteAuthor || !newNoteDate || !newNoteText ||
+              Number.isNaN(new Date(newNoteDate).getTime())
+            }
+          >
+            Guardar nota
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
