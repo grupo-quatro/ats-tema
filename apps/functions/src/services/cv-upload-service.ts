@@ -1,6 +1,6 @@
 import { logger } from 'firebase-functions';
 
-import { CandidatesRepository } from '../repositories/candidate-repository';
+import { CandidatesRepository } from '../repositories/candidateRepository';
 import { CvParseStatus } from '@ats/shared-types';
 
 /**

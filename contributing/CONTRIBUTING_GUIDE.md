@@ -41,7 +41,7 @@ The application is built with **Next.js 15** (frontend) and **Firebase** (backen
 | Database        | Cloud Firestore                       | Flexible schema, realtime when needed     |
 | Auth            | Firebase Auth                         | JWT, roles via Custom Claims              |
 | Storage         | Firebase Storage                      | CV files, offer PDFs                      |
-| AI              | OpenAI GPT-4o-mini                    | CV parsing, skill extraction, scoring     |
+| AI              | Vertex AI (Gemini 1.5 Flash)          | CV parsing, skill extraction, scoring     |
 | Types           | TypeScript (strict mode)              | Shared types between front and back       |
 | Package manager | pnpm workspaces                       | Monorepo, shared packages                 |
 | Monorepo        | Turborepo                             | Parallel builds, caching                  |
@@ -83,12 +83,21 @@ ats-tema/
 │   │           ├── hooks/               # Custom React hooks
 │   │           └── lib/                 # Firebase init, config, utilities
 │   │
-│   └── functions/                       # Firebase Cloud Functions
+│   └── functions/                       # Firebase Cloud Functions Backend
 │       └── src/
-│           ├── triggers/                # 5 Firestore/Storage event handlers
-│           ├── services/                # Orchestration — calls ai/ and repositories
-│           ├── ai/                      # CV parsing, scoring, fit calculation
-│           └── repositories/            # Firestore writes — mirrors web pattern (ADD)
+│           ├── callables/               # Entity HTTPS Callables (named exports, camelCase)
+│           │   └── candidateCallables.ts
+│           ├── triggers/                # Background event handlers (camelCase)
+│           │   └── onCvUploaded.ts
+│           ├── services/                # Domain core orchestration layer (camelCase)
+│           │   └── candidateService.ts
+│           ├── repositories/            # Database queries matching active interfaces (camelCase)
+│           │   └── candidateRepository.ts
+│           ├── validators/              # Payload contract validators (camelCase)
+│           │   └── candidateValidator.ts
+│           ├── core/                    # Global initialization (camelCase)
+│           │   └── firebaseAdmin.ts
+│           └── index.ts                 # Root export gateway for triggers & callables
 │
 └── packages/
     └── shared-types/                    # DTOs and interfaces shared between apps
@@ -789,23 +798,27 @@ pnpm --filter ats-functions test
 
 ## 11. Code style
 
-- TypeScript strict mode — no `any`, no type assertions unless unavoidable and commented
-- No default exports in repositories, services, or utilities — named exports only. Default exports are allowed in Next.js pages and components (required by the framework)
-- Async/await throughout — no `.then()` chains
-- Error handling — every async function that calls Firebase or OpenAI must have a try/catch. Errors should be logged and re-thrown with context, not swallowed
-- No comments explaining what the code does — write code that explains itself. Comments are for explaining _why_ a non-obvious decision was made
+- **TypeScript strict mode** — no `any`, no type assertions unless unavoidable and commented.
+- **No default exports** in repositories, services, utilities, or cloud function modules — named exports only to guarantee strict type traceability. Default exports are allowed exclusively in Next.js pages and components as strictly required by the framework.
+- **Async/await throughout** — no `.then()` chains or unresolved asynchronous procedures.
+- **Error handling** — every async function that interacts with Firestore, Storage, or AI engines must include a robust try/catch block. Errors must be logged using the designated logger utility and re-thrown with proper context, never swallowed.
+- **Self-explanatory code** — write expressive code that documents itself. Inline comments must be reserved exclusively to explain _why_ a non-obvious technical or domain decision was made, never _what_ the code does.
+- **Backend Filename Normalization** — `kebab-case` is strictly discontinued for code files inside the backend app (`apps/functions`). All source code and asset files must follow `camelCase`.
+- **Entity Cohesion Grouping** — Backend structures under `apps/functions` must be grouped into unified entity files (`*Callables.ts`, `*Service.ts`, `*Repository.ts`, `*Validator.ts`) instead of separating files by individual procedural actions.
+- **Distributed Refactoring Policy (The Boy Scout Rule)** — The `candidate` module acts as the official architectural **Golden Path**. To protect the sprint capacity of our 6-person team, legacy procedural configurations (`jobs`, `applications`) must not be refactored in a single mass block. Developers are required to clean and restructure these components into the unifed `camelCase` entity pattern _incrementally_, right when they pick up a User Story that touches that specific domain.
 
 ### Naming conventions
 
-| Thing                 | Convention                                                 | Example                              |
-| --------------------- | ---------------------------------------------------------- | ------------------------------------ |
-| Files                 | kebab-case                                                 | `jobs.repository.ts`                 |
-| Interfaces            | PascalCase with I prefix only if needed for disambiguation | `JobsRepository`                     |
-| Classes               | PascalCase                                                 | `FirebaseJobsRepository`             |
-| Functions/methods     | camelCase                                                  | `findByStatus`                       |
-| Constants             | SCREAMING_SNAKE for true constants                         | `MAX_CV_SIZE_MB`                     |
-| React components      | PascalCase                                                 | `PipelineTable`                      |
-| Firestore collections | camelCase, plural                                          | `jobs`, `candidates`, `applications` |
+| Thing                     | Convention                                                   | Example                                                           |
+| :------------------------ | :----------------------------------------------------------- | :---------------------------------------------------------------- |
+| **Backend Code Files**    | camelCase                                                    | `candidateCallables.ts`, `candidateService.ts`, `onCvUploaded.ts` |
+| **Frontend Code Files**   | camelCase (for hooks, services, and utilities)               | `usePostulation.ts`, `postulation.service.ts`                     |
+| **Interfaces**            | PascalCase (with I prefix only if needed for disambiguation) | `JobsRepository`, `Candidate`, `Application`                      |
+| **Classes**               | PascalCase                                                   | `FirebaseJobsRepository`                                          |
+| **Functions / methods**   | camelCase                                                    | `findByStatus`, `registerCandidateCV`                             |
+| **Constants**             | SCREAMING_SNAKE for true constants                           | `MAX_CV_SIZE_MB`                                                  |
+| **React components**      | PascalCase                                                   | `PipelineTable`, `CvUploadView`, `MethodCard`                     |
+| **Firestore collections** | camelCase, plural                                            | `jobs`, `candidates`, `applications`                              |
 
 ---
 
@@ -858,10 +871,10 @@ cp apps/web/.env.example apps/web/.env.local
 cp apps/functions/.env.example apps/functions/.env
 
 # Start Firebase emulators (Firestore, Auth, Storage, Functions)
-firebase emulators:start
+firebase emulators:start --only auth,firestore,storage,functions
 
 # In a separate terminal, start Next.js dev server
-pnpm --filter ats-web dev
+pnpm turbo run dev --filter=@ats/web
 ```
 
 ### Required environment variables

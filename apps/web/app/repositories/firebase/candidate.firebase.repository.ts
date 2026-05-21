@@ -2,10 +2,10 @@ import { ref, uploadBytesResumable } from 'firebase/storage';
 import { signInAnonymously } from 'firebase/auth';
 
 import type {
-  RegisterCandidatePayload,
-  RegisterCandidateResponse,
-  RegisterCandidateCVPayload,
-  RegisterCandidateCVResponse,
+  CandidatePostulationPayload,
+  CandidatePostulationResponse,
+  CandidatePostulationCVPayload,
+  CandidatePostulationCVResponse,
 } from '@ats/shared-types';
 
 import { auth, storage, callFunction } from '../../shared/lib/firebase';
@@ -17,23 +17,23 @@ export class CandidateFirebaseRepository implements ICandidateRepository {
   }
 
   async registerCandidate(
-    payload: RegisterCandidatePayload,
-  ): Promise<RegisterCandidateResponse> {
+    payload: CandidatePostulationPayload,
+  ): Promise<CandidatePostulationResponse> {
     await this.ensureAuth();
     const result = await callFunction<
-      RegisterCandidatePayload,
-      RegisterCandidateResponse
+      CandidatePostulationPayload,
+      CandidatePostulationResponse
     >('registerCandidate', payload);
     return result.data;
   }
 
   async registerCandidateCV(
-    payload: RegisterCandidateCVPayload,
-  ): Promise<RegisterCandidateCVResponse> {
+    payload: CandidatePostulationCVPayload,
+  ): Promise<CandidatePostulationCVResponse> {
     await this.ensureAuth();
     const result = await callFunction<
-      RegisterCandidateCVPayload,
-      RegisterCandidateCVResponse
+      CandidatePostulationCVPayload,
+      CandidatePostulationCVResponse
     >('registerCandidateCV', payload);
     return result.data;
   }
