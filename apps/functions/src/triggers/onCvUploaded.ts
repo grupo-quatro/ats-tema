@@ -1,7 +1,7 @@
 import { logger } from 'firebase-functions';
 import { onObjectFinalized } from 'firebase-functions/v2/storage';
 
-import { CvUploadService } from '../services/cv-upload-service';
+import { CvUploadService } from '../services/cvUploadService';
 
 const cvUploadService = new CvUploadService();
 
