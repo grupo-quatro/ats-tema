@@ -179,7 +179,6 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
               onClose={() => setMenuAnchor(null)}
             >
               <MenuItem onClick={() => setMenuAnchor(null)}>Cambiar etapa</MenuItem>
-              <MenuItem onClick={() => setMenuAnchor(null)}>Editar perfil</MenuItem>
               <Divider />
               <MenuItem onClick={() => setMenuAnchor(null)} sx={{ color: 'error.main' }}>
                 Rechazar candidato
