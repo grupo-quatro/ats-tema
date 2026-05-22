@@ -29,7 +29,6 @@ import {
   MessageSquare,
   MoreVertical,
   Sparkles,
-  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { STAGE_LABELS, type CandidateMockProfile } from '../mock/candidateMock';
