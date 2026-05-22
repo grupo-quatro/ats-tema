@@ -15,7 +15,7 @@
   "config": {
     "ghooks": {
       "pre-commit": "cross-env CI=true pnpm lint && cross-env CI=true pnpm format && cross-env CI=true pnpm test",
-      "commit-msg": "commitlint -e --verbose || (echo '\n❌ ERROR: El mensaje de commit no sigue el estándar.\n💡 Ejemplo válido: feat(auth): agregar validación de usuario\n📖 Más info en: https://www.conventionalcommits.org/es/\n' && exit 1)"
+      "commit-msg": "commitlint -e --verbose || (node -e \"console.error('\\nERROR: El mensaje de commit no sigue el estandar.\\nEjemplo valido: feat(auth): agregar validacion de usuario\\nMas info en: https://www.conventionalcommits.org/es/\\n')\" && exit 1)"
     }
   },
   "devDependencies": {
