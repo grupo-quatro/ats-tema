@@ -1,6 +1,5 @@
-import { CandidatePostulationBase } from '../../contracts/candidatePostulationBase';
+import { ParsedCV } from './parsedCv';
 
-export type ParsedCandidateProfileData = Partial<CandidatePostulationBase> & {
-  rawText?: string;
+export type ParsedCandidateProfileData = ParsedCV & {
   parserVersion?: string;
 };
