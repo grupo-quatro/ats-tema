@@ -5,7 +5,7 @@ import type {
 } from '@ats/shared-types';
 
 import { ApplicationsRepository } from '../repositories/application-repository';
-import { CandidatesRepository } from '../repositories/candidate-repository';
+import { CandidatesRepository } from '../repositories/candidateRepository';
 
 export type ApplicationRegistrationSource = 'manual' | 'cv_upload';
 

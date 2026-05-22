@@ -2,7 +2,7 @@
 
 import { useMutation } from '@tanstack/react-query';
 
-import type { RegisterCandidatePayload } from '@ats/shared-types';
+import type { CandidatePostulationPayload } from '@ats/shared-types';
 
 import { CandidateFirebaseRepository } from '../../../repositories/firebase/candidate.firebase.repository';
 import { PostulationService } from '../postulation.service';
@@ -15,7 +15,7 @@ export function useRegisterManual() {
       payload,
       file,
     }: {
-      payload: RegisterCandidatePayload;
+      payload: CandidatePostulationPayload;
       file?: File;
     }) => service.registerManual(payload, file),
   });

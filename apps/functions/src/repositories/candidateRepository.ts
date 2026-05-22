@@ -123,6 +123,17 @@ export class CandidatesRepository {
     }
   }
 
+  async update(id: string, data: Partial<Candidate>): Promise<void> {
+    const cleanData = JSON.parse(JSON.stringify(data)); // Evita inputs con undefined que rompen Firestore
+    await db
+      .collection('candidates')
+      .doc(id)
+      .update({
+        ...cleanData,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+  }
+
   private mapToCandidate(candidate: FirestoreCandidate): Candidate {
     return {
       ...candidate,
