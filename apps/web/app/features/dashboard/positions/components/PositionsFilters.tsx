@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import {
   Box,
   TextField,
@@ -15,6 +16,8 @@ type Props = {
 };
 
 export default function PositionsFilters({ onSearch }: Props) {
+  const router = useRouter();
+
   return (
     <Card sx={{ boxShadow: 4 }}>
       <Box sx={{ mb: 4 }}>
@@ -49,7 +52,12 @@ export default function PositionsFilters({ onSearch }: Props) {
           }}
         />
 
-        <Button variant="contained">+ Nueva Posición</Button>
+        <Button
+          variant="contained"
+          onClick={() => router.push('/dashboard/positions/create')}
+        >
+          + Nueva Posición
+        </Button>
       </Box>
     </Card>
   );
