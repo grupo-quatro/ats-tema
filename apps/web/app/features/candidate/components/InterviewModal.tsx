@@ -2,14 +2,18 @@
 
 import { Box, Dialog, DialogContent, IconButton, Typography } from '@mui/material';
 import { X } from 'lucide-react';
+import TechnicalInterviewForm from './TechnicalInterviewForm';
+import HrInterviewForm from './HrInterviewForm';
 
 interface InterviewModalProps {
   open: boolean;
   onClose: () => void;
   candidateName: string;
+  type?: 'tech' | 'hr';
+  skills?: string[];
 }
 
-export function InterviewModal({ open, onClose, candidateName }: InterviewModalProps) {
+export function InterviewModal({ open, onClose, candidateName, type = 'tech', skills = [] }: InterviewModalProps) {
   return (
     <Dialog
       open={open}
@@ -30,7 +34,7 @@ export function InterviewModal({ open, onClose, candidateName }: InterviewModalP
       >
         <Box>
           <Typography sx={{ color: 'white', fontWeight: 500, fontSize: 18 }}>
-            Realizar Entrevista
+            {type === 'tech' ? 'Entrevista técnica' : 'Entrevista RRHH'}
           </Typography>
           <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: 13 }}>
             {candidateName}
@@ -42,7 +46,11 @@ export function InterviewModal({ open, onClose, candidateName }: InterviewModalP
       </Box>
 
       <DialogContent sx={{ p: 4, minHeight: 200 }}>
-        {/* TODO: contenido del formulario de entrevista */}
+        {type === 'tech' ? (
+          <TechnicalInterviewForm skills={skills} candidateName={candidateName} onClose={onClose} />
+        ) : (
+          <HrInterviewForm candidateName={candidateName} onClose={onClose} />
+        )}
       </DialogContent>
     </Dialog>
   );

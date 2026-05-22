@@ -43,6 +43,7 @@ interface CandidateProfileViewProps {
 export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
   const [cvModalOpen, setCvModalOpen] = useState(false);
   const [interviewModalOpen, setInterviewModalOpen] = useState(false);
+  const [interviewType, setInterviewType] = useState<'tech' | 'hr'>('tech');
   const [newNoteModalOpen, setNewNoteModalOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [interviewNotes, setInterviewNotes] = useState(candidate.interviewNotes);
@@ -160,10 +161,18 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
 
             <Button
               variant="contained"
-              onClick={() => setInterviewModalOpen(true)}
+              onClick={() => { setInterviewType('tech'); setInterviewModalOpen(true); }}
               sx={{ bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' } }}
             >
-              Realizar Entrevista
+              Entrevista técnica
+            </Button>
+
+            <Button
+              variant="outlined"
+              onClick={() => { setInterviewType('hr'); setInterviewModalOpen(true); }}
+              sx={{ textTransform: 'none' }}
+            >
+              Entrevista RRHH
             </Button>
 
             <IconButton
@@ -535,6 +544,8 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
         open={interviewModalOpen}
         onClose={() => setInterviewModalOpen(false)}
         candidateName={candidate.fullName}
+        type={interviewType}
+        skills={candidate.detectedSkills}
       />
 
       <Dialog open={newNoteModalOpen} onClose={() => setNewNoteModalOpen(false)} maxWidth="sm" fullWidth>
