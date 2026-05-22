@@ -5,6 +5,7 @@ import type {
   Candidate,
   CreateCandidateDTO,
   CvParseStatus,
+  ParsedCV,
 } from '@ats/shared-types';
 
 import { db } from '../core/firebase-admin';
@@ -140,5 +141,24 @@ export class CandidatesRepository {
       createdAt: candidate.createdAt.toDate(),
       updatedAt: candidate.updatedAt.toDate(),
     };
+  }
+
+  async updateCvParseSuccess(
+    candidateId: string,
+    parsedData: ParsedCV,
+  ): Promise<void> {
+    await db.collection('candidates').doc(candidateId).update({
+      cvParseStatus: 'done',
+      parsedData: parsedData,
+      updatedAt: new Date(),
+    });
+  }
+
+  async updateCvParseFailure(candidateId: string): Promise<void> {
+    await db.collection('candidates').doc(candidateId).update({
+      cvParseStatus: 'failed',
+      parsedData: null,
+      updatedAt: new Date(),
+    });
   }
 }
