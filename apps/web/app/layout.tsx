@@ -29,7 +29,7 @@ export default function RootLayout({
               }}
             >
               <Navbar />
-              <Box component="main" sx={{ flex: 1 }}>
+              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                 {children}
               </Box>
               <Footer />

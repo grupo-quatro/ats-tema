@@ -27,19 +27,19 @@ import {
   CreateJobDTO,
   Skill,
   JobLocation,
-} from '../../../../../../packages/shared-types/src/models/job';
+} from '../../../../../../../../packages/shared-types/src/models/job';
 
-interface JobFormProps {
+interface PositionFormProps {
   onSubmit: (data: CreateJobDTO) => Promise<void>;
   isLoading?: boolean;
   onCancel?: () => void;
 }
 
-export default function JobForm({
+export default function PositionForm({
   onSubmit,
   isLoading = false,
   onCancel,
-}: JobFormProps) {
+}: PositionFormProps) {
   const [mandatorySkills, setMandatorySkills] = useState<Skill[]>([]);
   const [desirableSkills, setDesirableSkills] = useState<Skill[]>([]);
   const [validationTrigger, setValidationTrigger] = useState(0);
@@ -108,7 +108,6 @@ export default function JobForm({
       weight: '5',
     });
 
-    // Trigger re-validation
     setValidationTrigger((prev) => prev + 1);
   };
 
@@ -129,19 +128,16 @@ export default function JobForm({
       weight: '5',
     });
 
-    // Trigger re-validation
     setValidationTrigger((prev) => prev + 1);
   };
 
   const removeMandatorySkill = (index: number) => {
     setMandatorySkills(mandatorySkills.filter((_, i) => i !== index));
-    // Trigger re-validation
     setValidationTrigger((prev) => prev + 1);
   };
 
   const removeDesirableSkill = (index: number) => {
     setDesirableSkills(desirableSkills.filter((_, i) => i !== index));
-    // Trigger re-validation
     setValidationTrigger((prev) => prev + 1);
   };
 
@@ -151,43 +147,29 @@ export default function JobForm({
     const seniority = form.state.values.seniority || '';
     const description = form.state.values.description || '';
 
-    if (!title.trim()) {
-      return 'El título de la posición es obligatorio';
-    }
-    if (!department.trim()) {
-      return 'El área es obligatoria';
-    }
-    if (!seniority.trim()) {
-      return 'El nivel de seniority es obligatorio';
-    }
-    if (!description.trim()) {
-      return 'La descripción general es obligatoria';
-    }
-    if (mandatorySkills.length === 0) {
+    if (!title.trim()) return 'El título de la posición es obligatorio';
+    if (!department.trim()) return 'El área es obligatoria';
+    if (!seniority.trim()) return 'El nivel de seniority es obligatorio';
+    if (!description.trim()) return 'La descripción general es obligatoria';
+    if (mandatorySkills.length === 0)
       return 'Debe agregar al menos una skill obligatoria';
-    }
 
     return null;
   };
 
   const isFormValid = (): boolean => {
-    // Leer los valores actuales del form
     const title = (form.state.values.title || '').trim();
     const department = (form.state.values.department || '').trim();
     const seniority = (form.state.values.seniority || '').trim();
     const description = (form.state.values.description || '').trim();
 
-    // Validar que todos los campos requeridos estén completos
-    const allFieldsComplete =
+    return (
       title.length > 0 &&
       department.length > 0 &&
       seniority.length > 0 &&
-      description.length > 0;
-
-    // Validar que haya al menos una skill obligatoria
-    const hasRequiredSkills = mandatorySkills.length > 0;
-
-    return allFieldsComplete && hasRequiredSkills;
+      description.length > 0 &&
+      mandatorySkills.length > 0
+    );
   };
 
   return (
@@ -200,7 +182,6 @@ export default function JobForm({
     >
       <Stack spacing={3}>
         {/* ALERTA IA */}
-
         <Alert
           icon={<Sparkles size={16} />}
           sx={{
@@ -209,27 +190,13 @@ export default function JobForm({
             border: '1px solid #dbeafe',
             color: '#2563eb',
             alignItems: 'flex-start',
-
-            '& .MuiAlert-message': {
-              width: '100%',
-            },
+            '& .MuiAlert-message': { width: '100%' },
           }}
         >
-          <Typography
-            sx={{
-              fontWeight: 600,
-              fontSize: '0.82rem',
-            }}
-          >
+          <Typography sx={{ fontWeight: 600, fontSize: '0.82rem' }}>
             Matching Automático con IA
           </Typography>
-
-          <Typography
-            sx={{
-              fontSize: '0.75rem',
-              mt: 0.5,
-            }}
-          >
+          <Typography sx={{ fontSize: '0.75rem', mt: 0.5 }}>
             La configuración que realices será utilizada por la IA para evaluar,
             rankear y sugerir los mejores candidatos. Los pesos asignados a cada
             skill determinarán la relevancia en el scoring final.
@@ -237,7 +204,6 @@ export default function JobForm({
         </Alert>
 
         {/* INFORMACIÓN GENERAL */}
-
         <Paper
           elevation={0}
           sx={{
@@ -259,12 +225,7 @@ export default function JobForm({
             Información General
           </Box>
 
-          <Box
-            sx={{
-              p: 3,
-              bgcolor: '#ffffff',
-            }}
-          >
+          <Box sx={{ p: 3, bgcolor: '#ffffff' }}>
             <Stack spacing={3}>
               <form.Field name="title">
                 {(field) => (
@@ -279,7 +240,6 @@ export default function JobForm({
                     >
                       Título de la Posición *
                     </FormLabel>
-
                     <TextField
                       placeholder="Ej: Senior Frontend Developer"
                       value={field.state.value}
@@ -315,7 +275,6 @@ export default function JobForm({
                         >
                           Área *
                         </FormLabel>
-
                         <TextField
                           size="small"
                           fullWidth
@@ -350,7 +309,6 @@ export default function JobForm({
                         >
                           Seniority Buscado *
                         </FormLabel>
-
                         <TextField
                           size="small"
                           fullWidth
@@ -385,7 +343,6 @@ export default function JobForm({
                     >
                       Descripción General *
                     </FormLabel>
-
                     <TextField
                       multiline
                       rows={5}
@@ -410,7 +367,6 @@ export default function JobForm({
         </Paper>
 
         {/* HARD SKILLS OBLIGATORIAS */}
-
         <Paper
           elevation={0}
           sx={{
@@ -430,33 +386,16 @@ export default function JobForm({
               alignItems: 'center',
             }}
           >
-            <Stack
-              direction="row"
-              sx={{
-                gap: 1,
-                alignItems: 'center',
-              }}
-            >
+            <Stack direction="row" sx={{ gap: 1, alignItems: 'center' }}>
               <Star size={16} />
-
-              <Typography
-                sx={{
-                  fontSize: '0.95rem',
-                  fontWeight: 500,
-                  color: 'white',
-                }}
-              >
+              <Typography sx={{ fontSize: '0.95rem', fontWeight: 500, color: 'white' }}>
                 Hard Skills Obligatorias
               </Typography>
             </Stack>
-
             <Chip
               label="Requerido"
               size="small"
-              sx={{
-                bgcolor: 'rgba(255,255,255,0.15)',
-                color: '#ffffff',
-              }}
+              sx={{ bgcolor: 'rgba(255,255,255,0.15)', color: '#ffffff' }}
             />
           </Box>
 
@@ -478,57 +417,33 @@ export default function JobForm({
 
             <Paper
               variant="outlined"
-              sx={{
-                p: 2,
-                borderRadius: '10px',
-                borderColor: '#dbe2ea',
-                mb: 4,
-              }}
+              sx={{ p: 2, borderRadius: '10px', borderColor: '#dbe2ea', mb: 4 }}
             >
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <Typography
-                    sx={{
-                      fontSize: '0.72rem',
-                      mb: 0.8,
-                    }}
-                  >
+                  <Typography sx={{ fontSize: '0.72rem', mb: 0.8 }}>
                     Nombre de la Skill
                   </Typography>
-
                   <TextField
                     fullWidth
                     size="small"
                     placeholder="Ej: React, TypeScript, Node.js..."
                     value={mandatorySkillForm.name}
                     onChange={(e) =>
-                      setMandatorySkillForm({
-                        ...mandatorySkillForm,
-                        name: e.target.value,
-                      })
+                      setMandatorySkillForm({ ...mandatorySkillForm, name: e.target.value })
                     }
                   />
                 </Grid>
-
                 <Grid size={{ xs: 12, md: 3 }}>
-                  <Typography
-                    sx={{
-                      fontSize: '0.72rem',
-                      mb: 0.8,
-                    }}
-                  >
+                  <Typography sx={{ fontSize: '0.72rem', mb: 0.8 }}>
                     Peso (1-10)
                   </Typography>
-
                   <Select
                     fullWidth
                     size="small"
                     value={mandatorySkillForm.weight}
                     onChange={(e) =>
-                      setMandatorySkillForm({
-                        ...mandatorySkillForm,
-                        weight: e.target.value,
-                      })
+                      setMandatorySkillForm({ ...mandatorySkillForm, weight: e.target.value })
                     }
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
@@ -538,7 +453,6 @@ export default function JobForm({
                     ))}
                   </Select>
                 </Grid>
-
                 <Grid size={{ xs: 12, md: 3 }}>
                   <Button
                     fullWidth
@@ -550,10 +464,7 @@ export default function JobForm({
                       bgcolor: '#2563eb',
                       color: '#ffffff',
                       borderRadius: '8px',
-
-                      '&:hover': {
-                        bgcolor: '#1d4ed8',
-                      },
+                      '&:hover': { bgcolor: '#1d4ed8' },
                     }}
                   >
                     Agregar
@@ -568,33 +479,18 @@ export default function JobForm({
                 flexDirection: 'column',
                 gap: 1.5,
                 py: mandatorySkills.length > 0 ? 3 : 5,
-                alignItems:
-                  mandatorySkills.length > 0 ? 'flex-start' : 'center',
-                justifyContent:
-                  mandatorySkills.length > 0 ? 'flex-start' : 'center',
+                alignItems: mandatorySkills.length > 0 ? 'flex-start' : 'center',
+                justifyContent: mandatorySkills.length > 0 ? 'flex-start' : 'center',
                 minHeight: mandatorySkills.length > 0 ? 'auto' : '120px',
                 color: '#94a3b8',
               }}
             >
               {mandatorySkills.length > 0 ? (
                 <Box sx={{ width: '100%' }}>
-                  <Typography
-                    sx={{
-                      fontSize: '0.85rem',
-                      fontWeight: 600,
-                      color: '#374151',
-                      mb: 2,
-                    }}
-                  >
+                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', mb: 2 }}>
                     Skills Agregadas ({mandatorySkills.length})
                   </Typography>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 1,
-                    }}
-                  >
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     {mandatorySkills.map((skill, index) => (
                       <Box
                         key={index}
@@ -609,36 +505,17 @@ export default function JobForm({
                         }}
                       >
                         <Box sx={{ flex: 1 }}>
-                          <Typography
-                            sx={{
-                              fontSize: '0.85rem',
-                              fontWeight: 600,
-                              color: '#111827',
-                            }}
-                          >
+                          <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>
                             {skill.name}
                           </Typography>
-                          <Typography
-                            sx={{
-                              fontSize: '0.75rem',
-                              color: '#6b7280',
-                              mt: 0.5,
-                            }}
-                          >
+                          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280', mt: 0.5 }}>
                             Peso: {skill.weight}/10
                           </Typography>
                         </Box>
                         <Button
                           size="small"
                           onClick={() => removeMandatorySkill(index)}
-                          sx={{
-                            minWidth: 'auto',
-                            p: 0.5,
-                            color: '#ef4444',
-                            '&:hover': {
-                              bgcolor: '#fee2e2',
-                            },
-                          }}
+                          sx={{ minWidth: 'auto', p: 0.5, color: '#ef4444', '&:hover': { bgcolor: '#fee2e2' } }}
                         >
                           <X size={16} />
                         </Button>
@@ -649,11 +526,7 @@ export default function JobForm({
               ) : (
                 <>
                   <CircleAlert size={36} />
-                  <Typography
-                    sx={{
-                      fontSize: '0.85rem',
-                    }}
-                  >
+                  <Typography sx={{ fontSize: '0.85rem' }}>
                     No se han agregado skills obligatorias
                   </Typography>
                 </>
@@ -663,7 +536,6 @@ export default function JobForm({
         </Paper>
 
         {/* HARD SKILLS DESEABLES */}
-
         <Paper
           elevation={0}
           sx={{
@@ -683,45 +555,23 @@ export default function JobForm({
               alignItems: 'center',
             }}
           >
-            <Stack
-              direction="row"
-              sx={{
-                gap: 1,
-                alignItems: 'center',
-              }}
-            >
+            <Stack direction="row" sx={{ gap: 1, alignItems: 'center' }}>
               <Star size={16} />
-
-              <Typography
-                sx={{
-                  fontSize: '0.95rem',
-                  fontWeight: 500,
-                  color: 'white',
-                }}
-              >
+              <Typography sx={{ fontSize: '0.95rem', fontWeight: 500, color: 'white' }}>
                 Hard Skills Deseables
               </Typography>
             </Stack>
-
             <Chip
               label="Opcional"
               size="small"
-              sx={{
-                bgcolor: 'rgba(255,255,255,0.15)',
-                color: '#ffffff',
-              }}
+              sx={{ bgcolor: 'rgba(255,255,255,0.15)', color: '#ffffff' }}
             />
           </Box>
 
           <Box sx={{ p: 3 }}>
             <Alert
               icon={false}
-              sx={{
-                mb: 3,
-                bgcolor: '#f8fafc',
-                borderRadius: '10px',
-                fontSize: '0.75rem',
-              }}
+              sx={{ mb: 3, bgcolor: '#f8fafc', borderRadius: '10px', fontSize: '0.75rem' }}
             >
               <strong>Nice to have:</strong> Skills que suman puntos adicionales
               pero no son excluyentes para la selección del candidato.
@@ -729,57 +579,33 @@ export default function JobForm({
 
             <Paper
               variant="outlined"
-              sx={{
-                p: 2,
-                borderRadius: '10px',
-                borderColor: '#dbe2ea',
-                mb: 4,
-              }}
+              sx={{ p: 2, borderRadius: '10px', borderColor: '#dbe2ea', mb: 4 }}
             >
               <Grid container spacing={2}>
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <Typography
-                    sx={{
-                      fontSize: '0.72rem',
-                      mb: 0.8,
-                    }}
-                  >
+                  <Typography sx={{ fontSize: '0.72rem', mb: 0.8 }}>
                     Nombre de la Skill
                   </Typography>
-
                   <TextField
                     fullWidth
                     size="small"
                     placeholder="Ej: React, TypeScript, Node.js..."
                     value={desirableSkillForm.name}
                     onChange={(e) =>
-                      setDesirableSkillForm({
-                        ...desirableSkillForm,
-                        name: e.target.value,
-                      })
+                      setDesirableSkillForm({ ...desirableSkillForm, name: e.target.value })
                     }
                   />
                 </Grid>
-
                 <Grid size={{ xs: 12, md: 3 }}>
-                  <Typography
-                    sx={{
-                      fontSize: '0.72rem',
-                      mb: 0.8,
-                    }}
-                  >
+                  <Typography sx={{ fontSize: '0.72rem', mb: 0.8 }}>
                     Peso (1-10)
                   </Typography>
-
                   <Select
                     fullWidth
                     size="small"
                     value={desirableSkillForm.weight}
                     onChange={(e) =>
-                      setDesirableSkillForm({
-                        ...desirableSkillForm,
-                        weight: e.target.value,
-                      })
+                      setDesirableSkillForm({ ...desirableSkillForm, weight: e.target.value })
                     }
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
@@ -789,7 +615,6 @@ export default function JobForm({
                     ))}
                   </Select>
                 </Grid>
-
                 <Grid size={{ xs: 12, md: 3 }}>
                   <Button
                     fullWidth
@@ -815,33 +640,18 @@ export default function JobForm({
                 flexDirection: 'column',
                 gap: 1.5,
                 py: desirableSkills.length > 0 ? 3 : 5,
-                alignItems:
-                  desirableSkills.length > 0 ? 'flex-start' : 'center',
-                justifyContent:
-                  desirableSkills.length > 0 ? 'flex-start' : 'center',
+                alignItems: desirableSkills.length > 0 ? 'flex-start' : 'center',
+                justifyContent: desirableSkills.length > 0 ? 'flex-start' : 'center',
                 minHeight: desirableSkills.length > 0 ? 'auto' : '120px',
                 color: '#94a3b8',
               }}
             >
               {desirableSkills.length > 0 ? (
                 <Box sx={{ width: '100%' }}>
-                  <Typography
-                    sx={{
-                      fontSize: '0.85rem',
-                      fontWeight: 600,
-                      color: '#374151',
-                      mb: 2,
-                    }}
-                  >
+                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', mb: 2 }}>
                     Skills Agregadas ({desirableSkills.length})
                   </Typography>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 1,
-                    }}
-                  >
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                     {desirableSkills.map((skill, index) => (
                       <Box
                         key={index}
@@ -856,36 +666,17 @@ export default function JobForm({
                         }}
                       >
                         <Box sx={{ flex: 1 }}>
-                          <Typography
-                            sx={{
-                              fontSize: '0.85rem',
-                              fontWeight: 600,
-                              color: '#111827',
-                            }}
-                          >
+                          <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>
                             {skill.name}
                           </Typography>
-                          <Typography
-                            sx={{
-                              fontSize: '0.75rem',
-                              color: '#6b7280',
-                              mt: 0.5,
-                            }}
-                          >
+                          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280', mt: 0.5 }}>
                             Peso: {skill.weight}/10
                           </Typography>
                         </Box>
                         <Button
                           size="small"
                           onClick={() => removeDesirableSkill(index)}
-                          sx={{
-                            minWidth: 'auto',
-                            p: 0.5,
-                            color: '#ef4444',
-                            '&:hover': {
-                              bgcolor: '#fee2e2',
-                            },
-                          }}
+                          sx={{ minWidth: 'auto', p: 0.5, color: '#ef4444', '&:hover': { bgcolor: '#fee2e2' } }}
                         >
                           <X size={16} />
                         </Button>
@@ -896,11 +687,7 @@ export default function JobForm({
               ) : (
                 <>
                   <CircleAlert size={36} />
-                  <Typography
-                    sx={{
-                      fontSize: '0.85rem',
-                    }}
-                  >
+                  <Typography sx={{ fontSize: '0.85rem' }}>
                     No se han agregado skills deseables
                   </Typography>
                 </>
@@ -910,7 +697,6 @@ export default function JobForm({
         </Paper>
 
         {/* OBSERVACIONES */}
-
         <Paper
           elevation={0}
           sx={{
@@ -919,30 +705,10 @@ export default function JobForm({
             boxShadow: '0 6px 18px rgba(0,0,0,0.08)',
           }}
         >
-          <Box
-            sx={{
-              bgcolor: '#2563eb',
-              color: '#ffffff',
-              px: 3,
-              py: 2,
-            }}
-          >
-            <Stack
-              direction="row"
-              sx={{
-                gap: 1,
-                alignItems: 'center',
-              }}
-            >
+          <Box sx={{ bgcolor: '#2563eb', color: '#ffffff', px: 3, py: 2 }}>
+            <Stack direction="row" sx={{ gap: 1, alignItems: 'center' }}>
               <FileText size={16} />
-
-              <Typography
-                sx={{
-                  fontSize: '0.95rem',
-                  fontWeight: 500,
-                  color: 'white',
-                }}
-              >
+              <Typography sx={{ fontSize: '0.95rem', fontWeight: 500, color: 'white' }}>
                 Observaciones y Criterios Adicionales
               </Typography>
             </Stack>
@@ -964,31 +730,22 @@ export default function JobForm({
               experiencia en startups&quot;, &quot;Disponibilidad para viajar
               ocasionalmente&quot;
             </Alert>
-
             <TextField
               multiline
               rows={4}
               fullWidth
               placeholder="Agrega criterios especiales de selección, excepciones o consideraciones importantes para la evaluación..."
               sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '10px',
-                  bgcolor: '#f8fafc',
-                },
+                '& .MuiOutlinedInput-root': { borderRadius: '10px', bgcolor: '#f8fafc' },
               }}
             />
           </Box>
         </Paper>
 
         {/* BOTONES */}
-
         <Stack
           direction="row"
-          sx={{
-            pt: 1,
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
+          sx={{ pt: 1, justifyContent: 'space-between', alignItems: 'center' }}
         >
           <Button
             variant="outlined"
@@ -1007,9 +764,7 @@ export default function JobForm({
           <Button
             type="submit"
             variant="contained"
-            disabled={
-              isLoading || !isFormValid() || mandatorySkills.length === 0
-            }
+            disabled={isLoading || !isFormValid() || mandatorySkills.length === 0}
             sx={{
               textTransform: 'none',
               borderRadius: '10px',
@@ -1017,19 +772,13 @@ export default function JobForm({
               px: 4,
               py: 1.2,
               boxShadow: '0 10px 18px rgba(37,99,235,0.25)',
-
               '&:hover': {
                 bgcolor:
                   isLoading || !isFormValid() || mandatorySkills.length === 0
                     ? '#2563eb'
                     : '#1d4ed8',
               },
-
-              '&:disabled': {
-                bgcolor: '#cbd5e1',
-                color: '#94a3b8',
-                boxShadow: 'none',
-              },
+              '&:disabled': { bgcolor: '#cbd5e1', color: '#94a3b8', boxShadow: 'none' },
             }}
             title={
               !isFormValid()

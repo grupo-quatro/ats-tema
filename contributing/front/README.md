@@ -129,6 +129,45 @@ Disponible en `http://localhost:3000`.
 
 ---
 
+## Sidebar del Dashboard
+
+El sidebar vive en `app/components/sidebar/Sidebar.tsx` y aplica a todas las rutas bajo `/dashboard/` a través del layout `app/dashboard/layout.tsx`.
+
+### Comportamiento
+
+- **Expandido (240px):** muestra ícono + etiqueta de texto.
+- **Colapsado (64px):** muestra solo íconos; un tooltip aparece al hacer hover con el nombre de la sección.
+- El botón de colapso está en la parte superior del sidebar.
+- La preferencia del usuario se persiste en `localStorage` con la clave `ats-sidebar-collapsed`.
+
+### Agregar una sección nueva
+
+1. Crear la ruta en `app/dashboard/<nombre>/page.tsx`.
+2. Agregar un objeto al array `NAV_ITEMS` en `Sidebar.tsx`:
+
+```tsx
+// app/components/sidebar/Sidebar.tsx
+
+import { IconName } from 'lucide-react';
+
+const NAV_ITEMS = [
+  // ... items existentes
+  {
+    label: 'Mi Sección',
+    href: '/dashboard/mi-seccion',
+    icon: IconName,        // siempre de lucide-react
+  },
+];
+```
+
+3. El item se marca como activo automáticamente cuando `pathname` comienza con su `href`.
+
+### Rutas que NO muestran sidebar
+
+Las rutas públicas (`/jobs`, `/postulation`) no están dentro de `app/dashboard/` por lo que nunca renderizarán el sidebar. No hace falta ninguna configuración extra para ocultarlo.
+
+---
+
 ## Más información
 
 - [Guía de diseño y componentes](./DESIGN_GUIDE.md)

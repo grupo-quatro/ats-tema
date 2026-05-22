@@ -16,7 +16,7 @@ import {
   MapPin,
   Users,
 } from 'lucide-react';
-import { getJobBySlug } from '../../../features/jobs/services/jobs';
+import { getJobBySlug } from '../../../features/dashboard/positions/services/positions';
 import type { Job } from '@ats/shared-types';
 
 export const dynamic = 'force-dynamic';

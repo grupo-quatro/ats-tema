@@ -11,15 +11,15 @@ import {
 } from '@mui/material';
 import { ArrowLeft, BriefcaseBusiness } from 'lucide-react';
 import { useState } from 'react';
-import JobForm from '@/features/jobs/components/JobForm';
-import { useCreateJob } from '@/features/jobs/hooks/useCreateJob';
+import PositionForm from '@/features/dashboard/positions/components/PositionForm';
+import { useCreatePosition } from '@/features/dashboard/positions/hooks/useCreatePosition';
 import { CreateJobDTO } from '@ats/shared-types';
 
 export default function CreateJobPage() {
   const router = useRouter();
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const { mutate: createJob, isPending } = useCreateJob();
+  const { mutate: createJob, isPending } = useCreatePosition();
 
   const handleCreateJob = async (jobData: CreateJobDTO) => {
     createJob(jobData, {
@@ -116,7 +116,7 @@ export default function CreateJobPage() {
           </Typography>
         </Box>
 
-        <JobForm
+        <PositionForm
           onSubmit={handleCreateJob}
           isLoading={isPending}
           onCancel={() => router.push('/dashboard/positions')}

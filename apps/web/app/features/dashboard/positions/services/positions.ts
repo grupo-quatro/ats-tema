@@ -1,4 +1,4 @@
-import { Job } from '../../../../../../packages/shared-types/src/models/job';
+import { Job } from '../../../../../../../../packages/shared-types/src/models/job';
 
 export const JOBS_DATA: Job[] = [
   {

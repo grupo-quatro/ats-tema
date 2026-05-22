@@ -1,30 +1,25 @@
 'use client';
 
 import type { ComponentProps } from 'react';
-
 import { Dialog, DialogContent, Box, CircularProgress } from '@mui/material';
+import PositionForm from './PositionForm';
+import { CreateJobDTO } from '../../../../../../../../packages/shared-types/src/models/job';
 
-import JobForm from './JobForm';
-
-import { CreateJobDTO } from '../../../../../../packages/shared-types/src/models/job';
-
-interface JobFormDialogProps extends Omit<
-  ComponentProps<typeof Dialog>,
-  'onClose' | 'onSubmit'
-> {
+interface PositionFormDialogProps
+  extends Omit<ComponentProps<typeof Dialog>, 'onClose' | 'onSubmit'> {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: CreateJobDTO) => Promise<void>;
   isLoading?: boolean;
 }
 
-export default function JobFormDialog({
+export default function PositionFormDialog({
   open,
   onClose,
   onSubmit,
   isLoading = false,
   ...dialogProps
-}: JobFormDialogProps) {
+}: PositionFormDialogProps) {
   return (
     <Dialog
       open={open}
@@ -41,12 +36,7 @@ export default function JobFormDialog({
       }}
       {...dialogProps}
     >
-      <DialogContent
-        sx={{
-          p: 3,
-          position: 'relative',
-        }}
-      >
+      <DialogContent sx={{ p: 3, position: 'relative' }}>
         {isLoading && (
           <Box
             sx={{
@@ -63,7 +53,7 @@ export default function JobFormDialog({
           </Box>
         )}
 
-        <JobForm
+        <PositionForm
           onSubmit={async (data) => {
             await onSubmit(data);
             onClose();
