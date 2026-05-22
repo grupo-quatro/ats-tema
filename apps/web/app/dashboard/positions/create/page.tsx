@@ -9,7 +9,7 @@ import {
   Snackbar,
   Typography,
 } from '@mui/material';
-import { ArrowLeft, BriefcaseBusiness } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import PositionForm from '@/features/dashboard/positions/components/PositionForm';
 import { useCreatePosition } from '@/features/dashboard/positions/hooks/useCreatePosition';
@@ -79,21 +79,6 @@ export default function CreateJobPage() {
             alignItems: 'center',
           }}
         >
-          <Box
-            sx={{
-              width: 56,
-              height: 56,
-              borderRadius: '50%',
-              bgcolor: '#2563eb',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              mb: 2,
-              boxShadow: '0 8px 20px rgba(37,99,235,0.25)',
-            }}
-          >
-            <BriefcaseBusiness size={24} color="#ffffff" />
-          </Box>
 
           <Typography
             sx={{
