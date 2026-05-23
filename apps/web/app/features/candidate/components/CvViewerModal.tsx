@@ -1,6 +1,12 @@
 'use client';
 
-import { Box, Dialog, DialogContent, IconButton, Typography } from '@mui/material';
+import {
+  Box,
+  Dialog,
+  DialogContent,
+  IconButton,
+  Typography,
+} from '@mui/material';
 import { FileText, X } from 'lucide-react';
 
 interface CvViewerModalProps {
@@ -10,7 +16,12 @@ interface CvViewerModalProps {
   candidateName: string;
 }
 
-export function CvViewerModal({ open, onClose, cvUrl, candidateName }: CvViewerModalProps) {
+export function CvViewerModal({
+  open,
+  onClose,
+  cvUrl,
+  candidateName,
+}: CvViewerModalProps) {
   return (
     <Dialog
       open={open}
@@ -37,7 +48,11 @@ export function CvViewerModal({ open, onClose, cvUrl, candidateName }: CvViewerM
             {candidateName}
           </Typography>
         </Box>
-        <IconButton onClick={onClose} sx={{ color: 'white' }} aria-label="Cerrar">
+        <IconButton
+          onClick={onClose}
+          sx={{ color: 'white' }}
+          aria-label="Cerrar"
+        >
           <X size={20} />
         </IconButton>
       </Box>
@@ -46,7 +61,12 @@ export function CvViewerModal({ open, onClose, cvUrl, candidateName }: CvViewerM
         {cvUrl ? (
           <iframe
             src={cvUrl}
-            style={{ width: '100%', height: '600px', border: 'none', display: 'block' }}
+            style={{
+              width: '100%',
+              height: '600px',
+              border: 'none',
+              display: 'block',
+            }}
             title={`CV de ${candidateName}`}
           />
         ) : (
@@ -79,8 +99,8 @@ export function CvViewerModal({ open, onClose, cvUrl, candidateName }: CvViewerM
               color="text.secondary"
               sx={{ textAlign: 'center', maxWidth: 320 }}
             >
-              El archivo PDF del candidato se visualizará aquí una vez integrado con el
-              almacenamiento.
+              El archivo PDF del candidato se visualizará aquí una vez integrado
+              con el almacenamiento.
             </Typography>
           </Box>
         )}

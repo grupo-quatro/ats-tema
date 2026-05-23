@@ -3,13 +3,7 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import {
-  Box,
-  IconButton,
-  Tooltip,
-  Typography,
-  Divider,
-} from '@mui/material';
+import { Box, IconButton, Tooltip, Typography, Divider } from '@mui/material';
 import {
   BriefcaseBusiness,
   Users,
@@ -117,7 +111,14 @@ export default function Sidebar() {
       {/* Nav items */}
       <Box
         component="nav"
-        sx={{ flex: 1, py: 1.5, display: 'flex', flexDirection: 'column', gap: 0.5, px: 1 }}
+        sx={{
+          flex: 1,
+          py: 1.5,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 0.5,
+          px: 1,
+        }}
       >
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;

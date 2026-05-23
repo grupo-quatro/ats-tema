@@ -3,10 +3,12 @@
 import type { ComponentProps } from 'react';
 import { Dialog, DialogContent, Box, CircularProgress } from '@mui/material';
 import PositionForm from './PositionForm';
-import { CreateJobDTO } from '../../../../../../../../packages/shared-types/src/models/job';
+import { CreateJobDTO } from '@ats/shared-types';
 
-interface PositionFormDialogProps
-  extends Omit<ComponentProps<typeof Dialog>, 'onClose' | 'onSubmit'> {
+interface PositionFormDialogProps extends Omit<
+  ComponentProps<typeof Dialog>,
+  'onClose' | 'onSubmit'
+> {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: CreateJobDTO) => Promise<void>;

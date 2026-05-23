@@ -155,7 +155,7 @@ const NAV_ITEMS = [
   {
     label: 'Mi Sección',
     href: '/dashboard/mi-seccion',
-    icon: IconName,        // siempre de lucide-react
+    icon: IconName, // siempre de lucide-react
   },
 ];
 ```

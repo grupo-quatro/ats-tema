@@ -217,22 +217,27 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               </Box>
             </Stack>
 
-            <Button
-              variant="contained"
-              sx={{
-                textTransform: 'none',
-                bgcolor: '#fff',
-                color: '#1d4ed8',
-                px: 4,
-                py: 1.2,
-                fontWeight: 700,
-                borderRadius: '10px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
-              }}
+            <Link
+              href={`/dashboard/positions/${job.slug}/edit`}
+              style={{ textDecoration: 'none' }}
             >
-              Editar
-            </Button>
+              <Button
+                variant="contained"
+                sx={{
+                  textTransform: 'none',
+                  bgcolor: '#fff',
+                  color: '#1d4ed8',
+                  px: 4,
+                  py: 1.2,
+                  fontWeight: 700,
+                  borderRadius: '10px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
+                }}
+              >
+                Editar
+              </Button>
+            </Link>
           </Stack>
 
           <Box

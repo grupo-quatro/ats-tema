@@ -119,9 +119,14 @@ export default function PositionsTable({ jobs }: Props) {
                     <Eye size={16} />
                   </IconButton>
                 </Link>
-                <IconButton size="small">
-                  <Edit2 size={16} />
-                </IconButton>
+                <Link
+                  href={`/dashboard/positions/${job.slug}/edit`}
+                  style={{ display: 'inline-flex' }}
+                >
+                  <IconButton size="small">
+                    <Edit2 size={16} />
+                  </IconButton>
+                </Link>
                 <IconButton size="small">
                   <Trash2 size={16} />
                 </IconButton>

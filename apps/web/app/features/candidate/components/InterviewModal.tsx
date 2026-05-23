@@ -1,6 +1,12 @@
 'use client';
 
-import { Box, Dialog, DialogContent, IconButton, Typography } from '@mui/material';
+import {
+  Box,
+  Dialog,
+  DialogContent,
+  IconButton,
+  Typography,
+} from '@mui/material';
 import { X } from 'lucide-react';
 import TechnicalInterviewForm from './TechnicalInterviewForm';
 import HrInterviewForm from './HrInterviewForm';
@@ -13,7 +19,13 @@ interface InterviewModalProps {
   skills?: string[];
 }
 
-export function InterviewModal({ open, onClose, candidateName, type = 'tech', skills = [] }: InterviewModalProps) {
+export function InterviewModal({
+  open,
+  onClose,
+  candidateName,
+  type = 'tech',
+  skills = [],
+}: InterviewModalProps) {
   return (
     <Dialog
       open={open}
@@ -40,14 +52,22 @@ export function InterviewModal({ open, onClose, candidateName, type = 'tech', sk
             {candidateName}
           </Typography>
         </Box>
-        <IconButton onClick={onClose} sx={{ color: 'white' }} aria-label="Cerrar">
+        <IconButton
+          onClick={onClose}
+          sx={{ color: 'white' }}
+          aria-label="Cerrar"
+        >
           <X size={20} />
         </IconButton>
       </Box>
 
       <DialogContent sx={{ p: 4, minHeight: 200 }}>
         {type === 'tech' ? (
-          <TechnicalInterviewForm skills={skills} candidateName={candidateName} onClose={onClose} />
+          <TechnicalInterviewForm
+            skills={skills}
+            candidateName={candidateName}
+            onClose={onClose}
+          />
         ) : (
           <HrInterviewForm candidateName={candidateName} onClose={onClose} />
         )}

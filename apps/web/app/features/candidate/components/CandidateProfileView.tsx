@@ -46,7 +46,9 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
   const [interviewType, setInterviewType] = useState<'tech' | 'hr'>('tech');
   const [newNoteModalOpen, setNewNoteModalOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-  const [interviewNotes, setInterviewNotes] = useState(candidate.interviewNotes);
+  const [interviewNotes, setInterviewNotes] = useState(
+    candidate.interviewNotes,
+  );
   const [newNoteAuthor, setNewNoteAuthor] = useState('');
   const [newNoteDate, setNewNoteDate] = useState('');
   const [newNoteRating, setNewNoteRating] = useState(0);
@@ -72,7 +74,12 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
 
   const handleSaveNewNote = () => {
     const parsedDate = new Date(newNoteDate);
-    if (!newNoteAuthor || !newNoteDate || !newNoteText || Number.isNaN(parsedDate.getTime())) {
+    if (
+      !newNoteAuthor ||
+      !newNoteDate ||
+      !newNoteText ||
+      Number.isNaN(parsedDate.getTime())
+    ) {
       return;
     }
 
@@ -90,7 +97,13 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: { xs: 3, md: 5 } }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        bgcolor: 'background.default',
+        py: { xs: 3, md: 5 },
+      }}
+    >
       <Container maxWidth="xl">
         <Button
           component={Link}
@@ -131,7 +144,10 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
               {candidate.initials}
             </Box>
             <Box>
-              <Typography variant="h2" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
+              <Typography
+                variant="h2"
+                sx={{ fontWeight: 600, lineHeight: 1.2 }}
+              >
                 {candidate.fullName}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -140,9 +156,20 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
             </Box>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              flexWrap: 'wrap',
+            }}
+          >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontWeight: 500 }}
+              >
                 Estado actual:
               </Typography>
               <Chip
@@ -161,7 +188,10 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
 
             <Button
               variant="contained"
-              onClick={() => { setInterviewType('tech'); setInterviewModalOpen(true); }}
+              onClick={() => {
+                setInterviewType('tech');
+                setInterviewModalOpen(true);
+              }}
               sx={{ bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' } }}
             >
               Entrevista técnica
@@ -169,7 +199,10 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
 
             <Button
               variant="outlined"
-              onClick={() => { setInterviewType('hr'); setInterviewModalOpen(true); }}
+              onClick={() => {
+                setInterviewType('hr');
+                setInterviewModalOpen(true);
+              }}
               sx={{ textTransform: 'none' }}
             >
               Entrevista RRHH
@@ -187,9 +220,14 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
               open={Boolean(menuAnchor)}
               onClose={() => setMenuAnchor(null)}
             >
-              <MenuItem onClick={() => setMenuAnchor(null)}>Cambiar etapa</MenuItem>
+              <MenuItem onClick={() => setMenuAnchor(null)}>
+                Cambiar etapa
+              </MenuItem>
               <Divider />
-              <MenuItem onClick={() => setMenuAnchor(null)} sx={{ color: 'error.main' }}>
+              <MenuItem
+                onClick={() => setMenuAnchor(null)}
+                sx={{ color: 'error.main' }}
+              >
                 Rechazar candidato
               </MenuItem>
             </Menu>
@@ -207,12 +245,20 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
         >
           {/* Left column */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <CandidateInfoCard candidate={candidate} onViewCv={() => setCvModalOpen(true)} />
+            <CandidateInfoCard
+              candidate={candidate}
+              onViewCv={() => setCvModalOpen(true)}
+            />
 
             <Card>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}>
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2.5 }}
+              >
                 <Clock size={14} color="#64748b" />
-                <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 600, color: 'text.secondary' }}
+                >
                   Seguimiento de la candidatura
                 </Typography>
               </Box>
@@ -248,10 +294,11 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                               borderColor: 'primary.main',
                               boxShadow: '0 0 0 3px #dbeafe',
                             }),
-                            ...(!isCompleted && !isCurrent && {
-                              bgcolor: 'white',
-                              border: '2px solid #cbd5e1',
-                            }),
+                            ...(!isCompleted &&
+                              !isCurrent && {
+                                bgcolor: 'white',
+                                border: '2px solid #cbd5e1',
+                              }),
                           }}
                         />
                         {!isLast && (
@@ -304,7 +351,13 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                           </Typography>
                         </Box>
                         {stage.description && (
-                          <Typography sx={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.4 }}>
+                          <Typography
+                            sx={{
+                              fontSize: 11,
+                              color: '#94a3b8',
+                              lineHeight: 1.4,
+                            }}
+                          >
                             {stage.description}
                           </Typography>
                         )}
@@ -320,17 +373,33 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Scoring card */}
             <Card>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+              <Box
+                sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}
+              >
                 <Sparkles size={16} color="#64748b" />
-                <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 600, color: 'text.secondary' }}
+                >
                   Scoring Inicial de IA
                 </Typography>
               </Box>
 
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.25 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block', mb: 0.25 }}
+              >
                 % FIT
               </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, mb: 2.5 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  gap: 1.5,
+                  mb: 2.5,
+                }}
+              >
                 <Typography
                   sx={{
                     fontSize: 52,
@@ -411,12 +480,18 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
 
             {/* Strengths card */}
             <Card>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}>
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}
+              >
                 Fortalezas de la candidatura
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                 {candidate.strengths.map((strength, i) => (
-                  <Box key={i} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                  <Box
+                    key={i}
+                    sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}
+                  >
                     <CheckCircle2
                       size={18}
                       color="#16a34a"
@@ -432,14 +507,29 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
 
             {/* Interview notes card */}
             <Card>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: 2 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 1,
+                  mb: 2,
+                }}
+              >
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <MessageSquare size={16} color="#64748b" />
-                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600, color: 'text.secondary' }}
+                  >
                     Notas de las entrevistas
                   </Typography>
                 </Box>
-                <Button size="small" variant="outlined" onClick={openNewNoteModal}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={openNewNoteModal}
+                >
                   Añadir nota
                 </Button>
               </Box>
@@ -460,7 +550,13 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                           mb: 1,
                         }}
                       >
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.25,
+                          }}
+                        >
                           <Box
                             sx={(theme) => ({
                               width: 32,
@@ -484,17 +580,27 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                               .toUpperCase()}
                           </Box>
                           <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.3 }}>
+                            <Typography
+                              variant="body2"
+                              sx={{ fontWeight: 600, lineHeight: 1.3 }}
+                            >
                               {note.authorName}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               {note.date}
                             </Typography>
                           </Box>
                         </Box>
                         <Rating value={note.rating} readOnly size="small" />
                       </Box>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: 13 }}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontSize: 13 }}
+                      >
                         {note.note}
                       </Typography>
                     </Box>
@@ -514,7 +620,11 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                 gap: 1.5,
               }}
             >
-              <Info size={18} color="#2563eb" style={{ marginTop: 2, flexShrink: 0 }} />
+              <Info
+                size={18}
+                color="#2563eb"
+                style={{ marginTop: 2, flexShrink: 0 }}
+              />
               <Box>
                 <Typography
                   variant="body2"
@@ -522,10 +632,14 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                 >
                   Gestión de Etapa
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ fontSize: 13 }}>
-                  Utilizá el menú de acciones (tres puntos en el header) para cambiar la etapa del
-                  candidato. Al cambiar a ciertas etapas se activarán flujos automáticos de
-                  comunicación.
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: 13 }}
+                >
+                  Utilizá el menú de acciones (tres puntos en el header) para
+                  cambiar la etapa del candidato. Al cambiar a ciertas etapas se
+                  activarán flujos automáticos de comunicación.
                 </Typography>
               </Box>
             </Box>
@@ -548,11 +662,17 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
         skills={candidate.detectedSkills}
       />
 
-      <Dialog open={newNoteModalOpen} onClose={() => setNewNoteModalOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={newNoteModalOpen}
+        onClose={() => setNewNoteModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Añadir nueva nota de entrevista</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ mb: 2, color: 'text.secondary' }}>
-            Completa los datos de la nota para agregarla a la ficha del candidato.
+            Completa los datos de la nota para agregarla a la ficha del
+            candidato.
           </DialogContentText>
           <Stack spacing={2}>
             <TextField
@@ -570,7 +690,9 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                 value={newNoteDate}
                 onChange={(event) => setNewNoteDate(event.target.value)}
                 fullWidth
-                error={Boolean(newNoteDate && Number.isNaN(new Date(newNoteDate).getTime()))}
+                error={Boolean(
+                  newNoteDate && Number.isNaN(new Date(newNoteDate).getTime()),
+                )}
                 helperText={
                   newNoteDate && Number.isNaN(new Date(newNoteDate).getTime())
                     ? 'Fecha inválida'
@@ -604,7 +726,9 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
             variant="contained"
             onClick={handleSaveNewNote}
             disabled={
-              !newNoteAuthor || !newNoteDate || !newNoteText ||
+              !newNoteAuthor ||
+              !newNoteDate ||
+              !newNoteText ||
               Number.isNaN(new Date(newNoteDate).getTime())
             }
           >

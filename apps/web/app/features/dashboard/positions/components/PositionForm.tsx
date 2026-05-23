@@ -388,7 +388,9 @@ export default function PositionForm({
           >
             <Stack direction="row" sx={{ gap: 1, alignItems: 'center' }}>
               <Star size={16} />
-              <Typography sx={{ fontSize: '0.95rem', fontWeight: 500, color: 'white' }}>
+              <Typography
+                sx={{ fontSize: '0.95rem', fontWeight: 500, color: 'white' }}
+              >
                 Hard Skills Obligatorias
               </Typography>
             </Stack>
@@ -430,7 +432,10 @@ export default function PositionForm({
                     placeholder="Ej: React, TypeScript, Node.js..."
                     value={mandatorySkillForm.name}
                     onChange={(e) =>
-                      setMandatorySkillForm({ ...mandatorySkillForm, name: e.target.value })
+                      setMandatorySkillForm({
+                        ...mandatorySkillForm,
+                        name: e.target.value,
+                      })
                     }
                   />
                 </Grid>
@@ -443,7 +448,10 @@ export default function PositionForm({
                     size="small"
                     value={mandatorySkillForm.weight}
                     onChange={(e) =>
-                      setMandatorySkillForm({ ...mandatorySkillForm, weight: e.target.value })
+                      setMandatorySkillForm({
+                        ...mandatorySkillForm,
+                        weight: e.target.value,
+                      })
                     }
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
@@ -479,18 +487,29 @@ export default function PositionForm({
                 flexDirection: 'column',
                 gap: 1.5,
                 py: mandatorySkills.length > 0 ? 3 : 5,
-                alignItems: mandatorySkills.length > 0 ? 'flex-start' : 'center',
-                justifyContent: mandatorySkills.length > 0 ? 'flex-start' : 'center',
+                alignItems:
+                  mandatorySkills.length > 0 ? 'flex-start' : 'center',
+                justifyContent:
+                  mandatorySkills.length > 0 ? 'flex-start' : 'center',
                 minHeight: mandatorySkills.length > 0 ? 'auto' : '120px',
                 color: '#94a3b8',
               }}
             >
               {mandatorySkills.length > 0 ? (
                 <Box sx={{ width: '100%' }}>
-                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', mb: 2 }}>
+                  <Typography
+                    sx={{
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      color: '#374151',
+                      mb: 2,
+                    }}
+                  >
                     Skills Agregadas ({mandatorySkills.length})
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+                  >
                     {mandatorySkills.map((skill, index) => (
                       <Box
                         key={index}
@@ -505,17 +524,34 @@ export default function PositionForm({
                         }}
                       >
                         <Box sx={{ flex: 1 }}>
-                          <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>
+                          <Typography
+                            sx={{
+                              fontSize: '0.85rem',
+                              fontWeight: 600,
+                              color: '#111827',
+                            }}
+                          >
                             {skill.name}
                           </Typography>
-                          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280', mt: 0.5 }}>
+                          <Typography
+                            sx={{
+                              fontSize: '0.75rem',
+                              color: '#6b7280',
+                              mt: 0.5,
+                            }}
+                          >
                             Peso: {skill.weight}/10
                           </Typography>
                         </Box>
                         <Button
                           size="small"
                           onClick={() => removeMandatorySkill(index)}
-                          sx={{ minWidth: 'auto', p: 0.5, color: '#ef4444', '&:hover': { bgcolor: '#fee2e2' } }}
+                          sx={{
+                            minWidth: 'auto',
+                            p: 0.5,
+                            color: '#ef4444',
+                            '&:hover': { bgcolor: '#fee2e2' },
+                          }}
                         >
                           <X size={16} />
                         </Button>
@@ -557,7 +593,9 @@ export default function PositionForm({
           >
             <Stack direction="row" sx={{ gap: 1, alignItems: 'center' }}>
               <Star size={16} />
-              <Typography sx={{ fontSize: '0.95rem', fontWeight: 500, color: 'white' }}>
+              <Typography
+                sx={{ fontSize: '0.95rem', fontWeight: 500, color: 'white' }}
+              >
                 Hard Skills Deseables
               </Typography>
             </Stack>
@@ -571,7 +609,12 @@ export default function PositionForm({
           <Box sx={{ p: 3 }}>
             <Alert
               icon={false}
-              sx={{ mb: 3, bgcolor: '#f8fafc', borderRadius: '10px', fontSize: '0.75rem' }}
+              sx={{
+                mb: 3,
+                bgcolor: '#f8fafc',
+                borderRadius: '10px',
+                fontSize: '0.75rem',
+              }}
             >
               <strong>Nice to have:</strong> Skills que suman puntos adicionales
               pero no son excluyentes para la selección del candidato.
@@ -592,7 +635,10 @@ export default function PositionForm({
                     placeholder="Ej: React, TypeScript, Node.js..."
                     value={desirableSkillForm.name}
                     onChange={(e) =>
-                      setDesirableSkillForm({ ...desirableSkillForm, name: e.target.value })
+                      setDesirableSkillForm({
+                        ...desirableSkillForm,
+                        name: e.target.value,
+                      })
                     }
                   />
                 </Grid>
@@ -605,7 +651,10 @@ export default function PositionForm({
                     size="small"
                     value={desirableSkillForm.weight}
                     onChange={(e) =>
-                      setDesirableSkillForm({ ...desirableSkillForm, weight: e.target.value })
+                      setDesirableSkillForm({
+                        ...desirableSkillForm,
+                        weight: e.target.value,
+                      })
                     }
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
@@ -640,18 +689,29 @@ export default function PositionForm({
                 flexDirection: 'column',
                 gap: 1.5,
                 py: desirableSkills.length > 0 ? 3 : 5,
-                alignItems: desirableSkills.length > 0 ? 'flex-start' : 'center',
-                justifyContent: desirableSkills.length > 0 ? 'flex-start' : 'center',
+                alignItems:
+                  desirableSkills.length > 0 ? 'flex-start' : 'center',
+                justifyContent:
+                  desirableSkills.length > 0 ? 'flex-start' : 'center',
                 minHeight: desirableSkills.length > 0 ? 'auto' : '120px',
                 color: '#94a3b8',
               }}
             >
               {desirableSkills.length > 0 ? (
                 <Box sx={{ width: '100%' }}>
-                  <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', mb: 2 }}>
+                  <Typography
+                    sx={{
+                      fontSize: '0.85rem',
+                      fontWeight: 600,
+                      color: '#374151',
+                      mb: 2,
+                    }}
+                  >
                     Skills Agregadas ({desirableSkills.length})
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                  <Box
+                    sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}
+                  >
                     {desirableSkills.map((skill, index) => (
                       <Box
                         key={index}
@@ -666,17 +726,34 @@ export default function PositionForm({
                         }}
                       >
                         <Box sx={{ flex: 1 }}>
-                          <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: '#111827' }}>
+                          <Typography
+                            sx={{
+                              fontSize: '0.85rem',
+                              fontWeight: 600,
+                              color: '#111827',
+                            }}
+                          >
                             {skill.name}
                           </Typography>
-                          <Typography sx={{ fontSize: '0.75rem', color: '#6b7280', mt: 0.5 }}>
+                          <Typography
+                            sx={{
+                              fontSize: '0.75rem',
+                              color: '#6b7280',
+                              mt: 0.5,
+                            }}
+                          >
                             Peso: {skill.weight}/10
                           </Typography>
                         </Box>
                         <Button
                           size="small"
                           onClick={() => removeDesirableSkill(index)}
-                          sx={{ minWidth: 'auto', p: 0.5, color: '#ef4444', '&:hover': { bgcolor: '#fee2e2' } }}
+                          sx={{
+                            minWidth: 'auto',
+                            p: 0.5,
+                            color: '#ef4444',
+                            '&:hover': { bgcolor: '#fee2e2' },
+                          }}
                         >
                           <X size={16} />
                         </Button>
@@ -708,7 +785,9 @@ export default function PositionForm({
           <Box sx={{ bgcolor: '#2563eb', color: '#ffffff', px: 3, py: 2 }}>
             <Stack direction="row" sx={{ gap: 1, alignItems: 'center' }}>
               <FileText size={16} />
-              <Typography sx={{ fontSize: '0.95rem', fontWeight: 500, color: 'white' }}>
+              <Typography
+                sx={{ fontSize: '0.95rem', fontWeight: 500, color: 'white' }}
+              >
                 Observaciones y Criterios Adicionales
               </Typography>
             </Stack>
@@ -736,7 +815,10 @@ export default function PositionForm({
               fullWidth
               placeholder="Agrega criterios especiales de selección, excepciones o consideraciones importantes para la evaluación..."
               sx={{
-                '& .MuiOutlinedInput-root': { borderRadius: '10px', bgcolor: '#f8fafc' },
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '10px',
+                  bgcolor: '#f8fafc',
+                },
               }}
             />
           </Box>
@@ -764,7 +846,9 @@ export default function PositionForm({
           <Button
             type="submit"
             variant="contained"
-            disabled={isLoading || !isFormValid() || mandatorySkills.length === 0}
+            disabled={
+              isLoading || !isFormValid() || mandatorySkills.length === 0
+            }
             sx={{
               textTransform: 'none',
               borderRadius: '10px',
@@ -778,7 +862,11 @@ export default function PositionForm({
                     ? '#2563eb'
                     : '#1d4ed8',
               },
-              '&:disabled': { bgcolor: '#cbd5e1', color: '#94a3b8', boxShadow: 'none' },
+              '&:disabled': {
+                bgcolor: '#cbd5e1',
+                color: '#94a3b8',
+                boxShadow: 'none',
+              },
             }}
             title={
               !isFormValid()

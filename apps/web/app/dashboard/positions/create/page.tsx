@@ -79,7 +79,6 @@ export default function CreateJobPage() {
             alignItems: 'center',
           }}
         >
-
           <Typography
             sx={{
               fontSize: '1.9rem',

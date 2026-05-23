@@ -1,7 +1,7 @@
 'use client';
 
 import { useMutation } from '@tanstack/react-query';
-import { CreateJobDTO } from '../../../../../../../../packages/shared-types/src/models/job';
+import { CreateJobDTO } from '@ats/shared-types';
 
 function getCreatePositionUrl(): string {
   const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === 'true';

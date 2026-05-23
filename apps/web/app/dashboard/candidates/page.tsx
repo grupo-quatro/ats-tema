@@ -18,7 +18,9 @@ export default function CandidatesPage() {
       <Typography variant="h2" sx={{ color: '#334155', fontWeight: 500 }}>
         Candidatos
       </Typography>
-      <Typography variant="body2">Esta sección está en construcción.</Typography>
+      <Typography variant="body2">
+        Esta sección está en construcción.
+      </Typography>
     </Box>
   );
 }

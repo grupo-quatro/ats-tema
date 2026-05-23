@@ -101,7 +101,15 @@ export const CANDIDATES_MOCK: CandidateMockProfile[] = [
       },
     ],
     fitScore: 95,
-    detectedSkills: ['React', 'TypeScript', 'Next.js', 'Node.js', 'GraphQL', 'Jest', 'TDD'],
+    detectedSkills: [
+      'React',
+      'TypeScript',
+      'Next.js',
+      'Node.js',
+      'GraphQL',
+      'Jest',
+      'TDD',
+    ],
     gapSkills: ['Kubernetes', 'Docker'],
     strengths: [
       'Liderazgo de equipo de 5 desarrolladores en aplicaciones React, TypeScript y Next.js',
