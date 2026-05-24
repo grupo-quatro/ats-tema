@@ -13,7 +13,14 @@ import {
   Chip,
   IconButton,
 } from '@mui/material';
-import { Eye, Edit2, Trash2, Users, ToggleLeft, ToggleRight } from 'lucide-react';
+import {
+  Eye,
+  Edit2,
+  Trash2,
+  Users,
+  ToggleLeft,
+  ToggleRight,
+} from 'lucide-react';
 import type { Job } from '@ats/shared-types';
 import { useUpdatePositionStatus } from '../hooks/useUpdatePositionStatus';
 
@@ -132,7 +139,9 @@ export default function PositionsTable({ jobs }: Props) {
                 </Link>
                 <IconButton
                   size="small"
-                  title={job.status === 'open' ? 'Cerrar posición' : 'Abrir posición'}
+                  title={
+                    job.status === 'open' ? 'Cerrar posición' : 'Abrir posición'
+                  }
                   onClick={() =>
                     updateStatus({
                       id: job.id,

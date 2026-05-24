@@ -219,7 +219,10 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             </Stack>
 
             <Stack direction="row" spacing={2}>
-              <TogglePositionStatusButton jobId={job.id} currentStatus={job.status} />
+              <TogglePositionStatusButton
+                jobId={job.id}
+                currentStatus={job.status}
+              />
               <Link
                 href={`/dashboard/positions/${job.slug}/edit`}
                 style={{ textDecoration: 'none' }}

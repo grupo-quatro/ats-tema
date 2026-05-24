@@ -9,7 +9,10 @@ interface Props {
   currentStatus: JobStatus;
 }
 
-export default function TogglePositionStatusButton({ jobId, currentStatus }: Props) {
+export default function TogglePositionStatusButton({
+  jobId,
+  currentStatus,
+}: Props) {
   const { mutate: updateStatus, isPending } = useUpdatePositionStatus();
   const isOpen = currentStatus === 'open';
 
@@ -34,7 +37,11 @@ export default function TogglePositionStatusButton({ jobId, currentStatus }: Pro
         },
       }}
     >
-      {isPending ? 'Guardando...' : isOpen ? 'Cerrar posición' : 'Abrir posición'}
+      {isPending
+        ? 'Guardando...'
+        : isOpen
+          ? 'Cerrar posición'
+          : 'Abrir posición'}
     </Button>
   );
 }
