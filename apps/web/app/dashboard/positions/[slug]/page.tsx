@@ -17,6 +17,7 @@ import {
   Users,
 } from 'lucide-react';
 import { getJobBySlug } from '../../../features/dashboard/positions/services/positions';
+import TogglePositionStatusButton from '../../../features/dashboard/positions/components/TogglePositionStatusButton';
 import type { Job } from '@ats/shared-types';
 
 export const dynamic = 'force-dynamic';
@@ -217,27 +218,30 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               </Box>
             </Stack>
 
-            <Link
-              href={`/dashboard/positions/${job.slug}/edit`}
-              style={{ textDecoration: 'none' }}
-            >
-              <Button
-                variant="contained"
-                sx={{
-                  textTransform: 'none',
-                  bgcolor: '#fff',
-                  color: '#1d4ed8',
-                  px: 4,
-                  py: 1.2,
-                  fontWeight: 700,
-                  borderRadius: '10px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
-                }}
+            <Stack direction="row" spacing={2}>
+              <TogglePositionStatusButton jobId={job.id} currentStatus={job.status} />
+              <Link
+                href={`/dashboard/positions/${job.slug}/edit`}
+                style={{ textDecoration: 'none' }}
               >
-                Editar
-              </Button>
-            </Link>
+                <Button
+                  variant="contained"
+                  sx={{
+                    textTransform: 'none',
+                    bgcolor: '#fff',
+                    color: '#1d4ed8',
+                    px: 4,
+                    py: 1.2,
+                    fontWeight: 700,
+                    borderRadius: '10px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
+                  }}
+                >
+                  Editar
+                </Button>
+              </Link>
+            </Stack>
           </Stack>
 
           <Box

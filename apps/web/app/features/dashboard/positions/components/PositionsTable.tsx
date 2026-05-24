@@ -13,14 +13,17 @@ import {
   Chip,
   IconButton,
 } from '@mui/material';
-import { Eye, Edit2, Trash2, Users } from 'lucide-react';
+import { Eye, Edit2, Trash2, Users, ToggleLeft, ToggleRight } from 'lucide-react';
 import type { Job } from '@ats/shared-types';
+import { useUpdatePositionStatus } from '../hooks/useUpdatePositionStatus';
 
 type Props = {
   jobs: Job[];
 };
 
 export default function PositionsTable({ jobs }: Props) {
+  const { mutate: updateStatus } = useUpdatePositionStatus();
+
   return (
     <TableContainer
       component={Paper}
@@ -127,6 +130,22 @@ export default function PositionsTable({ jobs }: Props) {
                     <Edit2 size={16} />
                   </IconButton>
                 </Link>
+                <IconButton
+                  size="small"
+                  title={job.status === 'open' ? 'Cerrar posición' : 'Abrir posición'}
+                  onClick={() =>
+                    updateStatus({
+                      id: job.id,
+                      status: job.status === 'open' ? 'closed' : 'open',
+                    })
+                  }
+                >
+                  {job.status === 'open' ? (
+                    <ToggleRight size={16} color="#16a34a" />
+                  ) : (
+                    <ToggleLeft size={16} color="#94a3b8" />
+                  )}
+                </IconButton>
                 <IconButton size="small">
                   <Trash2 size={16} />
                 </IconButton>
