@@ -1,4 +1,4 @@
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { onRequest } from 'firebase-functions/v2/https';
 import { logger } from 'firebase-functions';
 
 import type { GetApplicationsByJobPayload } from '@ats/shared-types';
@@ -8,45 +8,54 @@ import {
   GetApplicationsByJobService,
   JobNotFoundError,
 } from '../services/get-applications-by-job-service';
+import { HttpAuthError, requireAuthenticatedUser } from '../core/http-auth';
 
 const getApplicationsByJobService = new GetApplicationsByJobService();
 
-export const getApplicationsByJob = onCall(async (request) => {
-  if (!request.auth) {
-    throw new HttpsError(
-      'unauthenticated',
-      'El usuario debe estar autenticado para consultar las postulaciones.',
-    );
-  }
-
+export const getApplicationsByJob = onRequest(async (req, res) => {
   try {
-    const payload = request.data as Partial<GetApplicationsByJobPayload>;
+    if (req.method !== 'GET') {
+      res.status(405).json({ error: 'Method Not Allowed.' });
+      return;
+    }
+
+    await requireAuthenticatedUser(req);
+
+    const { jobId, orderBy, orderDirection, limit } = req.query;
+    const payload: Partial<GetApplicationsByJobPayload> = {
+      jobId: jobId as string,
+      orderBy: orderBy as GetApplicationsByJobPayload['orderBy'],
+      orderDirection:
+        orderDirection as GetApplicationsByJobPayload['orderDirection'],
+      limit: limit ? Number(limit) : undefined,
+    };
 
     validateGetApplicationsByJobPayload(payload);
 
-    const { jobId, ...options } = payload;
-
-    return await getApplicationsByJobService.getApplicationsByJob(
-      jobId,
+    const { jobId: validJobId, ...options } = payload;
+    const result = await getApplicationsByJobService.getApplicationsByJob(
+      validJobId,
       options,
     );
+
+    res.status(200).json(result);
   } catch (error) {
-    if (error instanceof HttpsError) {
-      throw error;
+    if (error instanceof HttpAuthError) {
+      res.status(401).json({ error: error.message });
+      return;
     }
 
     if (error instanceof JobNotFoundError) {
-      throw new HttpsError('not-found', error.message);
+      res.status(404).json({ error: error.message });
+      return;
     }
 
     logger.error(
       'Error inesperado obteniendo postulaciones por posición',
       error,
     );
-
-    throw new HttpsError(
-      'internal',
-      'No se pudieron obtener las postulaciones.',
-    );
+    res
+      .status(500)
+      .json({ error: 'No se pudieron obtener las postulaciones.' });
   }
 });

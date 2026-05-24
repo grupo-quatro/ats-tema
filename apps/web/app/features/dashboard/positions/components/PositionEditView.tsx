@@ -60,9 +60,9 @@ const inputSx = {
   },
 };
 
-function formatDate(date?: Date) {
+function formatDate(date?: Date | string) {
   if (!date) return '-';
-  return date.toLocaleDateString('es-AR', {
+  return new Date(date).toLocaleDateString('es-AR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',

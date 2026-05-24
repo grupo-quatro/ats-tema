@@ -24,7 +24,8 @@ export class UpdateApplicationStageService {
   ): Promise<UpdateApplicationStageResponse> {
     const { applicationId, stage, rejectionReason, notes } = payload;
 
-    const application = await this.applicationsRepository.findById(applicationId);
+    const application =
+      await this.applicationsRepository.findById(applicationId);
     if (!application) {
       throw new ApplicationNotFoundError(applicationId);
     }
@@ -41,7 +42,9 @@ export class UpdateApplicationStageService {
     return { ok: true };
   }
 
-  private resolveStatus(stage: ApplicationStage): ApplicationStatus | undefined {
+  private resolveStatus(
+    stage: ApplicationStage,
+  ): ApplicationStatus | undefined {
     if (stage === 'hired') return 'hired';
     if (stage === 'rejected') return 'rejected';
     if (stage === 'withdrawn') return 'withdrawn';

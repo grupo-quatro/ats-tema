@@ -85,9 +85,9 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
   const [stageDialogOpen, setStageDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-  const [selectedStageKey, setSelectedStageKey] = useState<CandidateStageKey | ''>(
-    '',
-  );
+  const [selectedStageKey, setSelectedStageKey] = useState<
+    CandidateStageKey | ''
+  >('');
   const [rejectReason, setRejectReason] = useState('');
   const [isSavingNote, setIsSavingNote] = useState(false);
   const [isUpdatingStage, setIsUpdatingStage] = useState(false);
@@ -167,7 +167,10 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
       setInterviewNotes((current) => [...current, note]);
       setNewNoteModalOpen(false);
       resetNewNoteForm();
-      setSnackbar({ message: 'Nota guardada correctamente', severity: 'success' });
+      setSnackbar({
+        message: 'Nota guardada correctamente',
+        severity: 'success',
+      });
     } catch {
       setSnackbar({ message: 'No se pudo guardar la nota', severity: 'error' });
     } finally {
@@ -196,7 +199,10 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
         severity: 'success',
       });
     } catch {
-      setSnackbar({ message: 'No se pudo cambiar la etapa', severity: 'error' });
+      setSnackbar({
+        message: 'No se pudo cambiar la etapa',
+        severity: 'error',
+      });
     } finally {
       setIsUpdatingStage(false);
     }
@@ -209,13 +215,18 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      setStageHistory((current) => applyRejection(current, rejectReason.trim()));
+      setStageHistory((current) =>
+        applyRejection(current, rejectReason.trim()),
+      );
       setCurrentStage(STAGE_LABELS.descartado);
       setRejectDialogOpen(false);
       setRejectReason('');
       setSnackbar({ message: 'Candidato rechazado', severity: 'success' });
     } catch {
-      setSnackbar({ message: 'No se pudo rechazar al candidato', severity: 'error' });
+      setSnackbar({
+        message: 'No se pudo rechazar al candidato',
+        severity: 'error',
+      });
     } finally {
       setIsUpdatingStage(false);
     }

@@ -34,7 +34,10 @@ describe('PipelineService.getCandidatesByJob', () => {
   });
 
   it('retorna la lista de candidatos del repositorio', async () => {
-    const candidates = [makeApplication(), makeApplication({ id: 'app-2', fitScore: 75 })];
+    const candidates = [
+      makeApplication(),
+      makeApplication({ id: 'app-2', fitScore: 75 }),
+    ];
     vi.mocked(mockRepo.getApplicationsByJob).mockResolvedValue(candidates);
 
     const result = await service.getCandidatesByJob('job-1');
@@ -105,7 +108,11 @@ describe('PipelineService.updateApplicationStage', () => {
   it('llama al repositorio con applicationId y stage correctos', async () => {
     vi.mocked(mockRepo.updateApplicationStage).mockResolvedValue({ ok: true });
 
-    await service.updateApplicationStage('app-1', 'cv_submitted', 'Buen perfil');
+    await service.updateApplicationStage(
+      'app-1',
+      'cv_submitted',
+      'Buen perfil',
+    );
 
     expect(mockRepo.updateApplicationStage).toHaveBeenCalledWith({
       applicationId: 'app-1',
@@ -167,11 +174,11 @@ describe('PipelineService.discardApplication', () => {
       new Error('Firebase error'),
     );
 
-    await expect(
-      service.discardApplication('app-1', 'Motivo'),
-    ).rejects.toThrow(PipelineServiceError);
-    await expect(
-      service.discardApplication('app-1', 'Motivo'),
-    ).rejects.toThrow('No se pudo descartar');
+    await expect(service.discardApplication('app-1', 'Motivo')).rejects.toThrow(
+      PipelineServiceError,
+    );
+    await expect(service.discardApplication('app-1', 'Motivo')).rejects.toThrow(
+      'No se pudo descartar',
+    );
   });
 });

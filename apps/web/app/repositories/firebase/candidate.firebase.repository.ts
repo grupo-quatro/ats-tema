@@ -8,7 +8,8 @@ import type {
   CandidatePostulationCVResponse,
 } from '@ats/shared-types';
 
-import { auth, storage, callFunction } from '../../shared/lib/firebase';
+import { auth, storage } from '../../shared/lib/firebase';
+import * as candidatesApi from '../../shared/api/candidates-api';
 import type { ICandidateRepository } from '../interfaces/candidate.repository';
 
 export class CandidateFirebaseRepository implements ICandidateRepository {
@@ -20,22 +21,14 @@ export class CandidateFirebaseRepository implements ICandidateRepository {
     payload: CandidatePostulationPayload,
   ): Promise<CandidatePostulationResponse> {
     await this.ensureAuth();
-    const result = await callFunction<
-      CandidatePostulationPayload,
-      CandidatePostulationResponse
-    >('registerCandidate', payload);
-    return result.data;
+    return candidatesApi.registerCandidate(payload);
   }
 
   async registerCandidateCV(
     payload: CandidatePostulationCVPayload,
   ): Promise<CandidatePostulationCVResponse> {
     await this.ensureAuth();
-    const result = await callFunction<
-      CandidatePostulationCVPayload,
-      CandidatePostulationCVResponse
-    >('registerCandidateCV', payload);
-    return result.data;
+    return candidatesApi.registerCandidateCV(payload);
   }
 
   uploadCv(candidateId: string, file: File): Promise<void> {

@@ -117,7 +117,11 @@ export function CandidateInfoCard({
                 : 'Mostrar experiencia laboral'
             }
           >
-            {experienceOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            {experienceOpen ? (
+              <ChevronUp size={16} />
+            ) : (
+              <ChevronDown size={16} />
+            )}
           </IconButton>
         </Box>
 
@@ -170,7 +174,11 @@ export function CandidateInfoCard({
               educationOpen ? 'Ocultar educación' : 'Mostrar educación'
             }
           >
-            {educationOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            {educationOpen ? (
+              <ChevronUp size={16} />
+            ) : (
+              <ChevronDown size={16} />
+            )}
           </IconButton>
         </Box>
 
