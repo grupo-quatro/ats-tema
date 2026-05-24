@@ -1,6 +1,13 @@
 export { healthCheck } from './callables/health-check';
-export { getJobDetail } from './callables/get-job-detail';
-export { listOpenJobs } from './callables/list-open-jobs';
+export {
+  createJob,
+  getInternalJobDetail,
+  getJobDetail,
+  getPosition,
+  listOpenJobs,
+  updatePosition,
+  updatePositionStatus,
+} from './callables/jobCallable';
 export { seedJobs } from './callables/seed-jobs';
 export {
   registerCandidate,
