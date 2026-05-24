@@ -16,13 +16,25 @@ import {
   MapPin,
   Users,
 } from 'lucide-react';
-import { getJobBySlug } from '../../../features/dashboard/positions/services/positions';
+import TogglePositionStatusButton from '../../../features/dashboard/positions/components/TogglePositionStatusButton';
+import { getFunctionUrl } from '@/shared/lib/functions-url';
 import type { Job } from '@ats/shared-types';
+
+async function fetchPosition(id: string): Promise<Job | null> {
+  const token = 'dev-recruiter';
+  const res = await fetch(`${getFunctionUrl('getPosition')}?id=${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error('Error al obtener la posición');
+  return res.json();
+}
 
 export const dynamic = 'force-dynamic';
 
 interface JobDetailPageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
 }
 
 const statusLabels: Record<
@@ -93,10 +105,10 @@ function InfoCard({
 }
 
 export default async function JobDetailPage({ params }: JobDetailPageProps) {
-  const { slug } = await params;
-  const job = getJobBySlug(slug) as Job | undefined;
+  const { id } = await params;
+  const job = await fetchPosition(id);
 
-  if (!job) {
+  if (!job || !('id' in job)) {
     return (
       <Container maxWidth="lg" sx={{ py: 8 }}>
         <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
@@ -217,27 +229,33 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
               </Box>
             </Stack>
 
-            <Link
-              href={`/dashboard/positions/${job.slug}/edit`}
-              style={{ textDecoration: 'none' }}
-            >
-              <Button
-                variant="contained"
-                sx={{
-                  textTransform: 'none',
-                  bgcolor: '#fff',
-                  color: '#1d4ed8',
-                  px: 4,
-                  py: 1.2,
-                  fontWeight: 700,
-                  borderRadius: '10px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
-                }}
+            <Stack direction="row" spacing={2}>
+              <TogglePositionStatusButton
+                jobId={job.id}
+                currentStatus={job.status}
+              />
+              <Link
+                href={`/dashboard/positions/${job.id}/edit`}
+                style={{ textDecoration: 'none' }}
               >
-                Editar
-              </Button>
-            </Link>
+                <Button
+                  variant="contained"
+                  sx={{
+                    textTransform: 'none',
+                    bgcolor: '#fff',
+                    color: '#1d4ed8',
+                    px: 4,
+                    py: 1.2,
+                    fontWeight: 700,
+                    borderRadius: '10px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
+                  }}
+                >
+                  Editar
+                </Button>
+              </Link>
+            </Stack>
           </Stack>
 
           <Box

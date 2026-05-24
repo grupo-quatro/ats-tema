@@ -7,6 +7,9 @@ import type {
   GetInternalJobDetailResponse,
   Job,
   JobStatus,
+  ListDepartmentsResponse,
+  ListPositionsFilters,
+  ListPositionsResponse,
   UpdateJobDTO,
   UpdatePositionPayload,
   UpdatePositionResponse,
@@ -298,6 +301,16 @@ export class JobService {
         error,
       );
     }
+  }
+
+  async listPositions(
+    filters: ListPositionsFilters,
+  ): Promise<ListPositionsResponse> {
+    return this.jobsRepository.findWithFilters(filters);
+  }
+
+  async listDepartments(): Promise<ListDepartmentsResponse> {
+    return this.jobsRepository.findDepartments();
   }
 
   private buildUpdateData(payload: UpdatePositionPayload): UpdateJobDTO {

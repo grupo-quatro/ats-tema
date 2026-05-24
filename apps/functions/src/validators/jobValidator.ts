@@ -66,7 +66,10 @@ export function validateCreateJobPayload(
     payload.observations !== undefined &&
     typeof payload.observations !== 'string'
   ) {
-    throw new HttpsError('invalid-argument', 'Las observaciones deben ser texto.');
+    throw new HttpsError(
+      'invalid-argument',
+      'Las observaciones deben ser texto.',
+    );
   }
 
   if (payload.additionalCriteria !== undefined) {
@@ -80,7 +83,10 @@ export function validateCreateJobPayload(
     throw new HttpsError('invalid-argument', 'La ciudad debe ser texto.');
   }
 
-  if (payload.status !== undefined && !VALID_JOB_STATUSES.includes(payload.status)) {
+  if (
+    payload.status !== undefined &&
+    !VALID_JOB_STATUSES.includes(payload.status)
+  ) {
     throw new HttpsError(
       'invalid-argument',
       'El estado de la posición no es válido.',
@@ -147,7 +153,10 @@ export function validateUpdatePositionPayload(
     payload.observations !== undefined &&
     typeof payload.observations !== 'string'
   ) {
-    throw new HttpsError('invalid-argument', 'Las observaciones deben ser texto.');
+    throw new HttpsError(
+      'invalid-argument',
+      'Las observaciones deben ser texto.',
+    );
   }
 
   if (payload.additionalCriteria !== undefined) {
@@ -195,7 +204,10 @@ export function validateUpdatePositionStatusPayload(
 ): asserts payload is UpdatePositionStatusPayload {
   validateRequiredString(payload.id, 'El campo id es requerido.');
 
-  if (payload.status === undefined || !VALID_JOB_STATUSES.includes(payload.status)) {
+  if (
+    payload.status === undefined ||
+    !VALID_JOB_STATUSES.includes(payload.status)
+  ) {
     throw new HttpsError('invalid-argument', 'Estado inválido.');
   }
 }
@@ -224,7 +236,10 @@ function validateStringArray(
 
 function validateSkill(skill: Skill): void {
   if (!skill.name || skill.name.trim().length === 0) {
-    throw new HttpsError('invalid-argument', 'Cada skill debe tener un nombre válido.');
+    throw new HttpsError(
+      'invalid-argument',
+      'Cada skill debe tener un nombre válido.',
+    );
   }
 
   if (
@@ -244,7 +259,10 @@ function validateSkill(skill: Skill): void {
     skill.weight < 1 ||
     skill.weight > 10
   ) {
-    throw new HttpsError('invalid-argument', 'El peso de cada skill debe estar entre 1 y 10.');
+    throw new HttpsError(
+      'invalid-argument',
+      'El peso de cada skill debe estar entre 1 y 10.',
+    );
   }
 
   if (!VALID_SKILL_TYPES.includes(skill.type)) {

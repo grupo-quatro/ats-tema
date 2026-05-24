@@ -4,6 +4,9 @@ import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https';
 import type {
   CreateJobPayload,
   GetInternalJobDetailPayload,
+  JobLocation,
+  JobStatus,
+  ListPositionsFilters,
   UpdatePositionPayload,
   UpdatePositionStatusPayload,
 } from '@ats/shared-types';
@@ -301,5 +304,81 @@ export const updatePositionStatus = onRequest(async (request, response) => {
     response
       .status(500)
       .json({ error: 'No se pudo actualizar el estado de la posición.' });
+  }
+});
+
+export const listPositions = onRequest(async (request, response) => {
+  try {
+    if (request.method !== 'GET') {
+      response.status(405).json({ error: 'Method Not Allowed.' });
+      return;
+    }
+
+    await requireAuthenticatedUser(request);
+
+    const {
+      search,
+      status,
+      location,
+      department,
+      page,
+      limit,
+      orderBy,
+      orderDir,
+    } = request.query;
+
+    const filters: ListPositionsFilters = {
+      search: typeof search === 'string' ? search.trim() : undefined,
+      status: typeof status === 'string' ? (status as JobStatus) : undefined,
+      location:
+        typeof location === 'string' ? (location as JobLocation) : undefined,
+      department:
+        typeof department === 'string' ? department.trim() : undefined,
+      page: page ? Number(page) : 1,
+      limit: limit ? Number(limit) : 10,
+      orderBy:
+        typeof orderBy === 'string'
+          ? (orderBy as ListPositionsFilters['orderBy'])
+          : undefined,
+      orderDir:
+        typeof orderDir === 'string'
+          ? (orderDir as ListPositionsFilters['orderDir'])
+          : undefined,
+    };
+
+    const result = await jobService.listPositions(filters);
+    response.status(200).json(result);
+  } catch (error) {
+    if (error instanceof HttpAuthError) {
+      response.status(401).json({ error: error.message });
+      return;
+    }
+    logger.error('Error inesperado listando posiciones', error);
+    response
+      .status(500)
+      .json({ error: 'No se pudieron obtener las posiciones.' });
+  }
+});
+
+export const listDepartments = onRequest(async (request, response) => {
+  try {
+    if (request.method !== 'GET') {
+      response.status(405).json({ error: 'Method Not Allowed.' });
+      return;
+    }
+
+    await requireAuthenticatedUser(request);
+
+    const departments = await jobService.listDepartments();
+    response.status(200).json(departments);
+  } catch (error) {
+    if (error instanceof HttpAuthError) {
+      response.status(401).json({ error: error.message });
+      return;
+    }
+    logger.error('Error inesperado obteniendo departamentos', error);
+    response
+      .status(500)
+      .json({ error: 'No se pudieron obtener los departamentos.' });
   }
 });
