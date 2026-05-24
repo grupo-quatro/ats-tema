@@ -27,10 +27,7 @@ export function validateUpdateApplicationStagePayload(
   }
 
   if (!payload.stage) {
-    throw new HttpsError(
-      'invalid-argument',
-      'El campo stage es obligatorio.',
-    );
+    throw new HttpsError('invalid-argument', 'El campo stage es obligatorio.');
   }
 
   if (!VALID_STAGES.includes(payload.stage as (typeof VALID_STAGES)[number])) {

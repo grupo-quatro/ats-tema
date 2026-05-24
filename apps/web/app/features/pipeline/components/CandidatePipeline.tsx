@@ -80,7 +80,11 @@ function getStatusChipSx(stage: ApplicationStage) {
   if (stage === 'cv_submitted') {
     return { bgcolor: '#dbeafe', color: '#4f46e5' };
   }
-  if (stage === 'screening' || stage === 'applied' || stage === 'profile_pending') {
+  if (
+    stage === 'screening' ||
+    stage === 'applied' ||
+    stage === 'profile_pending'
+  ) {
     return { bgcolor: '#f3e8ff', color: '#9333ea' };
   }
   if (stage === 'hired' || stage === 'offer_sent') {
@@ -230,7 +234,9 @@ export default function CandidatePipeline({
             {jobTitle}
           </Typography>
           <Typography sx={{ color: '#334155', fontSize: '1rem', mb: 3.5 }}>
-            {isLoading ? 'Cargando candidatos...' : `${filteredCandidates.length} Candidatos`}
+            {isLoading
+              ? 'Cargando candidatos...'
+              : `${filteredCandidates.length} Candidatos`}
           </Typography>
 
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
@@ -300,36 +306,50 @@ export default function CandidatePipeline({
                 <TableCell sx={{ color: 'white', fontWeight: 700, py: 2 }}>
                   Candidato
                 </TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 700, py: 2, width: 140 }}>
+                <TableCell
+                  sx={{ color: 'white', fontWeight: 700, py: 2, width: 140 }}
+                >
                   <TableSortLabel
                     active={sortField === 'fitScore'}
-                    direction={sortField === 'fitScore' ? sortDirection : 'desc'}
+                    direction={
+                      sortField === 'fitScore' ? sortDirection : 'desc'
+                    }
                     onClick={() => handleSort('fitScore')}
                     sx={{
                       color: 'white !important',
-                      '& .MuiTableSortLabel-icon': { color: 'white !important' },
+                      '& .MuiTableSortLabel-icon': {
+                        color: 'white !important',
+                      },
                     }}
                   >
                     % FIT
                   </TableSortLabel>
                 </TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 700, py: 2, width: 360 }}>
+                <TableCell
+                  sx={{ color: 'white', fontWeight: 700, py: 2, width: 360 }}
+                >
                   <TableSortLabel
                     active={sortField === 'stage'}
                     direction={sortField === 'stage' ? sortDirection : 'asc'}
                     onClick={() => handleSort('stage')}
                     sx={{
                       color: 'white !important',
-                      '& .MuiTableSortLabel-icon': { color: 'white !important' },
+                      '& .MuiTableSortLabel-icon': {
+                        color: 'white !important',
+                      },
                     }}
                   >
                     Estado
                   </TableSortLabel>
                 </TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 700, py: 2, width: 220 }}>
+                <TableCell
+                  sx={{ color: 'white', fontWeight: 700, py: 2, width: 220 }}
+                >
                   Última actualización
                 </TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 700, py: 2, width: 190 }}>
+                <TableCell
+                  sx={{ color: 'white', fontWeight: 700, py: 2, width: 190 }}
+                >
                   Acciones
                 </TableCell>
               </TableRow>
@@ -344,7 +364,9 @@ export default function CandidatePipeline({
                     <Typography sx={{ color: '#334155', fontWeight: 600 }}>
                       No hay candidatos para mostrar.
                     </Typography>
-                    <Typography sx={{ color: '#64748b', fontSize: '0.9rem', mt: 0.5 }}>
+                    <Typography
+                      sx={{ color: '#64748b', fontSize: '0.9rem', mt: 0.5 }}
+                    >
                       Ajustá la búsqueda o el filtro de estado.
                     </Typography>
                   </TableCell>
@@ -366,7 +388,11 @@ export default function CandidatePipeline({
                         }}
                       >
                         <TableCell>
-                          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+                          <Stack
+                            direction="row"
+                            spacing={1.5}
+                            sx={{ alignItems: 'center' }}
+                          >
                             <Avatar
                               sx={{
                                 bgcolor: '#2563eb',
@@ -387,7 +413,8 @@ export default function CandidatePipeline({
                                   lineHeight: 1.25,
                                 }}
                               >
-                                {candidate.candidateName ?? 'Candidato sin nombre'}
+                                {candidate.candidateName ??
+                                  'Candidato sin nombre'}
                               </Typography>
                               <Typography
                                 sx={{
@@ -427,7 +454,9 @@ export default function CandidatePipeline({
                           />
                         </TableCell>
                         <TableCell>
-                          <Typography sx={{ color: '#334155', fontSize: '0.94rem' }}>
+                          <Typography
+                            sx={{ color: '#334155', fontSize: '0.94rem' }}
+                          >
                             {formatDate(candidate.updatedAt)}
                           </Typography>
                         </TableCell>
@@ -435,7 +464,9 @@ export default function CandidatePipeline({
                           <Button
                             variant="contained"
                             startIcon={<Eye size={16} />}
-                            onClick={() => onViewCandidate(candidate.candidateId)}
+                            onClick={() =>
+                              onViewCandidate(candidate.candidateId)
+                            }
                             sx={{
                               bgcolor: '#eff6ff',
                               color: '#2563eb',

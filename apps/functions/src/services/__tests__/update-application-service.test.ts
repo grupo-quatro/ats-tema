@@ -5,7 +5,9 @@ import {
   ApplicationNotFoundError,
 } from '../update-application-service';
 
-const makeApplication = (overrides: Partial<Application> = {}): Application => ({
+const makeApplication = (
+  overrides: Partial<Application> = {},
+): Application => ({
   id: 'app-1',
   jobId: 'job-1',
   candidateId: 'cand-1',

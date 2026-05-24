@@ -15,7 +15,9 @@ export default function CandidatePipelineRoute({ jobId, jobTitle }: Props) {
     <CandidatePipeline
       jobId={jobId}
       jobTitle={jobTitle}
-      onViewCandidate={(candidateId) => router.push(`/candidate/${candidateId}`)}
+      onViewCandidate={(candidateId) =>
+        router.push(`/candidate/${candidateId}`)
+      }
     />
   );
 }

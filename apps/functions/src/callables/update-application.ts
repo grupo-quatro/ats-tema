@@ -36,9 +36,6 @@ export const updateApplicationStage = onCall(async (request) => {
 
     logger.error('Error inesperado actualizando etapa de postulación', error);
 
-    throw new HttpsError(
-      'internal',
-      'No se pudo actualizar la postulación.',
-    );
+    throw new HttpsError('internal', 'No se pudo actualizar la postulación.');
   }
 });

@@ -32,7 +32,12 @@ El componente recibe `jobId` como prop (o lo lee de los params de la route). La 
 ```tsx
 // app/dashboard/positions/[id]/candidates/page.tsx
 export default function CandidatesPage({ params }: { params: { id: string } }) {
-  return <CandidatePipeline jobId={params.id} onViewCandidate={(cId) => router.push(`/candidate/${cId}`)} />;
+  return (
+    <CandidatePipeline
+      jobId={params.id}
+      onViewCandidate={(cId) => router.push(`/candidate/${cId}`)}
+    />
+  );
 }
 ```
 
@@ -58,7 +63,11 @@ export default function CandidatePipeline({
   jobId: string;
   onViewCandidate: (candidateId: number) => void;
 }) {
-  const { data: candidates = [], isLoading, isError } = useGetCandidatesByJob(jobId);
+  const {
+    data: candidates = [],
+    isLoading,
+    isError,
+  } = useGetCandidatesByJob(jobId);
   // ...
 }
 ```
@@ -67,17 +76,18 @@ La respuesta es `ApplicationWithCandidateDTO[]`, ordenada por `fitScore` desc. E
 
 **Mapeo de campos — mock → real:**
 
-| Campo en el mock       | Campo real en `ApplicationWithCandidateDTO` |
-|------------------------|---------------------------------------------|
-| `candidate.name`       | `candidate.candidateName`                   |
-| `candidate.matchScore` | `candidate.fitScore`                        |
-| `candidate.fitPercentage` | `candidate.fitScore`                     |
-| `candidate.status` (string visual) | `candidate.stage` (key interna) |
-| `candidate.appliedDate` | `candidate.createdAt`                      |
-| `candidate.avatar`     | Calcular desde `candidateName` (ver abajo)  |
-| `candidate.ranking`    | `index + 1` del array (ya viene ordenado)   |
+| Campo en el mock                   | Campo real en `ApplicationWithCandidateDTO` |
+| ---------------------------------- | ------------------------------------------- |
+| `candidate.name`                   | `candidate.candidateName`                   |
+| `candidate.matchScore`             | `candidate.fitScore`                        |
+| `candidate.fitPercentage`          | `candidate.fitScore`                        |
+| `candidate.status` (string visual) | `candidate.stage` (key interna)             |
+| `candidate.appliedDate`            | `candidate.createdAt`                       |
+| `candidate.avatar`                 | Calcular desde `candidateName` (ver abajo)  |
+| `candidate.ranking`                | `index + 1` del array (ya viene ordenado)   |
 
 **Avatar desde nombre:**
+
 ```tsx
 function getAvatar(name?: string): string {
   if (!name) return '?';
@@ -91,14 +101,16 @@ function getAvatar(name?: string): string {
 ```
 
 **Stage a texto visual** — importar las constantes ya creadas:
+
 ```tsx
 import { STAGE_LABELS } from '../../features/pipeline/constants/stage-labels';
 
 // En el JSX donde antes mostrabas candidate.status:
-<span>{STAGE_LABELS[candidate.stage]}</span>
+<span>{STAGE_LABELS[candidate.stage]}</span>;
 ```
 
 **Estados de loading y error** — agregar antes de la tabla:
+
 ```tsx
 if (isLoading) return <div>Cargando candidatos...</div>;
 if (isError) return <div>No se pudieron cargar los candidatos.</div>;
@@ -156,11 +168,12 @@ const discard = useDiscardApplication(jobId);
   onClick={(e) => {
     e.stopPropagation();
     const reason = window.prompt('Motivo de descarte:');
-    if (reason) discard.mutate({ applicationId: candidate.id, rejectionReason: reason });
+    if (reason)
+      discard.mutate({ applicationId: candidate.id, rejectionReason: reason });
   }}
 >
   <Trash className="w-4 h-4" />
-</button>
+</button>;
 ```
 
 > Si el diseño tiene un modal de confirmación, pasá el `applicationId` al estado del modal y llamá `discard.mutate()` desde el submit del modal. El patrón es el mismo.
@@ -180,14 +193,18 @@ const updateStage = useUpdateApplicationStage(jobId);
     e.stopPropagation();
     // Abrís el modal/selector con los stages disponibles
     // y al confirmar:
-    updateStage.mutate({ applicationId: candidate.id, stage: stageSeleccionado });
+    updateStage.mutate({
+      applicationId: candidate.id,
+      stage: stageSeleccionado,
+    });
   }}
 >
   <Edit className="w-4 h-4" />
-</button>
+</button>;
 ```
 
 Los stages válidos para el selector vienen de `STAGE_LABELS`:
+
 ```tsx
 import { STAGE_LABELS } from '../../features/pipeline/constants/stage-labels';
 // Object.entries(STAGE_LABELS) → [['applied', 'Postulación recibida'], ...]
@@ -208,6 +225,7 @@ onViewCandidate: (candidateId: string) => void
 ```
 
 Y en el click de la fila:
+
 ```tsx
 onClick={() => onViewCandidate(candidate.candidateId)}
 ```
@@ -223,12 +241,14 @@ import type { ApplicationStage } from '@ats/shared-types';
 
 const getStatusColor = (stage: ApplicationStage): string => {
   if (stage === 'hired') return 'bg-green-100 text-green-700 border-green-200';
-  if (stage === 'offer_sent') return 'bg-blue-100 text-blue-700 border-blue-200';
+  if (stage === 'offer_sent')
+    return 'bg-blue-100 text-blue-700 border-blue-200';
   if (stage === 'interview_2_done' || stage === 'interview_2_scheduled')
     return 'bg-blue-100 text-blue-700 border-blue-200';
   if (stage === 'interview_1_done' || stage === 'interview_1_scheduled')
     return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-  if (stage === 'cv_submitted') return 'bg-purple-100 text-purple-700 border-purple-200';
+  if (stage === 'cv_submitted')
+    return 'bg-purple-100 text-purple-700 border-purple-200';
   if (stage === 'rejected') return 'bg-red-100 text-red-700 border-red-200';
   return 'bg-slate-100 text-slate-700 border-slate-200';
 };

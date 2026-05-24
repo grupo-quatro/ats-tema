@@ -28,7 +28,7 @@ async function fetchPositions(
   const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === 'true';
   const token = useEmulators
     ? 'dev-recruiter'
-    : await getAuth().currentUser?.getIdToken() ?? '';
+    : ((await getAuth().currentUser?.getIdToken()) ?? '');
 
   const url = `${getFunctionUrl('listPositions')}?${params.toString()}`;
   const res = await fetch(url, {

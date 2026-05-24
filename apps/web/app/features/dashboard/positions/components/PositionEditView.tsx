@@ -451,20 +451,20 @@ export default function PositionEditView({ job, onSave }: Props) {
   const router = useRouter();
   const [message, setMessage] = useState('');
   const [mandatorySkills, setMandatorySkills] = useState<EditableSkill[]>(() =>
-      job.skills
-        .filter((skill) => skill.type === 'mandatory')
-        .map((skill) => ({
-          ...skill,
-          years: skill.yearsOfExperience,
-        })),
+    job.skills
+      .filter((skill) => skill.type === 'mandatory')
+      .map((skill) => ({
+        ...skill,
+        years: skill.yearsOfExperience,
+      })),
   );
   const [desirableSkills, setDesirableSkills] = useState<EditableSkill[]>(() =>
-      job.skills
-        .filter((skill) => skill.type === 'desirable')
-        .map((skill) => ({
-          ...skill,
-          years: skill.yearsOfExperience,
-        })),
+    job.skills
+      .filter((skill) => skill.type === 'desirable')
+      .map((skill) => ({
+        ...skill,
+        years: skill.yearsOfExperience,
+      })),
   );
   const [mandatoryDraft, setMandatoryDraft] = useState<SkillDraft>({
     name: '',
