@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import {
   Box,
+  CircularProgress,
   Dialog,
   DialogContent,
   IconButton,
@@ -22,6 +24,16 @@ export function CvViewerModal({
   cvUrl,
   candidateName,
 }: CvViewerModalProps) {
+  const [isLoading, setIsLoading] = useState(Boolean(cvUrl));
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    if (open && cvUrl) {
+      setIsLoading(true);
+      setHasError(false);
+    }
+  }, [open, cvUrl]);
+
   return (
     <Dialog
       open={open}
@@ -57,18 +69,60 @@ export function CvViewerModal({
         </IconButton>
       </Box>
 
-      <DialogContent sx={{ p: 0, minHeight: 520, bgcolor: '#f1f5f9' }}>
+      <DialogContent sx={{ p: 0, minHeight: 520, bgcolor: '#f1f5f9', position: 'relative' }}>
         {cvUrl ? (
-          <iframe
-            src={cvUrl}
-            style={{
-              width: '100%',
-              height: '600px',
-              border: 'none',
-              display: 'block',
-            }}
-            title={`CV de ${candidateName}`}
-          />
+          <>
+            {isLoading && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  bgcolor: '#f1f5f9',
+                  zIndex: 1,
+                }}
+              >
+                <CircularProgress size={36} />
+              </Box>
+            )}
+            {hasError ? (
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 520,
+                  gap: 2,
+                }}
+              >
+                <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                  No se pudo cargar el CV
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Intentá abrirlo nuevamente en unos momentos.
+                </Typography>
+              </Box>
+            ) : (
+              <iframe
+                src={cvUrl}
+                style={{
+                  width: '100%',
+                  height: '600px',
+                  border: 'none',
+                  display: 'block',
+                }}
+                title={`CV de ${candidateName}`}
+                onLoad={() => setIsLoading(false)}
+                onError={() => {
+                  setIsLoading(false);
+                  setHasError(true);
+                }}
+              />
+            )}
+          </>
         ) : (
           <Box
             sx={{

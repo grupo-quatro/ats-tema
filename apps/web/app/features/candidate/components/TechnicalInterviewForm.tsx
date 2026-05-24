@@ -1,17 +1,28 @@
 import React, { useState } from 'react';
-import { Box, Button, Stack, TextField, Typography } from '@mui/material';
-import { Rating } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Rating,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
+import type { CandidateInterviewNote } from '../mock/candidateMock';
 
 interface Props {
   skills: string[];
   candidateName: string;
   onClose: () => void;
+  onSave?: (note: CandidateInterviewNote) => void | Promise<void>;
 }
 
 export function TechnicalInterviewForm({
   skills,
-  candidateName,
+  // candidateName,
   onClose,
+  onSave,
 }: Props) {
   const initialRatings: Record<string, number> = {};
   skills.forEach((s) => (initialRatings[s] = 0));
@@ -21,12 +32,43 @@ export function TechnicalInterviewForm({
   const [overall, setOverall] = useState<number>(0);
   const [decision, setDecision] = useState('');
   const [comments, setComments] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSave = () => {
-    const payload = { ratings, overall, decision, comments, candidateName };
-    // TODO: enviar a backend. Por ahora sólo cierre.
-    console.log('Technical interview save', payload);
-    onClose();
+  const handleSave = async () => {
+    if (!overall || !decision.trim()) {
+      setErrorMessage('Completá la calificación general y la decisión recomendada.');
+      return;
+    }
+
+    setErrorMessage('');
+    setIsSaving(true);
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 700));
+
+      const note: CandidateInterviewNote = {
+        authorName: 'Evaluación técnica',
+        date: new Date().toLocaleDateString('es-ES'),
+        rating: overall,
+        note: [
+          `Decisión: ${decision.trim()}.`,
+          comments.trim(),
+          `Skills evaluadas: ${skills
+            .map((skill) => `${skill} (${ratings[skill] || 0}/5)`)
+            .join(', ')}.`,
+        ]
+          .filter(Boolean)
+          .join(' '),
+      };
+
+      await onSave?.(note);
+      onClose();
+    } catch {
+      setErrorMessage('No se pudo guardar la evaluación.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -54,8 +96,9 @@ export function TechnicalInterviewForm({
             <Rating
               value={ratings[skill] || 0}
               onChange={(_, value) =>
-                setRatings((c) => ({ ...c, [skill]: value || 0 }))
+                setRatings((current) => ({ ...current, [skill]: value || 0 }))
               }
+              disabled={isSaving}
             />
           </Box>
         ))}
@@ -69,6 +112,7 @@ export function TechnicalInterviewForm({
         <Rating
           value={overall}
           onChange={(_, value) => setOverall(value || 0)}
+          disabled={isSaving}
         />
       </Box>
 
@@ -78,6 +122,7 @@ export function TechnicalInterviewForm({
         onChange={(e) => setDecision(e.target.value)}
         fullWidth
         sx={{ mb: 2 }}
+        disabled={isSaving}
       />
 
       <TextField
@@ -88,12 +133,28 @@ export function TechnicalInterviewForm({
         multiline
         minRows={4}
         sx={{ mb: 2 }}
+        disabled={isSaving}
       />
 
+      {errorMessage && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {errorMessage}
+        </Alert>
+      )}
+
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-        <Button onClick={onClose}>Cancelar</Button>
-        <Button variant="contained" onClick={handleSave}>
-          Enviar Evaluación
+        <Button onClick={onClose} disabled={isSaving}>
+          Cancelar
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleSave}
+          disabled={isSaving || !overall || !decision.trim()}
+          startIcon={
+            isSaving ? <CircularProgress size={16} color="inherit" /> : null
+          }
+        >
+          {isSaving ? 'Enviando...' : 'Enviar Evaluación'}
         </Button>
       </Box>
     </Box>
