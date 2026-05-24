@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import {
+  Alert,
   Box,
   Button,
   Card,
   Chip,
+  CircularProgress,
   Container,
   Dialog,
   DialogActions,
@@ -13,10 +14,14 @@ import {
   DialogContentText,
   DialogTitle,
   Divider,
+  FormControlLabel,
   IconButton,
   Menu,
   MenuItem,
+  Radio,
+  RadioGroup,
   Rating,
+  Snackbar,
   Stack,
   TextField,
   Typography,
@@ -24,6 +29,8 @@ import {
 import {
   ArrowLeft,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Clock,
   Info,
   MessageSquare,
@@ -32,6 +39,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { STAGE_LABELS, type CandidateMockProfile } from '../mock/candidateMock';
+import { useCandidateProfile } from '../hooks/useCandidateProfile';
 import { CandidateInfoCard } from './CandidateInfoCard';
 import { CvViewerModal } from './CvViewerModal';
 import { InterviewModal } from './InterviewModal';
@@ -41,60 +49,13 @@ interface CandidateProfileViewProps {
 }
 
 export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
-  const [cvModalOpen, setCvModalOpen] = useState(false);
-  const [interviewModalOpen, setInterviewModalOpen] = useState(false);
-  const [interviewType, setInterviewType] = useState<'tech' | 'hr'>('tech');
-  const [newNoteModalOpen, setNewNoteModalOpen] = useState(false);
-  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
-  const [interviewNotes, setInterviewNotes] = useState(
-    candidate.interviewNotes,
-  );
-  const [newNoteAuthor, setNewNoteAuthor] = useState('');
-  const [newNoteDate, setNewNoteDate] = useState('');
-  const [newNoteRating, setNewNoteRating] = useState(0);
-  const [newNoteText, setNewNoteText] = useState('');
+  const profile = useCandidateProfile(candidate);
 
-  const resetNewNoteForm = () => {
-    setNewNoteAuthor('');
-    setNewNoteDate('');
-    setNewNoteRating(0);
-    setNewNoteText('');
-  };
-
-  const openNewNoteModal = () => {
-    resetNewNoteForm();
-    setNewNoteModalOpen(true);
-  };
-
-  const formatDateToSpanish = (value: string) => {
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return value;
-    return parsed.toLocaleDateString('es-ES');
-  };
-
-  const handleSaveNewNote = () => {
-    const parsedDate = new Date(newNoteDate);
-    if (
-      !newNoteAuthor ||
-      !newNoteDate ||
-      !newNoteText ||
-      Number.isNaN(parsedDate.getTime())
-    ) {
-      return;
-    }
-
-    setInterviewNotes((current) => [
-      ...current,
-      {
-        authorName: newNoteAuthor,
-        date: formatDateToSpanish(newNoteDate),
-        rating: newNoteRating || 0,
-        note: newNoteText,
-      },
-    ]);
-    setNewNoteModalOpen(false);
-    resetNewNoteForm();
-  };
+  const isNewNoteInvalid =
+    !profile.newNoteAuthor ||
+    !profile.newNoteDate ||
+    !profile.newNoteText ||
+    Number.isNaN(new Date(profile.newNoteDate).getTime());
 
   return (
     <Box
@@ -107,14 +68,13 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
       <Container maxWidth="xl">
         <Button
           component={Link}
-          href="/candidates"
+          href="/dashboard/candidates"
           startIcon={<ArrowLeft size={18} />}
           sx={{ color: 'text.secondary', mb: 3, textTransform: 'none' }}
         >
           Volver a candidatos
         </Button>
 
-        {/* Page header */}
         <Box
           sx={{
             display: 'flex',
@@ -173,11 +133,17 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                 Estado actual:
               </Typography>
               <Chip
-                label={candidate.currentStage}
+                label={profile.currentStage}
                 size="small"
                 sx={{
-                  bgcolor: '#e0f2fe',
-                  color: '#0369a1',
+                  bgcolor:
+                    profile.currentStage === STAGE_LABELS.descartado
+                      ? '#fee2e2'
+                      : '#e0f2fe',
+                  color:
+                    profile.currentStage === STAGE_LABELS.descartado
+                      ? '#dc2626'
+                      : '#0369a1',
                   fontWeight: 600,
                   fontSize: 12,
                   borderRadius: '6px',
@@ -188,10 +154,8 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
 
             <Button
               variant="contained"
-              onClick={() => {
-                setInterviewType('tech');
-                setInterviewModalOpen(true);
-              }}
+              onClick={() => profile.openInterviewModal('tech')}
+              disabled={profile.currentStage === STAGE_LABELS.descartado}
               sx={{ bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' } }}
             >
               Entrevista técnica
@@ -199,33 +163,38 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
 
             <Button
               variant="outlined"
-              onClick={() => {
-                setInterviewType('hr');
-                setInterviewModalOpen(true);
-              }}
+              onClick={() => profile.openInterviewModal('hr')}
+              disabled={profile.currentStage === STAGE_LABELS.descartado}
               sx={{ textTransform: 'none' }}
             >
               Entrevista RRHH
             </Button>
 
             <IconButton
-              onClick={(e) => setMenuAnchor(e.currentTarget)}
+              onClick={(e) => profile.setMenuAnchor(e.currentTarget)}
               aria-label="Más opciones"
               size="small"
             >
               <MoreVertical size={20} />
             </IconButton>
             <Menu
-              anchorEl={menuAnchor}
-              open={Boolean(menuAnchor)}
-              onClose={() => setMenuAnchor(null)}
+              anchorEl={profile.menuAnchor}
+              open={Boolean(profile.menuAnchor)}
+              onClose={() => profile.setMenuAnchor(null)}
             >
-              <MenuItem onClick={() => setMenuAnchor(null)}>
+              <MenuItem
+                onClick={profile.openStageDialog}
+                disabled={
+                  profile.pendingStages.length === 0 ||
+                  profile.currentStage === STAGE_LABELS.descartado
+                }
+              >
                 Cambiar etapa
               </MenuItem>
               <Divider />
               <MenuItem
-                onClick={() => setMenuAnchor(null)}
+                onClick={profile.openRejectDialog}
+                disabled={profile.currentStage === STAGE_LABELS.descartado}
                 sx={{ color: 'error.main' }}
               >
                 Rechazar candidato
@@ -234,7 +203,6 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
           </Box>
         </Box>
 
-        {/* Two-column layout */}
         <Box
           sx={{
             display: 'grid',
@@ -243,11 +211,10 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
             alignItems: 'flex-start',
           }}
         >
-          {/* Left column */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
             <CandidateInfoCard
               candidate={candidate}
-              onViewCv={() => setCvModalOpen(true)}
+              onViewCv={() => profile.setCvModalOpen(true)}
             />
 
             <Card>
@@ -264,14 +231,13 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
               </Box>
 
               <Box>
-                {candidate.stageHistory.map((stage, i) => {
-                  const isLast = i === candidate.stageHistory.length - 1;
+                {profile.stageHistory.map((stage, i) => {
+                  const isLast = i === profile.stageHistory.length - 1;
                   const isCompleted = stage.status === 'completed';
                   const isCurrent = stage.status === 'current';
 
                   return (
-                    <Box key={i} sx={{ display: 'flex', gap: 1.5 }}>
-                      {/* Rail */}
+                    <Box key={stage.key} sx={{ display: 'flex', gap: 1.5 }}>
                       <Box
                         sx={{
                           display: 'flex',
@@ -291,8 +257,14 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                             ...(isCurrent && {
                               bgcolor: 'white',
                               border: '2.5px solid',
-                              borderColor: 'primary.main',
-                              boxShadow: '0 0 0 3px #dbeafe',
+                              borderColor:
+                                stage.key === 'descartado'
+                                  ? 'error.main'
+                                  : 'primary.main',
+                              boxShadow:
+                                stage.key === 'descartado'
+                                  ? '0 0 0 3px #fee2e2'
+                                  : '0 0 0 3px #dbeafe',
                             }),
                             ...(!isCompleted &&
                               !isCurrent && {
@@ -314,7 +286,6 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                         )}
                       </Box>
 
-                      {/* Content */}
                       <Box sx={{ pb: isLast ? 0 : 2, flex: 1, minWidth: 0 }}>
                         <Box
                           sx={{
@@ -330,7 +301,9 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                               fontSize: 13,
                               fontWeight: isCurrent ? 600 : 500,
                               color: isCurrent
-                                ? 'primary.main'
+                                ? stage.key === 'descartado'
+                                  ? 'error.main'
+                                  : 'primary.main'
                                 : isCompleted
                                   ? 'text.primary'
                                   : 'text.secondary',
@@ -369,9 +342,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
             </Card>
           </Box>
 
-          {/* Right column */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {/* Scoring card */}
             <Card>
               <Box
                 sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}
@@ -478,16 +449,42 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
               </Box>
             </Card>
 
-            {/* Strengths card */}
             <Card>
-              <Typography
-                variant="body2"
-                sx={{ fontWeight: 600, color: 'text.secondary', mb: 2 }}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  mb: 2,
+                }}
               >
-                Fortalezas de la candidatura
-              </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 600, color: 'text.secondary' }}
+                >
+                  Fortalezas de la candidatura
+                </Typography>
+                {candidate.strengths.length > 2 && (
+                  <Button
+                    size="small"
+                    onClick={() =>
+                      profile.setShowAllStrengths((current) => !current)
+                    }
+                    endIcon={
+                      profile.showAllStrengths ? (
+                        <ChevronUp size={16} />
+                      ) : (
+                        <ChevronDown size={16} />
+                      )
+                    }
+                    sx={{ textTransform: 'none' }}
+                  >
+                    {profile.showAllStrengths ? 'Ver menos' : 'Ver más'}
+                  </Button>
+                )}
+              </Box>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {candidate.strengths.map((strength, i) => (
+                {profile.visibleStrengths.map((strength, i) => (
                   <Box
                     key={i}
                     sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}
@@ -505,7 +502,6 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
               </Box>
             </Card>
 
-            {/* Interview notes card */}
             <Card>
               <Box
                 sx={{
@@ -528,20 +524,20 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                 <Button
                   size="small"
                   variant="outlined"
-                  onClick={openNewNoteModal}
+                  onClick={profile.openNewNoteModal}
                 >
                   Añadir nota
                 </Button>
               </Box>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-                {interviewNotes.length === 0 ? (
+                {profile.interviewNotes.length === 0 ? (
                   <Typography variant="body2" color="text.secondary">
                     Aún no hay notas de entrevistas.
                   </Typography>
                 ) : (
-                  interviewNotes.map((note, i) => (
-                    <Box key={i}>
+                  profile.interviewNotes.map((note, i) => (
+                    <Box key={`${note.authorName}-${note.date}-${i}`}>
                       <Box
                         sx={{
                           display: 'flex',
@@ -609,7 +605,6 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
               </Box>
             </Card>
 
-            {/* Stage management info box */}
             <Box
               sx={{
                 bgcolor: '#eff6ff',
@@ -648,23 +643,24 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
       </Container>
 
       <CvViewerModal
-        open={cvModalOpen}
-        onClose={() => setCvModalOpen(false)}
+        open={profile.cvModalOpen}
+        onClose={() => profile.setCvModalOpen(false)}
         cvUrl={candidate.cvMockUrl}
         candidateName={candidate.fullName}
       />
 
       <InterviewModal
-        open={interviewModalOpen}
-        onClose={() => setInterviewModalOpen(false)}
+        open={profile.interviewModalOpen}
+        onClose={() => profile.setInterviewModalOpen(false)}
         candidateName={candidate.fullName}
-        type={interviewType}
+        type={profile.interviewType}
         skills={candidate.detectedSkills}
+        onSave={profile.handleInterviewSave}
       />
 
       <Dialog
-        open={newNoteModalOpen}
-        onClose={() => setNewNoteModalOpen(false)}
+        open={profile.newNoteModalOpen}
+        onClose={() => !profile.isSavingNote && profile.setNewNoteModalOpen(false)}
         maxWidth="sm"
         fullWidth
       >
@@ -677,9 +673,10 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
           <Stack spacing={2}>
             <TextField
               label="Autor"
-              value={newNoteAuthor}
-              onChange={(event) => setNewNoteAuthor(event.target.value)}
+              value={profile.newNoteAuthor}
+              onChange={(event) => profile.setNewNoteAuthor(event.target.value)}
               fullWidth
+              disabled={profile.isSavingNote}
             />
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
               <Typography variant="body2" sx={{ fontWeight: 600 }}>
@@ -687,14 +684,17 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
               </Typography>
               <TextField
                 type="date"
-                value={newNoteDate}
-                onChange={(event) => setNewNoteDate(event.target.value)}
+                value={profile.newNoteDate}
+                onChange={(event) => profile.setNewNoteDate(event.target.value)}
                 fullWidth
+                disabled={profile.isSavingNote}
                 error={Boolean(
-                  newNoteDate && Number.isNaN(new Date(newNoteDate).getTime()),
+                  profile.newNoteDate &&
+                    Number.isNaN(new Date(profile.newNoteDate).getTime()),
                 )}
                 helperText={
-                  newNoteDate && Number.isNaN(new Date(newNoteDate).getTime())
+                  profile.newNoteDate &&
+                  Number.isNaN(new Date(profile.newNoteDate).getTime())
                     ? 'Fecha inválida'
                     : ''
                 }
@@ -705,37 +705,156 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                 Calificación:
               </Typography>
               <Rating
-                value={newNoteRating}
-                onChange={(_, value) => setNewNoteRating(value || 0)}
+                value={profile.newNoteRating}
+                onChange={(_, value) => profile.setNewNoteRating(value || 0)}
                 size="small"
+                disabled={profile.isSavingNote}
               />
             </Box>
             <TextField
               label="Nota"
-              value={newNoteText}
-              onChange={(event) => setNewNoteText(event.target.value)}
+              value={profile.newNoteText}
+              onChange={(event) => profile.setNewNoteText(event.target.value)}
               fullWidth
               multiline
               minRows={3}
+              disabled={profile.isSavingNote}
             />
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={() => setNewNoteModalOpen(false)}>Cancelar</Button>
+          <Button
+            onClick={() => profile.setNewNoteModalOpen(false)}
+            disabled={profile.isSavingNote}
+          >
+            Cancelar
+          </Button>
           <Button
             variant="contained"
-            onClick={handleSaveNewNote}
-            disabled={
-              !newNoteAuthor ||
-              !newNoteDate ||
-              !newNoteText ||
-              Number.isNaN(new Date(newNoteDate).getTime())
+            onClick={profile.handleSaveNewNote}
+            disabled={isNewNoteInvalid || profile.isSavingNote}
+            startIcon={
+              profile.isSavingNote ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : null
             }
           >
-            Guardar nota
+            {profile.isSavingNote ? 'Guardando...' : 'Guardar nota'}
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog
+        open={profile.stageDialogOpen}
+        onClose={() => !profile.isUpdatingStage && profile.setStageDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Cambiar etapa del candidato</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2, color: 'text.secondary' }}>
+            Seleccioná la siguiente etapa del proceso de selección.
+          </DialogContentText>
+          <RadioGroup
+            value={profile.selectedStageKey}
+            onChange={(event) =>
+              profile.setSelectedStageKey(
+                event.target.value as typeof profile.selectedStageKey,
+              )
+            }
+          >
+            {profile.pendingStages.map((stage) => (
+              <FormControlLabel
+                key={stage.key}
+                value={stage.key}
+                control={<Radio disabled={profile.isUpdatingStage} />}
+                label={STAGE_LABELS[stage.key]}
+              />
+            ))}
+          </RadioGroup>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            onClick={() => profile.setStageDialogOpen(false)}
+            disabled={profile.isUpdatingStage}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={profile.handleStageChange}
+            disabled={!profile.selectedStageKey || profile.isUpdatingStage}
+            startIcon={
+              profile.isUpdatingStage ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : null
+            }
+          >
+            {profile.isUpdatingStage ? 'Actualizando...' : 'Confirmar cambio'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={profile.rejectDialogOpen}
+        onClose={() => !profile.isUpdatingStage && profile.setRejectDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Rechazar candidato</DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2, color: 'text.secondary' }}>
+            Indicá el motivo del rechazo. Esta acción actualizará el timeline de
+            la candidatura.
+          </DialogContentText>
+          <TextField
+            label="Motivo del rechazo"
+            value={profile.rejectReason}
+            onChange={(event) => profile.setRejectReason(event.target.value)}
+            fullWidth
+            multiline
+            minRows={3}
+            disabled={profile.isUpdatingStage}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2 }}>
+          <Button
+            onClick={() => profile.setRejectDialogOpen(false)}
+            disabled={profile.isUpdatingStage}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={profile.handleReject}
+            disabled={!profile.rejectReason.trim() || profile.isUpdatingStage}
+            startIcon={
+              profile.isUpdatingStage ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : null
+            }
+          >
+            {profile.isUpdatingStage ? 'Procesando...' : 'Confirmar rechazo'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={Boolean(profile.snackbar)}
+        autoHideDuration={3000}
+        onClose={() => profile.setSnackbar(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        {profile.snackbar ? (
+          <Alert
+            severity={profile.snackbar.severity}
+            onClose={() => profile.setSnackbar(null)}
+          >
+            {profile.snackbar.message}
+          </Alert>
+        ) : undefined}
+      </Snackbar>
     </Box>
   );
 }

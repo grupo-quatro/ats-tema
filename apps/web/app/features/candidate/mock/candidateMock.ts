@@ -31,6 +31,18 @@ export type CandidateStageKey =
   | 'contratado'
   | 'descartado';
 
+export const STAGE_ORDER: CandidateStageKey[] = [
+  'postulacion_recibida',
+  'en_revision',
+  'cv_presentado_area',
+  'entrevista1_agendada',
+  'entrevista1_evaluacion',
+  'entrevista2_agendada',
+  'entrevista2_evaluacion',
+  'oferta_enviada',
+  'contratado',
+];
+
 export const STAGE_LABELS: Record<CandidateStageKey, string> = {
   postulacion_recibida: 'Postulación recibida',
   en_revision: 'En revisión',

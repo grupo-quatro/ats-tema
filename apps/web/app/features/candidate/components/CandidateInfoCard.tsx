@@ -1,8 +1,19 @@
 'use client';
 
-import { Box, Button, Card, Divider, Typography } from '@mui/material';
+import { useState } from 'react';
+import {
+  Box,
+  Button,
+  Card,
+  Collapse,
+  Divider,
+  IconButton,
+  Typography,
+} from '@mui/material';
 import {
   Briefcase,
+  ChevronDown,
+  ChevronUp,
   FileText,
   GraduationCap,
   Mail,
@@ -21,6 +32,9 @@ export function CandidateInfoCard({
   candidate,
   onViewCv,
 }: CandidateInfoCardProps) {
+  const [experienceOpen, setExperienceOpen] = useState(true);
+  const [educationOpen, setEducationOpen] = useState(true);
+
   return (
     <Card sx={{ p: 0, overflow: 'hidden' }}>
       <Box
@@ -76,69 +90,111 @@ export function CandidateInfoCard({
 
         <Divider sx={{ mb: 2 }} />
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 1.5 }}>
-          <Briefcase size={13} color="#64748b" />
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ fontWeight: 500 }}
-          >
-            Experiencia Laboral
-          </Typography>
-        </Box>
-
-        {candidate.experience.map((exp, i) => (
-          <Box
-            key={i}
-            sx={{ mb: i < candidate.experience.length - 1 ? 1.75 : 0 }}
-          >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 1.5,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <Briefcase size={13} color="#64748b" />
             <Typography
-              variant="body2"
-              sx={{ fontWeight: 600, color: 'primary.main', lineHeight: 1.4 }}
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontWeight: 500 }}
             >
-              {exp.role}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {exp.company}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {exp.period}
+              Experiencia Laboral
             </Typography>
           </Box>
-        ))}
+          <IconButton
+            size="small"
+            onClick={() => setExperienceOpen((current) => !current)}
+            aria-label={
+              experienceOpen
+                ? 'Ocultar experiencia laboral'
+                : 'Mostrar experiencia laboral'
+            }
+          >
+            {experienceOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </IconButton>
+        </Box>
+
+        <Collapse in={experienceOpen}>
+          {candidate.experience.map((exp, i) => (
+            <Box
+              key={`${exp.role}-${exp.company}`}
+              sx={{ mb: i < candidate.experience.length - 1 ? 1.75 : 0 }}
+            >
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 600, color: 'primary.main', lineHeight: 1.4 }}
+              >
+                {exp.role}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {exp.company}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {exp.period}
+              </Typography>
+            </Box>
+          ))}
+        </Collapse>
 
         <Divider sx={{ my: 2 }} />
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mb: 1.5 }}>
-          <GraduationCap size={13} color="#64748b" />
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ fontWeight: 500 }}
-          >
-            Educación
-          </Typography>
-        </Box>
-
-        {candidate.education.map((edu, i) => (
-          <Box
-            key={i}
-            sx={{ mb: i < candidate.education.length - 1 ? 1.75 : 0 }}
-          >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            mb: 1.5,
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+            <GraduationCap size={13} color="#64748b" />
             <Typography
-              variant="body2"
-              sx={{ fontWeight: 600, lineHeight: 1.4 }}
+              variant="caption"
+              color="text.secondary"
+              sx={{ fontWeight: 500 }}
             >
-              {edu.degree}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {edu.institution}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {edu.period}
+              Educación
             </Typography>
           </Box>
-        ))}
+          <IconButton
+            size="small"
+            onClick={() => setEducationOpen((current) => !current)}
+            aria-label={
+              educationOpen ? 'Ocultar educación' : 'Mostrar educación'
+            }
+          >
+            {educationOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </IconButton>
+        </Box>
+
+        <Collapse in={educationOpen}>
+          {candidate.education.map((edu, i) => (
+            <Box
+              key={`${edu.degree}-${edu.institution}`}
+              sx={{ mb: i < candidate.education.length - 1 ? 1.75 : 0 }}
+            >
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 600, lineHeight: 1.4 }}
+              >
+                {edu.degree}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {edu.institution}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {edu.period}
+              </Typography>
+            </Box>
+          ))}
+        </Collapse>
 
         <Button
           variant="outlined"
