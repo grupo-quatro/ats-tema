@@ -93,7 +93,12 @@ const CANDIDATE_SEEDS: SeedCandidateDefinition[] = [
       location: 'Rosario, Argentina',
       yearsOfExperience: 4,
       education: 'Analista en Sistemas, UADE',
-      technicalSkills: ['Node.js', 'TypeScript', 'Firebase Functions', 'Firestore'],
+      technicalSkills: [
+        'Node.js',
+        'TypeScript',
+        'Firebase Functions',
+        'Firestore',
+      ],
       professionalSummary:
         'Backend developer con foco en Cloud Functions y arquitectura serverless.',
       profileStatus: 'completed',
@@ -113,7 +118,13 @@ const CANDIDATE_SEEDS: SeedCandidateDefinition[] = [
       location: 'Buenos Aires, Argentina',
       yearsOfExperience: 6,
       education: 'Ingeniería en Software, ITBA',
-      technicalSkills: ['Node.js', 'TypeScript', 'Firebase Functions', 'OpenAI API', 'Vitest'],
+      technicalSkills: [
+        'Node.js',
+        'TypeScript',
+        'Firebase Functions',
+        'OpenAI API',
+        'Vitest',
+      ],
       professionalSummary:
         'Senior backend engineer con experiencia en integraciones de IA y diseño de servicios escalables.',
       profileStatus: 'completed',
@@ -133,7 +144,12 @@ const CANDIDATE_SEEDS: SeedCandidateDefinition[] = [
       location: 'Buenos Aires, Argentina',
       yearsOfExperience: 4,
       education: 'Licenciatura en RRHH, UBA',
-      technicalSkills: ['Reclutamiento IT', 'Entrevistas', 'LinkedIn Recruiter', 'ATS'],
+      technicalSkills: [
+        'Reclutamiento IT',
+        'Entrevistas',
+        'LinkedIn Recruiter',
+        'ATS',
+      ],
       professionalSummary:
         'Technical recruiter con foco en perfiles tech. Experiencia en startups y consultoras.',
       profileStatus: 'completed',
@@ -153,7 +169,12 @@ const CANDIDATE_SEEDS: SeedCandidateDefinition[] = [
       location: 'Mendoza, Argentina',
       yearsOfExperience: 3,
       education: 'Ingeniería en Sistemas, UNCuyo',
-      technicalSkills: ['Testing funcional', 'Automatización', 'Playwright', 'Cypress'],
+      technicalSkills: [
+        'Testing funcional',
+        'Automatización',
+        'Playwright',
+        'Cypress',
+      ],
       professionalSummary:
         'QA automation analyst con experiencia en proyectos fintech.',
       profileStatus: 'completed',
@@ -193,7 +214,13 @@ const CANDIDATE_SEEDS: SeedCandidateDefinition[] = [
       location: 'Buenos Aires, Argentina',
       yearsOfExperience: 7,
       education: 'Ingeniería en Sistemas, UBA',
-      technicalSkills: ['Node.js', 'TypeScript', 'Firestore', 'Firebase Functions', 'Emulator Suite'],
+      technicalSkills: [
+        'Node.js',
+        'TypeScript',
+        'Firestore',
+        'Firebase Functions',
+        'Emulator Suite',
+      ],
       professionalSummary:
         'Backend senior con larga trayectoria en Firebase. Referente en arquitectura serverless.',
       profileStatus: 'completed',
@@ -213,7 +240,8 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'interview_2_done',
     status: 'active',
     fitScore: 91,
-    fitSummary: 'Perfil muy alineado. Domina Next.js con SSR y tiene experiencia en Firebase.',
+    fitSummary:
+      'Perfil muy alineado. Domina Next.js con SSR y tiene experiencia en Firebase.',
     notes: 'Segunda entrevista excelente. Recomendar oferta.',
   },
   {
@@ -250,7 +278,8 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'offer_sent',
     status: 'active',
     fitScore: 95,
-    fitSummary: 'Perfil ideal. Senior con experiencia directa en Firebase Functions y OpenAI.',
+    fitSummary:
+      'Perfil ideal. Senior con experiencia directa en Firebase Functions y OpenAI.',
     notes: 'Oferta enviada. Esperando respuesta.',
   },
   {
@@ -259,7 +288,8 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'interview_1_scheduled',
     status: 'active',
     fitScore: 80,
-    fitSummary: 'Sólido en Node.js y Firestore. No tiene experiencia con OpenAI API.',
+    fitSummary:
+      'Sólido en Node.js y Firestore. No tiene experiencia con OpenAI API.',
   },
   {
     candidateId: 'seed-candidate-08',
@@ -267,7 +297,8 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'screening',
     status: 'active',
     fitScore: 88,
-    fitSummary: 'Senior con amplia trayectoria. Referente en arquitectura serverless con Firebase.',
+    fitSummary:
+      'Senior con amplia trayectoria. Referente en arquitectura serverless con Firebase.',
   },
 
   // technical-recruiter — candidatos en distintas etapas
@@ -297,7 +328,8 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'interview_2_scheduled',
     status: 'active',
     fitScore: 83,
-    fitSummary: 'Buen perfil QA con Playwright y Cypress. Experiencia en fintech.',
+    fitSummary:
+      'Buen perfil QA con Playwright y Cypress. Experiencia en fintech.',
   },
   {
     candidateId: 'seed-candidate-02',
@@ -325,7 +357,10 @@ export class SeedCandidatesService {
       for (const seed of CANDIDATE_SEEDS) {
         const existing = await this.candidatesRepository.findById(seed.id);
 
-        await this.candidatesRepository.createOrUpdateCandidate(seed.id, seed.data);
+        await this.candidatesRepository.createOrUpdateCandidate(
+          seed.id,
+          seed.data,
+        );
 
         if (existing) {
           candidatesUpdated += 1;
@@ -336,10 +371,11 @@ export class SeedCandidatesService {
 
       for (const appSeed of APPLICATION_SEEDS) {
         try {
-          const existing = await this.applicationsRepository.findByCandidateAndJob(
-            appSeed.candidateId,
-            appSeed.jobId,
-          );
+          const existing =
+            await this.applicationsRepository.findByCandidateAndJob(
+              appSeed.candidateId,
+              appSeed.jobId,
+            );
 
           if (existing) {
             applicationsFailed += 1;
@@ -351,8 +387,12 @@ export class SeedCandidatesService {
             candidateId: appSeed.candidateId,
             stage: appSeed.stage,
             status: appSeed.status,
-            ...(appSeed.fitScore !== undefined && { fitScore: appSeed.fitScore }),
-            ...(appSeed.fitSummary !== undefined && { fitSummary: appSeed.fitSummary }),
+            ...(appSeed.fitScore !== undefined && {
+              fitScore: appSeed.fitScore,
+            }),
+            ...(appSeed.fitSummary !== undefined && {
+              fitSummary: appSeed.fitSummary,
+            }),
             ...(appSeed.notes !== undefined && { notes: appSeed.notes }),
             ...(appSeed.rejectionReason !== undefined && {
               rejectionReason: appSeed.rejectionReason,
@@ -366,7 +406,12 @@ export class SeedCandidatesService {
         }
       }
 
-      return { candidatesCreated, candidatesUpdated, applicationsCreated, applicationsFailed };
+      return {
+        candidatesCreated,
+        candidatesUpdated,
+        applicationsCreated,
+        applicationsFailed,
+      };
     } catch (error) {
       throw new SeedCandidatesServiceError(
         'No se pudieron cargar las semillas de candidatos.',

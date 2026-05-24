@@ -30,25 +30,35 @@ describe('validateGetApplicationsByJobPayload', () => {
     try {
       validateGetApplicationsByJobPayload({});
     } catch (e) {
-      expect((e as GetApplicationsByJobValidationError).message).toMatch(/jobId/);
+      expect((e as GetApplicationsByJobValidationError).message).toMatch(
+        /jobId/,
+      );
     }
   });
 
   it('lanza GetApplicationsByJobValidationError cuando jobId está vacío', () => {
-    expect(() =>
-      validateGetApplicationsByJobPayload({ jobId: '   ' }),
-    ).toThrow(GetApplicationsByJobValidationError);
+    expect(() => validateGetApplicationsByJobPayload({ jobId: '   ' })).toThrow(
+      GetApplicationsByJobValidationError,
+    );
   });
 
   it('lanza GetApplicationsByJobValidationError cuando orderBy no es válido', () => {
     expect(() =>
-      validateGetApplicationsByJobPayload({ jobId: 'job-1', orderBy: 'name' as any }),
+      validateGetApplicationsByJobPayload({
+        jobId: 'job-1',
+        orderBy: 'name' as any,
+      }),
     ).toThrow(GetApplicationsByJobValidationError);
 
     try {
-      validateGetApplicationsByJobPayload({ jobId: 'job-1', orderBy: 'name' as any });
+      validateGetApplicationsByJobPayload({
+        jobId: 'job-1',
+        orderBy: 'name' as any,
+      });
     } catch (e) {
-      expect((e as GetApplicationsByJobValidationError).message).toMatch(/ordenamiento/);
+      expect((e as GetApplicationsByJobValidationError).message).toMatch(
+        /ordenamiento/,
+      );
     }
   });
 
@@ -81,23 +91,35 @@ describe('validateGetApplicationsByJobPayload', () => {
 
   it('acepta orderBy createdAt', () => {
     expect(() =>
-      validateGetApplicationsByJobPayload({ jobId: 'job-1', orderBy: 'createdAt' }),
+      validateGetApplicationsByJobPayload({
+        jobId: 'job-1',
+        orderBy: 'createdAt',
+      }),
     ).not.toThrow();
   });
 
   it('acepta orderBy fitScore', () => {
     expect(() =>
-      validateGetApplicationsByJobPayload({ jobId: 'job-1', orderBy: 'fitScore' }),
+      validateGetApplicationsByJobPayload({
+        jobId: 'job-1',
+        orderBy: 'fitScore',
+      }),
     ).not.toThrow();
   });
 
   it('acepta orderDirection asc y desc', () => {
     expect(() =>
-      validateGetApplicationsByJobPayload({ jobId: 'job-1', orderDirection: 'asc' }),
+      validateGetApplicationsByJobPayload({
+        jobId: 'job-1',
+        orderDirection: 'asc',
+      }),
     ).not.toThrow();
 
     expect(() =>
-      validateGetApplicationsByJobPayload({ jobId: 'job-1', orderDirection: 'desc' }),
+      validateGetApplicationsByJobPayload({
+        jobId: 'job-1',
+        orderDirection: 'desc',
+      }),
     ).not.toThrow();
   });
 
@@ -113,7 +135,10 @@ describe('validateGetApplicationsByJobPayload', () => {
 
   it('ignora orderBy undefined sin lanzar', () => {
     expect(() =>
-      validateGetApplicationsByJobPayload({ jobId: 'job-1', orderBy: undefined }),
+      validateGetApplicationsByJobPayload({
+        jobId: 'job-1',
+        orderBy: undefined,
+      }),
     ).not.toThrow();
   });
 });

@@ -40,6 +40,8 @@ export const updateApplicationStage = onRequest(async (request, response) => {
     }
 
     logger.error('Error inesperado actualizando etapa de postulación', error);
-    response.status(500).json({ error: 'No se pudo actualizar la postulación.' });
+    response
+      .status(500)
+      .json({ error: 'No se pudo actualizar la postulación.' });
   }
 });

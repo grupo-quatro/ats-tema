@@ -32,7 +32,9 @@ export function validateUpdateApplicationStagePayload(
   }
 
   if (!payload.stage) {
-    throw new UpdateApplicationValidationError('El campo stage es obligatorio.');
+    throw new UpdateApplicationValidationError(
+      'El campo stage es obligatorio.',
+    );
   }
 
   if (!VALID_STAGES.includes(payload.stage as (typeof VALID_STAGES)[number])) {

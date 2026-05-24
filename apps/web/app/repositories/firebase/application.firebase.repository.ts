@@ -24,7 +24,8 @@ export class ApplicationFirebaseRepository implements IApplicationRepository {
     const params = new URLSearchParams();
     params.set('jobId', payload.jobId);
     if (payload.orderBy) params.set('orderBy', payload.orderBy);
-    if (payload.orderDirection) params.set('orderDirection', payload.orderDirection);
+    if (payload.orderDirection)
+      params.set('orderDirection', payload.orderDirection);
     if (payload.limit !== undefined) params.set('limit', String(payload.limit));
 
     const res = await fetch(

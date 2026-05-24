@@ -1,9 +1,13 @@
-import type { ApplicationWithCandidateDTO, ApplicationStage } from '@ats/shared-types';
+import type {
+  ApplicationWithCandidateDTO,
+  ApplicationStage,
+} from '@ats/shared-types';
 import type {
   CandidateMockProfile,
   CandidateStageEntry,
   CandidateStageKey,
 } from '../mock/candidateMock';
+import { STAGE_LABELS } from '../mock/candidateMock';
 
 export const STAGE_ORDER: ApplicationStage[] = [
   'applied',
@@ -17,7 +21,9 @@ export const STAGE_ORDER: ApplicationStage[] = [
   'hired',
 ];
 
-export const STAGE_KEY_MAP: Partial<Record<ApplicationStage, CandidateStageKey>> = {
+export const STAGE_KEY_MAP: Partial<
+  Record<ApplicationStage, CandidateStageKey>
+> = {
   applied: 'postulacion_recibida',
   screening: 'en_revision',
   cv_submitted: 'cv_presentado_area',
@@ -42,7 +48,9 @@ export function getInitials(name?: string): string {
     .toUpperCase();
 }
 
-export function buildStageHistory(currentStage: ApplicationStage): CandidateStageEntry[] {
+export function buildStageHistory(
+  currentStage: ApplicationStage,
+): CandidateStageEntry[] {
   const currentIndex = STAGE_ORDER.indexOf(currentStage);
 
   return STAGE_ORDER.map((stage, index) => {
@@ -87,7 +95,7 @@ export function mapApplicationToProfile(
         ]
       : [],
     stageHistory: buildStageHistory(application.stage),
-    currentStage: stageKey ?? application.stage,
+    currentStage: stageKey ? (STAGE_LABELS[stageKey] ?? application.stage) : application.stage,
     cvMockUrl: null,
   };
 }

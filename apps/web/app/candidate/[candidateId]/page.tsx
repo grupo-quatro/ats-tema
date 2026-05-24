@@ -11,7 +11,7 @@ import { mapApplicationToProfile } from '@/features/candidate/utils/candidate-pr
 
 export default function CandidatePage() {
   const params = useParams();
-const [profile, setProfile] = useState<CandidateMockProfile | null>(null);
+  const [profile, setProfile] = useState<CandidateMockProfile | null>(null);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {

@@ -29,15 +29,24 @@ export const getApplicationsByJob = onRequest(async (request, response) => {
 
     const payload: Partial<GetApplicationsByJobPayload> = {
       jobId: typeof jobId === 'string' ? jobId.trim() : undefined,
-      orderBy: typeof orderBy === 'string' ? (orderBy as GetApplicationsByJobPayload['orderBy']) : undefined,
-      orderDirection: typeof orderDirection === 'string' ? (orderDirection as GetApplicationsByJobPayload['orderDirection']) : undefined,
+      orderBy:
+        typeof orderBy === 'string'
+          ? (orderBy as GetApplicationsByJobPayload['orderBy'])
+          : undefined,
+      orderDirection:
+        typeof orderDirection === 'string'
+          ? (orderDirection as GetApplicationsByJobPayload['orderDirection'])
+          : undefined,
       limit: limit !== undefined ? Number(limit) : undefined,
     };
 
     validateGetApplicationsByJobPayload(payload);
 
     const { jobId: validJobId, ...options } = payload;
-    const result = await getApplicationsByJobService.getApplicationsByJob(validJobId, options);
+    const result = await getApplicationsByJobService.getApplicationsByJob(
+      validJobId,
+      options,
+    );
 
     response.status(200).json(result);
   } catch (error) {
@@ -63,6 +72,8 @@ export const getApplicationsByJob = onRequest(async (request, response) => {
     }
 
     logger.error('Error inesperado obteniendo postulaciones', error);
-    response.status(500).json({ error: 'No se pudieron obtener las postulaciones.' });
+    response
+      .status(500)
+      .json({ error: 'No se pudieron obtener las postulaciones.' });
   }
 });

@@ -114,7 +114,9 @@ describe('mapApplicationToProfile', () => {
   });
 
   it('usa 0 como fitScore cuando no está definido', () => {
-    const profile = mapApplicationToProfile(makeApplication({ fitScore: undefined }));
+    const profile = mapApplicationToProfile(
+      makeApplication({ fitScore: undefined }),
+    );
     expect(profile.fitScore).toBe(0);
   });
 
@@ -126,7 +128,9 @@ describe('mapApplicationToProfile', () => {
   });
 
   it('retorna strengths vacío cuando fitSummary no está definido', () => {
-    const profile = mapApplicationToProfile(makeApplication({ fitSummary: undefined }));
+    const profile = mapApplicationToProfile(
+      makeApplication({ fitSummary: undefined }),
+    );
     expect(profile.strengths).toEqual([]);
   });
 
@@ -139,7 +143,9 @@ describe('mapApplicationToProfile', () => {
   });
 
   it('retorna interviewNotes vacío cuando notes no está definido', () => {
-    const profile = mapApplicationToProfile(makeApplication({ notes: undefined }));
+    const profile = mapApplicationToProfile(
+      makeApplication({ notes: undefined }),
+    );
     expect(profile.interviewNotes).toEqual([]);
   });
 
@@ -165,13 +171,17 @@ describe('mapApplicationToProfile', () => {
   });
 
   it('construye el stageHistory con el stage correcto como current', () => {
-    const profile = mapApplicationToProfile(makeApplication({ stage: 'cv_submitted' }));
+    const profile = mapApplicationToProfile(
+      makeApplication({ stage: 'cv_submitted' }),
+    );
     const current = profile.stageHistory.find((s) => s.status === 'current');
     expect(current?.key).toBe('cv_presentado_area');
   });
 
-  it('mapea rejected a currentStage descartado', () => {
-    const profile = mapApplicationToProfile(makeApplication({ stage: 'rejected' }));
-    expect(profile.currentStage).toBe('descartado');
+  it('mapea rejected a currentStage "Descartado"', () => {
+    const profile = mapApplicationToProfile(
+      makeApplication({ stage: 'rejected' }),
+    );
+    expect(profile.currentStage).toBe('Descartado');
   });
 });

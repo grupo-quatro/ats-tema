@@ -32,7 +32,9 @@ describe('validateUpdateApplicationStagePayload', () => {
     try {
       validateUpdateApplicationStagePayload({ stage: 'screening' });
     } catch (e) {
-      expect((e as UpdateApplicationValidationError).message).toMatch(/applicationId/);
+      expect((e as UpdateApplicationValidationError).message).toMatch(
+        /applicationId/,
+      );
     }
   });
 
@@ -71,7 +73,9 @@ describe('validateUpdateApplicationStagePayload', () => {
         stage: 'interview_hr' as any,
       });
     } catch (e) {
-      expect((e as UpdateApplicationValidationError).message).toMatch(/interview_hr/);
+      expect((e as UpdateApplicationValidationError).message).toMatch(
+        /interview_hr/,
+      );
     }
   });
 
@@ -89,7 +93,9 @@ describe('validateUpdateApplicationStagePayload', () => {
         stage: 'rejected',
       });
     } catch (e) {
-      expect((e as UpdateApplicationValidationError).message).toMatch(/rejectionReason/);
+      expect((e as UpdateApplicationValidationError).message).toMatch(
+        /rejectionReason/,
+      );
     }
   });
 
