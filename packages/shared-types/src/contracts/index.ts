@@ -5,3 +5,4 @@ export * from './get-applications-by-job';
 export * from './submit-application';
 export * from './job';
 export * from './confirmCandidate';
+export * from './update-application';

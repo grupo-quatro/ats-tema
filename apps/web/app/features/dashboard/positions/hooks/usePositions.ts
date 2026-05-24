@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { getAuth } from 'firebase/auth';
 import { getFunctionUrl } from '@/shared/lib/firebase';
 import type {
   ListPositionsFilters,
@@ -24,9 +25,14 @@ async function fetchPositions(
   if (filters.orderBy) params.set('orderBy', filters.orderBy);
   if (filters.orderDir) params.set('orderDir', filters.orderDir);
 
+  const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === 'true';
+  const token = useEmulators
+    ? 'dev-recruiter'
+    : await getAuth().currentUser?.getIdToken() ?? '';
+
   const url = `${getFunctionUrl('listPositions')}?${params.toString()}`;
   const res = await fetch(url, {
-    headers: { Authorization: 'Bearer dev-recruiter' },
+    headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error('Error al obtener las posiciones');
   return res.json();

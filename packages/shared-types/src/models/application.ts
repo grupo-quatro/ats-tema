@@ -1,11 +1,13 @@
 export type ApplicationStage =
-  | 'profile_pending'
+  | 'profile_pending' // TODO: migrar a 'applied' cuando se consolide el flujo CV (candidateService)
   | 'applied'
   | 'screening'
-  | 'interview_hr'
-  | 'interview_technical'
-  | 'interview_final'
-  | 'offer'
+  | 'cv_submitted'
+  | 'interview_1_scheduled'
+  | 'interview_1_done'
+  | 'interview_2_scheduled'
+  | 'interview_2_done'
+  | 'offer_sent'
   | 'hired'
   | 'rejected'
   | 'withdrawn';
