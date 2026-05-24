@@ -10,7 +10,8 @@
     "compile-fn": "turbo run build --filter=@ats/functions",
     "dev-web": "turbo run dev --filter=@ats/web ",
     "test": "turbo run test",
-    "test:watch": "turbo run test -- --watch"
+    "test:watch": "turbo run test -- --watch",
+    "seed": "node scripts/seed-emulator.mjs"
   },
   "config": {
     "ghooks": {

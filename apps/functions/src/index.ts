@@ -11,6 +11,7 @@ export {
   updatePositionStatus,
 } from './callables/jobCallable';
 export { seedJobs } from './callables/seed-jobs';
+export { seedCandidates } from './callables/seed-candidates';
 export {
   registerCandidate,
   registerCandidateCV,

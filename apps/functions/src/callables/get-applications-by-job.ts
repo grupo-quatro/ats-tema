@@ -1,52 +1,68 @@
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { logger } from 'firebase-functions';
+import { onRequest } from 'firebase-functions/v2/https';
 
 import type { GetApplicationsByJobPayload } from '@ats/shared-types';
 
-import { validateGetApplicationsByJobPayload } from '../validators/get-applications-by-job-validator';
+import { HttpAuthError, requireAuthenticatedUser } from '../core/http-auth';
+import {
+  validateGetApplicationsByJobPayload,
+  GetApplicationsByJobValidationError,
+} from '../validators/get-applications-by-job-validator';
 import {
   GetApplicationsByJobService,
+  GetApplicationsByJobServiceError,
   JobNotFoundError,
 } from '../services/get-applications-by-job-service';
 
 const getApplicationsByJobService = new GetApplicationsByJobService();
 
-export const getApplicationsByJob = onCall(async (request) => {
-  if (!request.auth) {
-    throw new HttpsError(
-      'unauthenticated',
-      'El usuario debe estar autenticado para consultar las postulaciones.',
-    );
-  }
-
+export const getApplicationsByJob = onRequest(async (request, response) => {
   try {
-    const payload = request.data as Partial<GetApplicationsByJobPayload>;
+    if (request.method !== 'GET') {
+      response.status(405).json({ error: 'Method Not Allowed.' });
+      return;
+    }
+
+    await requireAuthenticatedUser(request);
+
+    const { jobId, orderBy, orderDirection, limit } = request.query;
+
+    const payload: Partial<GetApplicationsByJobPayload> = {
+      jobId: typeof jobId === 'string' ? jobId.trim() : undefined,
+      orderBy: typeof orderBy === 'string' ? (orderBy as GetApplicationsByJobPayload['orderBy']) : undefined,
+      orderDirection: typeof orderDirection === 'string' ? (orderDirection as GetApplicationsByJobPayload['orderDirection']) : undefined,
+      limit: limit !== undefined ? Number(limit) : undefined,
+    };
 
     validateGetApplicationsByJobPayload(payload);
 
-    const { jobId, ...options } = payload;
+    const { jobId: validJobId, ...options } = payload;
+    const result = await getApplicationsByJobService.getApplicationsByJob(validJobId, options);
 
-    return await getApplicationsByJobService.getApplicationsByJob(
-      jobId,
-      options,
-    );
+    response.status(200).json(result);
   } catch (error) {
-    if (error instanceof HttpsError) {
-      throw error;
+    if (error instanceof HttpAuthError) {
+      response.status(401).json({ error: error.message });
+      return;
+    }
+
+    if (error instanceof GetApplicationsByJobValidationError) {
+      response.status(400).json({ error: error.message });
+      return;
     }
 
     if (error instanceof JobNotFoundError) {
-      throw new HttpsError('not-found', error.message);
+      response.status(404).json({ error: error.message });
+      return;
     }
 
-    logger.error(
-      'Error inesperado obteniendo postulaciones por posición',
-      error,
-    );
+    if (error instanceof GetApplicationsByJobServiceError) {
+      logger.error('Error de negocio obteniendo postulaciones', error);
+      response.status(500).json({ error: error.message });
+      return;
+    }
 
-    throw new HttpsError(
-      'internal',
-      'No se pudieron obtener las postulaciones.',
-    );
+    logger.error('Error inesperado obteniendo postulaciones', error);
+    response.status(500).json({ error: 'No se pudieron obtener las postulaciones.' });
   }
 });

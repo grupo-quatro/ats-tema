@@ -34,7 +34,7 @@ import { useGetCandidatesByJob } from '../hooks/usePipeline';
 type Props = {
   jobId: string;
   jobTitle: string;
-  onViewCandidate: (candidateId: string) => void;
+  onViewCandidate: (candidate: ApplicationWithCandidateDTO) => void;
 };
 
 type SortField = 'candidateName' | 'fitScore' | 'stage' | 'updatedAt';
@@ -464,9 +464,7 @@ export default function CandidatePipeline({
                           <Button
                             variant="contained"
                             startIcon={<Eye size={16} />}
-                            onClick={() =>
-                              onViewCandidate(candidate.candidateId)
-                            }
+                            onClick={() => onViewCandidate(candidate)}
                             sx={{
                               bgcolor: '#eff6ff',
                               color: '#2563eb',

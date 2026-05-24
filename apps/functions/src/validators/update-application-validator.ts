@@ -1,5 +1,4 @@
 import type { UpdateApplicationStagePayload } from '@ats/shared-types';
-import { HttpsError } from 'firebase-functions/v2/https';
 
 const VALID_STAGES = [
   'profile_pending',
@@ -16,23 +15,28 @@ const VALID_STAGES = [
   'withdrawn',
 ] as const;
 
+export class UpdateApplicationValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'UpdateApplicationValidationError';
+  }
+}
+
 export function validateUpdateApplicationStagePayload(
   payload: Partial<UpdateApplicationStagePayload>,
 ): asserts payload is UpdateApplicationStagePayload {
   if (!payload.applicationId || payload.applicationId.trim().length === 0) {
-    throw new HttpsError(
-      'invalid-argument',
+    throw new UpdateApplicationValidationError(
       'El identificador de la postulación (applicationId) es obligatorio.',
     );
   }
 
   if (!payload.stage) {
-    throw new HttpsError('invalid-argument', 'El campo stage es obligatorio.');
+    throw new UpdateApplicationValidationError('El campo stage es obligatorio.');
   }
 
   if (!VALID_STAGES.includes(payload.stage as (typeof VALID_STAGES)[number])) {
-    throw new HttpsError(
-      'invalid-argument',
+    throw new UpdateApplicationValidationError(
       `El stage "${payload.stage}" no es válido.`,
     );
   }
@@ -41,8 +45,7 @@ export function validateUpdateApplicationStagePayload(
     payload.stage === 'rejected' &&
     (!payload.rejectionReason || payload.rejectionReason.trim().length === 0)
   ) {
-    throw new HttpsError(
-      'invalid-argument',
+    throw new UpdateApplicationValidationError(
       'El motivo de rechazo (rejectionReason) es obligatorio cuando el stage es "rejected".',
     );
   }

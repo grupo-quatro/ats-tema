@@ -5,7 +5,7 @@ import {
   connectFunctionsEmulator,
 } from 'firebase/functions';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { getAuth, connectAuthEmulator, signInAnonymously } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -36,6 +36,9 @@ if (isNew && useEmulators) {
     Number(functionsEmulatorPort),
   );
   connectStorageEmulator(storage, '127.0.0.1', 9199);
+  // En el emulador no hay sesión real — autenticar anónimamente para que
+  // los onCall reciban request.auth y no rechacen con 401.
+  signInAnonymously(auth);
 }
 
 export function callFunction<TData, TResult>(name: string, data: TData) {

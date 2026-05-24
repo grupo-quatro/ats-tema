@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { HttpsError } from 'firebase-functions/v2/https';
-import { validateUpdateApplicationStagePayload } from '../update-application-validator';
+import {
+  validateUpdateApplicationStagePayload,
+  UpdateApplicationValidationError,
+} from '../update-application-validator';
 
 describe('validateUpdateApplicationStagePayload', () => {
   it('no lanza cuando el payload es válido', () => {
@@ -22,48 +24,46 @@ describe('validateUpdateApplicationStagePayload', () => {
     ).not.toThrow();
   });
 
-  it('lanza invalid-argument cuando applicationId está ausente', () => {
+  it('lanza UpdateApplicationValidationError cuando applicationId está ausente', () => {
     expect(() =>
       validateUpdateApplicationStagePayload({ stage: 'screening' }),
-    ).toThrow(HttpsError);
+    ).toThrow(UpdateApplicationValidationError);
 
     try {
       validateUpdateApplicationStagePayload({ stage: 'screening' });
     } catch (e) {
-      expect((e as HttpsError).code).toBe('invalid-argument');
-      expect((e as HttpsError).message).toMatch(/applicationId/);
+      expect((e as UpdateApplicationValidationError).message).toMatch(/applicationId/);
     }
   });
 
-  it('lanza invalid-argument cuando applicationId está vacío', () => {
+  it('lanza UpdateApplicationValidationError cuando applicationId está vacío', () => {
     expect(() =>
       validateUpdateApplicationStagePayload({
         applicationId: '   ',
         stage: 'screening',
       }),
-    ).toThrow(HttpsError);
+    ).toThrow(UpdateApplicationValidationError);
   });
 
-  it('lanza invalid-argument cuando stage está ausente', () => {
+  it('lanza UpdateApplicationValidationError cuando stage está ausente', () => {
     expect(() =>
       validateUpdateApplicationStagePayload({ applicationId: 'app-1' }),
-    ).toThrow(HttpsError);
+    ).toThrow(UpdateApplicationValidationError);
 
     try {
       validateUpdateApplicationStagePayload({ applicationId: 'app-1' });
     } catch (e) {
-      expect((e as HttpsError).code).toBe('invalid-argument');
-      expect((e as HttpsError).message).toMatch(/stage/);
+      expect((e as UpdateApplicationValidationError).message).toMatch(/stage/);
     }
   });
 
-  it('lanza invalid-argument cuando stage no es un valor válido del enum', () => {
+  it('lanza UpdateApplicationValidationError cuando stage no es un valor válido del enum', () => {
     expect(() =>
       validateUpdateApplicationStagePayload({
         applicationId: 'app-1',
         stage: 'interview_hr' as any,
       }),
-    ).toThrow(HttpsError);
+    ).toThrow(UpdateApplicationValidationError);
 
     try {
       validateUpdateApplicationStagePayload({
@@ -71,18 +71,17 @@ describe('validateUpdateApplicationStagePayload', () => {
         stage: 'interview_hr' as any,
       });
     } catch (e) {
-      expect((e as HttpsError).code).toBe('invalid-argument');
-      expect((e as HttpsError).message).toMatch(/interview_hr/);
+      expect((e as UpdateApplicationValidationError).message).toMatch(/interview_hr/);
     }
   });
 
-  it('lanza invalid-argument cuando stage es rejected sin rejectionReason', () => {
+  it('lanza UpdateApplicationValidationError cuando stage es rejected sin rejectionReason', () => {
     expect(() =>
       validateUpdateApplicationStagePayload({
         applicationId: 'app-1',
         stage: 'rejected',
       }),
-    ).toThrow(HttpsError);
+    ).toThrow(UpdateApplicationValidationError);
 
     try {
       validateUpdateApplicationStagePayload({
@@ -90,19 +89,18 @@ describe('validateUpdateApplicationStagePayload', () => {
         stage: 'rejected',
       });
     } catch (e) {
-      expect((e as HttpsError).code).toBe('invalid-argument');
-      expect((e as HttpsError).message).toMatch(/rejectionReason/);
+      expect((e as UpdateApplicationValidationError).message).toMatch(/rejectionReason/);
     }
   });
 
-  it('lanza invalid-argument cuando stage es rejected con rejectionReason vacío', () => {
+  it('lanza UpdateApplicationValidationError cuando stage es rejected con rejectionReason vacío', () => {
     expect(() =>
       validateUpdateApplicationStagePayload({
         applicationId: 'app-1',
         stage: 'rejected',
         rejectionReason: '   ',
       }),
-    ).toThrow(HttpsError);
+    ).toThrow(UpdateApplicationValidationError);
   });
 
   it.each([
