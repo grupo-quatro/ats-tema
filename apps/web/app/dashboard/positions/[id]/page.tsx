@@ -230,6 +230,28 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
             </Stack>
 
             <Stack direction="row" spacing={2}>
+              <Link
+                href={`/dashboard/positions/${job.id}/candidates?title=${encodeURIComponent(job.title)}`}
+                style={{ textDecoration: 'none' }}
+              >
+                <Button
+                  variant="contained"
+                  startIcon={<Users size={18} />}
+                  sx={{
+                    textTransform: 'none',
+                    bgcolor: '#fff',
+                    color: '#1d4ed8',
+                    px: 4,
+                    py: 1.2,
+                    fontWeight: 700,
+                    borderRadius: '10px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                    '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
+                  }}
+                >
+                  Candidatos
+                </Button>
+              </Link>
               <TogglePositionStatusButton
                 jobId={job.id}
                 currentStatus={job.status}
