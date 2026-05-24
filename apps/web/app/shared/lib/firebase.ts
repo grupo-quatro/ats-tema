@@ -24,12 +24,22 @@ export const functions = getFunctions(
 export const storage = getStorage(app);
 export const auth = getAuth(app);
 
-if (isNew && process.env.NEXT_PUBLIC_USE_EMULATORS === 'true') {
+const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === 'true';
+const functionsEmulatorPort =
+  process.env.NEXT_PUBLIC_FUNCTIONS_EMULATOR_PORT ?? '5001';
+
+if (isNew && useEmulators) {
   connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
-  connectFunctionsEmulator(functions, '127.0.0.1', 5001);
+  connectFunctionsEmulator(
+    functions,
+    '127.0.0.1',
+    Number(functionsEmulatorPort),
+  );
   connectStorageEmulator(storage, '127.0.0.1', 9199);
 }
 
 export function callFunction<TData, TResult>(name: string, data: TData) {
   return httpsCallable<TData, TResult>(functions, name)(data);
 }
+
+export { getFunctionUrl } from './functions-url';

@@ -7,19 +7,12 @@ interface JobPageProps {
   params: Promise<{ jobId: string }>;
 }
 
-function getJobDetailUrl(jobId: string): string {
-  const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === 'true';
-  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-  const region = process.env.NEXT_PUBLIC_FUNCTIONS_REGION ?? 'us-central1';
-
-  if (useEmulators) {
-    return `http://127.0.0.1:5001/${projectId}/${region}/getJobDetail?jobId=${jobId}`;
-  }
-  return `https://${region}-${projectId}.cloudfunctions.net/getJobDetail?jobId=${jobId}`;
-}
+import { getFunctionUrl } from '../../shared/lib/firebase';
 
 async function fetchJob(jobId: string): Promise<Job | null> {
-  const res = await fetch(getJobDetailUrl(jobId), { cache: 'no-store' });
+  const res = await fetch(`${getFunctionUrl('getJobDetail')}?jobId=${jobId}`, {
+    cache: 'no-store',
+  });
   if (res.status === 404) return null;
   if (!res.ok) throw new Error('Error al obtener el detalle del puesto');
   return res.json();

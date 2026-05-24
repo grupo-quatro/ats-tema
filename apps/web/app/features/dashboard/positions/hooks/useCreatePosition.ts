@@ -2,20 +2,10 @@
 
 import { useMutation } from '@tanstack/react-query';
 import { CreateJobDTO } from '@ats/shared-types';
-
-function getCreatePositionUrl(): string {
-  const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === 'true';
-  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-  const region = process.env.NEXT_PUBLIC_FUNCTIONS_REGION ?? 'us-central1';
-
-  if (useEmulators) {
-    return `http://127.0.0.1:5001/${projectId}/${region}/createJob`;
-  }
-  return `https://${region}-${projectId}.cloudfunctions.net/createJob`;
-}
+import { getFunctionUrl } from '@/shared/lib/firebase';
 
 async function createPosition(jobData: CreateJobDTO): Promise<Response> {
-  const res = await fetch(getCreatePositionUrl(), {
+  const res = await fetch(getFunctionUrl('createJob'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

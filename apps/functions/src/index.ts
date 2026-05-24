@@ -4,7 +4,9 @@ export {
   getInternalJobDetail,
   getJobDetail,
   getPosition,
+  listDepartments,
   listOpenJobs,
+  listPositions,
   updatePosition,
   updatePositionStatus,
 } from './callables/jobCallable';

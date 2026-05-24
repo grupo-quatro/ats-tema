@@ -3,17 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { getAuth } from 'firebase/auth';
 import type { JobStatus, UpdatePositionStatusPayload } from '@ats/shared-types';
-
-function getUpdatePositionStatusUrl(): string {
-  const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === 'true';
-  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-  const region = process.env.NEXT_PUBLIC_FUNCTIONS_REGION ?? 'us-central1';
-
-  if (useEmulators) {
-    return `http://127.0.0.1:5001/${projectId}/${region}/updatePositionStatus`;
-  }
-  return `https://${region}-${projectId}.cloudfunctions.net/updatePositionStatus`;
-}
+import { getFunctionUrl } from '@/shared/lib/firebase';
 
 async function getAuthToken(): Promise<string> {
   const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === 'true';
@@ -30,7 +20,7 @@ async function updatePositionStatus(
 ): Promise<void> {
   const token = await getAuthToken();
 
-  const res = await fetch(getUpdatePositionStatusUrl(), {
+  const res = await fetch(getFunctionUrl('updatePositionStatus'), {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
@@ -51,6 +41,7 @@ export function useUpdatePositionStatus() {
   return useMutation({
     mutationFn: updatePositionStatus,
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
       queryClient.invalidateQueries({ queryKey: ['positions'] });
     },
   });
