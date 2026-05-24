@@ -48,9 +48,27 @@ describe('JobsRepository.findWithFilters', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockQuery = buildMockQuery([
-      makeFirestoreJob({ id: 'job-1', title: 'Frontend Developer', department: 'Engineering', location: 'remote', status: 'open' }),
-      makeFirestoreJob({ id: 'job-2', title: 'Backend Developer', department: 'Engineering', location: 'hybrid', status: 'open' }),
-      makeFirestoreJob({ id: 'job-3', title: 'UX Designer', department: 'Design', location: 'remote', status: 'open' }),
+      makeFirestoreJob({
+        id: 'job-1',
+        title: 'Frontend Developer',
+        department: 'Engineering',
+        location: 'remote',
+        status: 'open',
+      }),
+      makeFirestoreJob({
+        id: 'job-2',
+        title: 'Backend Developer',
+        department: 'Engineering',
+        location: 'hybrid',
+        status: 'open',
+      }),
+      makeFirestoreJob({
+        id: 'job-3',
+        title: 'UX Designer',
+        department: 'Design',
+        location: 'remote',
+        status: 'open',
+      }),
     ]);
     (db.collection as any).mockReturnValue(mockQuery);
     repo = new JobsRepository();
@@ -66,14 +84,22 @@ describe('JobsRepository.findWithFilters', () => {
   });
 
   it('aplica filtro de location en memoria', async () => {
-    const result = await repo.findWithFilters({ location: 'remote', page: 1, limit: 10 });
+    const result = await repo.findWithFilters({
+      location: 'remote',
+      page: 1,
+      limit: 10,
+    });
 
     expect(result.jobs.every((j) => j.location === 'remote')).toBe(true);
     expect(result.total).toBe(2);
   });
 
   it('aplica filtro de department en memoria', async () => {
-    const result = await repo.findWithFilters({ department: 'Design', page: 1, limit: 10 });
+    const result = await repo.findWithFilters({
+      department: 'Design',
+      page: 1,
+      limit: 10,
+    });
 
     expect(result.jobs.every((j) => j.department === 'Design')).toBe(true);
     expect(result.total).toBe(1);
@@ -101,7 +127,12 @@ describe('JobsRepository.findWithFilters', () => {
   });
 
   it('aplica orderBy en Firestore cuando no hay search', async () => {
-    await repo.findWithFilters({ orderBy: 'title', orderDir: 'asc', page: 1, limit: 10 });
+    await repo.findWithFilters({
+      orderBy: 'title',
+      orderDir: 'asc',
+      page: 1,
+      limit: 10,
+    });
 
     expect(mockQuery.orderBy).toHaveBeenCalledWith('title', 'asc');
   });

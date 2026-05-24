@@ -52,7 +52,10 @@ describe('JobService.listPositions', () => {
 
     const result = await service.listPositions({ page: 1, limit: 10 });
 
-    expect(mockRepo.findWithFilters).toHaveBeenCalledWith({ page: 1, limit: 10 });
+    expect(mockRepo.findWithFilters).toHaveBeenCalledWith({
+      page: 1,
+      limit: 10,
+    });
     expect(result).toEqual(response);
   });
 
@@ -67,7 +70,12 @@ describe('JobService.listPositions', () => {
       orderBy: 'title' as const,
       orderDir: 'asc' as const,
     };
-    mockRepo.findWithFilters.mockResolvedValue({ jobs: [], total: 0, page: 2, totalPages: 0 });
+    mockRepo.findWithFilters.mockResolvedValue({
+      jobs: [],
+      total: 0,
+      page: 2,
+      totalPages: 0,
+    });
 
     await service.listPositions(filters);
 
