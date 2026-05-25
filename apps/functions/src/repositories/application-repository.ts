@@ -1,9 +1,11 @@
+// branch: fb-50-57
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
 import type {
   Application,
   CreateApplicationDTO,
   QueryOptions,
+  SkillMatchStats,
   UpdateApplicationDTO,
 } from '@ats/shared-types';
 
@@ -13,11 +15,15 @@ const APPLICATIONS_COLLECTION = 'applications';
 
 type FirestoreApplication = Omit<
   Application,
-  'createdAt' | 'updatedAt' | 'stageUpdatedAt'
+  'createdAt' | 'updatedAt' | 'stageUpdatedAt' | 'skillMatchStats'
 > & {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   stageUpdatedAt: Timestamp;
+  // actualizadoEn llega como Timestamp de Firestore; se convierte en mapToApplication
+  skillMatchStats?: Omit<SkillMatchStats, 'actualizadoEn'> & {
+    actualizadoEn: Timestamp;
+  };
 };
 
 export class ApplicationsRepositoryError extends Error {
@@ -45,6 +51,36 @@ export class ApplicationsRepository {
     } catch (error) {
       throw new ApplicationsRepositoryError(
         `No se pudo obtener la postulación ${applicationId}.`,
+        error,
+      );
+    }
+  }
+
+  async findByCandidateId(
+    candidateId: string,
+    jobId?: string,
+  ): Promise<Application[]> {
+    try {
+      let query = this.collection.where('candidateId', '==', candidateId);
+
+      if (jobId) {
+        query = query.where('jobId', '==', jobId);
+      } else {
+        query = query.orderBy('createdAt', 'desc');
+      }
+
+      const snapshot = await query.get();
+
+      if (snapshot.empty) {
+        return [];
+      }
+
+      return snapshot.docs.map((doc) =>
+        this.mapToApplication(doc.data() as FirestoreApplication),
+      );
+    } catch (error) {
+      throw new ApplicationsRepositoryError(
+        `No se pudieron obtener las postulaciones para candidateId=${candidateId}.`,
         error,
       );
     }
@@ -164,6 +200,13 @@ export class ApplicationsRepository {
       createdAt: application.createdAt.toDate(),
       updatedAt: application.updatedAt.toDate(),
       stageUpdatedAt: application.stageUpdatedAt.toDate(),
+      // Convertir el Timestamp anidado dentro de skillMatchStats (si existe)
+      skillMatchStats: application.skillMatchStats
+        ? {
+            ...application.skillMatchStats,
+            actualizadoEn: application.skillMatchStats.actualizadoEn.toDate(),
+          }
+        : undefined,
     };
   }
 }
