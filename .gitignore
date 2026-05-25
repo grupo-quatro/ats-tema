@@ -45,3 +45,4 @@ apps/functions/lib/*
 .pnpm-store/
 apps/functions/firestore-debug.log
 emulator-data/
+firebase-export-*/

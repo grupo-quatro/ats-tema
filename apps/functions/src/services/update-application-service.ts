@@ -5,6 +5,7 @@ import type {
   UpdateApplicationStageResponse,
 } from '@ats/shared-types';
 
+import { auth } from '../core/firebase-admin';
 import { ApplicationsRepository } from '../repositories/application-repository';
 
 export class ApplicationNotFoundError extends Error {
@@ -21,6 +22,7 @@ export class UpdateApplicationStageService {
 
   async updateStage(
     payload: UpdateApplicationStagePayload,
+    changedBy: string,
   ): Promise<UpdateApplicationStageResponse> {
     const { applicationId, stage, rejectionReason, notes } = payload;
 
@@ -32,9 +34,20 @@ export class UpdateApplicationStageService {
 
     const status = this.resolveStatus(stage);
 
-    await this.applicationsRepository.update(applicationId, {
+    const [, userRecord] = await Promise.all([
+      this.applicationsRepository.update(applicationId, {
+        stage,
+        status,
+        ...(rejectionReason !== undefined && { rejectionReason }),
+        ...(notes !== undefined && { notes }),
+      }),
+      auth.getUser(changedBy).catch(() => null),
+    ]);
+
+    await this.applicationsRepository.addStageHistoryEntry(applicationId, {
       stage,
-      status,
+      changedBy,
+      changedByEmail: userRecord?.email ?? changedBy,
       ...(rejectionReason !== undefined && { rejectionReason }),
       ...(notes !== undefined && { notes }),
     });

@@ -6,3 +6,4 @@ export * from './submit-application';
 export * from './job';
 export * from './confirmCandidate';
 export * from './update-application';
+export * from './getStageHistory';

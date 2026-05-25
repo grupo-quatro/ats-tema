@@ -18,7 +18,6 @@ service firebase.storage {
 
     match /cvs/{candidateId}/{fileName} {
       allow write: if isSignedIn()
-        && request.auth.uid == candidateId
         && request.resource.size < 10 * 1024 * 1024
         && request.resource.contentType == "application/pdf";
 

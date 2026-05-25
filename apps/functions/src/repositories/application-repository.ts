@@ -3,7 +3,9 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import type {
   Application,
   CreateApplicationDTO,
+  CreateStageHistoryEntryDTO,
   QueryOptions,
+  StageHistoryEntry,
   UpdateApplicationDTO,
 } from '@ats/shared-types';
 
@@ -153,6 +155,52 @@ export class ApplicationsRepository {
     } catch (error) {
       throw new ApplicationsRepositoryError(
         `No se pudo actualizar la postulación ${id}.`,
+        error,
+      );
+    }
+  }
+
+  async addStageHistoryEntry(
+    applicationId: string,
+    entry: CreateStageHistoryEntryDTO,
+  ): Promise<void> {
+    try {
+      const ref = this.collection
+        .doc(applicationId)
+        .collection('stageHistory')
+        .doc();
+
+      await ref.set({
+        id: ref.id,
+        ...entry,
+        changedAt: FieldValue.serverTimestamp(),
+      });
+    } catch (error) {
+      throw new ApplicationsRepositoryError(
+        `No se pudo registrar el historial de etapa para ${applicationId}.`,
+        error,
+      );
+    }
+  }
+
+  async getStageHistory(applicationId: string): Promise<StageHistoryEntry[]> {
+    try {
+      const snapshot = await this.collection
+        .doc(applicationId)
+        .collection('stageHistory')
+        .orderBy('changedAt', 'desc')
+        .get();
+
+      return snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          ...data,
+          changedAt: (data.changedAt as Timestamp).toDate(),
+        } as StageHistoryEntry;
+      });
+    } catch (error) {
+      throw new ApplicationsRepositoryError(
+        `No se pudo obtener el historial de etapa para ${applicationId}.`,
         error,
       );
     }

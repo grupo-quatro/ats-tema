@@ -30,6 +30,10 @@ export async function requireAuthenticatedUser(
     return 'recruiter-dev';
   }
 
+  if (process.env.FUNCTIONS_EMULATOR === 'true' && token === 'dev-candidate') {
+    return 'candidate-dev';
+  }
+
   const decodedToken = await auth.verifyIdToken(token);
 
   return (

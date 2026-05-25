@@ -3,6 +3,7 @@ import type {
   SubmitApplicationResponse,
 } from '@ats/shared-types';
 
+import { auth } from '../core/firebase-admin';
 import { ApplicationsRepository } from '../repositories/application-repository';
 import { CandidatesRepository } from '../repositories/candidateRepository';
 import { JobsRepository } from '../repositories/job-repository';
@@ -102,6 +103,17 @@ export class SubmitApplicationService {
       status: 'active',
     };
 
-    return this.applicationsRepository.create(applicationData);
+    const [applicationId, userRecord] = await Promise.all([
+      this.applicationsRepository.create(applicationData),
+      auth.getUser(candidateId).catch(() => null),
+    ]);
+
+    await this.applicationsRepository.addStageHistoryEntry(applicationId, {
+      stage: 'applied',
+      changedBy: candidateId,
+      changedByEmail: userRecord?.email ?? candidateId,
+    });
+
+    return applicationId;
   }
 }

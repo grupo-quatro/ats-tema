@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   STAGE_LABELS,
   STAGE_ORDER,
@@ -9,8 +9,9 @@ import {
   type CandidateStageEntry,
   type CandidateStageKey,
 } from '../mock/candidateMock';
-import { updateApplicationStage } from '@/shared/api/applications-api';
+import { getStageHistory, updateApplicationStage } from '@/shared/api/applications-api';
 import { CANDIDATE_STAGE_TO_APP_STAGE } from '../utils/candidate-profile.utils';
+import type { StageHistoryEntry } from '@ats/shared-types';
 
 type SnackbarState = { message: string; severity: 'success' | 'error' } | null;
 
@@ -98,6 +99,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
 
   const [currentStage, setCurrentStage] = useState(candidate.currentStage);
   const [stageHistory, setStageHistory] = useState(candidate.stageHistory);
+  const [realStageHistory, setRealStageHistory] = useState<StageHistoryEntry[]>([]);
   const [interviewNotes, setInterviewNotes] = useState(
     candidate.interviewNotes,
   );
@@ -106,6 +108,13 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
   const [newNoteDate, setNewNoteDate] = useState('');
   const [newNoteRating, setNewNoteRating] = useState(0);
   const [newNoteText, setNewNoteText] = useState('');
+
+  useEffect(() => {
+    if (!candidate.applicationId) return;
+    getStageHistory(candidate.applicationId)
+      .then(setRealStageHistory)
+      .catch(() => {});
+  }, [candidate.applicationId]);
 
   const pendingStages = stageHistory.filter(
     (stage) => stage.status === 'pending' && stage.key !== 'descartado',
@@ -203,6 +212,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
         message: `Etapa actualizada a "${STAGE_LABELS[selectedStageKey]}"`,
         severity: 'success',
       });
+      getStageHistory(candidate.applicationId).then(setRealStageHistory).catch(() => {});
     } catch {
       setSnackbar({
         message: 'No se pudo cambiar la etapa',
@@ -231,6 +241,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
       setRejectDialogOpen(false);
       setRejectReason('');
       setSnackbar({ message: 'Candidato rechazado', severity: 'success' });
+      getStageHistory(candidate.applicationId).then(setRealStageHistory).catch(() => {});
     } catch {
       setSnackbar({
         message: 'No se pudo rechazar al candidato',
@@ -279,6 +290,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     setSnackbar,
     currentStage,
     stageHistory,
+    realStageHistory,
     interviewNotes,
     pendingStages,
     visibleStrengths,
