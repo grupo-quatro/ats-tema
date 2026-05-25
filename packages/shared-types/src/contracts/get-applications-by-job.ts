@@ -1,4 +1,9 @@
-import type { ApplicationStage, ApplicationStatus } from '../models';
+// branch: fb-50-57
+import type {
+  ApplicationStage,
+  ApplicationStatus,
+  SkillMatchStats,
+} from '../models';
 
 export type ApplicationSortField = 'createdAt' | 'fitScore';
 export type SortDirection = 'asc' | 'desc';
@@ -18,6 +23,12 @@ export interface ApplicationWithCandidateDTO {
   fitScore?: number;
   fitSummary?: string;
   coverLetter?: string;
+  /**
+   * Estadísticas de match ponderado de skills.
+   * Disponible tras la ejecución del trigger onApplicationCreated.
+   * Puede estar ausente en postulaciones antiguas o si el trigger aún no corrió.
+   */
+  skillMatchStats?: SkillMatchStats;
   candidateName?: string;
   candidateEmail?: string;
   notes?: string;

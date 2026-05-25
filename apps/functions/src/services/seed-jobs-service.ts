@@ -31,7 +31,11 @@ const PUBLISHED_AT = new Date('2026-05-16T12:00:00.000Z');
 
 function buildSkills(
   mandatory: Array<{ name: string; yearsOfExperience: number; weight: number }>,
-  desirable: Array<{ name: string; yearsOfExperience: number; weight: number }> = [],
+  desirable: Array<{
+    name: string;
+    yearsOfExperience: number;
+    weight: number;
+  }> = [],
 ): Skill[] {
   return [
     ...mandatory.map((skill) => ({

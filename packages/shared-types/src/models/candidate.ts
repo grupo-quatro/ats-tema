@@ -33,6 +33,8 @@ export interface Candidate {
   registrationSource: RegistrationSource;
   cvParseStatus: CvParseStatus;
   cvStoragePath?: string | null;
+  /** Datos estructurados extraídos del CV. Disponible cuando cvParseStatus = 'done'. */ // branch: fb-50-57
+  parsedCv?: ParsedCV;
 
   createdAt: Date;
   updatedAt: Date;
