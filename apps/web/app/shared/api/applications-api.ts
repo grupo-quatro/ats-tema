@@ -1,0 +1,49 @@
+import type {
+  GetApplicationsByJobPayload,
+  GetApplicationsByJobResponse,
+  UpdateApplicationStagePayload,
+  UpdateApplicationStageResponse,
+} from '@ats/shared-types';
+
+import { getFunctionUrl } from '../lib/firebase';
+import { getToken } from '../lib/auth';
+
+export async function getApplicationsByJob(
+  payload: GetApplicationsByJobPayload,
+): Promise<GetApplicationsByJobResponse> {
+  const token = await getToken();
+  const params = new URLSearchParams({ jobId: payload.jobId });
+  if (payload.orderBy) params.set('orderBy', payload.orderBy);
+  if (payload.orderDirection)
+    params.set('orderDirection', payload.orderDirection);
+  if (payload.limit) params.set('limit', String(payload.limit));
+
+  const res = await fetch(
+    `${getFunctionUrl('getApplicationsByJob')}?${params}`,
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Error al obtener las postulaciones');
+  }
+  return res.json();
+}
+
+export async function updateApplicationStage(
+  payload: UpdateApplicationStagePayload,
+): Promise<UpdateApplicationStageResponse> {
+  const token = await getToken();
+  const res = await fetch(getFunctionUrl('updateApplicationStage'), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Error al actualizar la postulación');
+  }
+  return res.json();
+}

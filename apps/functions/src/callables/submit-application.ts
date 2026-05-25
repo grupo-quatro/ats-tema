@@ -1,5 +1,5 @@
 import { logger } from 'firebase-functions';
-import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { onRequest } from 'firebase-functions/v2/https';
 
 import type { SubmitApplicationPayload } from '@ats/shared-types';
 
@@ -11,66 +11,54 @@ import {
 } from '../services/submit-application-errors';
 import { SubmitApplicationService } from '../services/submit-application-service';
 import { validateSubmitApplicationPayload } from '../validators/submit-application-validator';
+import { HttpAuthError, requireAuthenticatedUser } from '../core/http-auth';
 
 const submitApplicationService = new SubmitApplicationService();
 
-export const submitApplication = onCall(async (request) => {
-  if (!request.auth) {
-    throw new HttpsError(
-      'unauthenticated',
-      'El usuario debe estar autenticado para postularse.',
-    );
-  }
-
-  const candidateId =
-    request.auth.uid ||
-    request.auth.token?.uid ||
-    request.auth.token?.user_id ||
-    request.auth.token?.sub;
-
-  if (!candidateId) {
-    logger.error('No se pudo resolver candidateId desde request.auth', {
-      auth: request.auth,
-    });
-
-    throw new HttpsError(
-      'unauthenticated',
-      'No se pudo identificar al usuario autenticado.',
-    );
-  }
-
+export const submitApplication = onRequest(async (req, res) => {
   try {
-    const payload = request.data as Partial<SubmitApplicationPayload>;
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method Not Allowed.' });
+      return;
+    }
 
+    const candidateId = await requireAuthenticatedUser(req);
+
+    const payload = req.body as Partial<SubmitApplicationPayload>;
     validateSubmitApplicationPayload(payload);
 
-    return await submitApplicationService.submitApplication(
+    const result = await submitApplicationService.submitApplication(
       candidateId,
       payload.jobId,
     );
+    res.status(200).json(result);
   } catch (error) {
-    if (error instanceof HttpsError) {
-      throw error;
+    if (error instanceof HttpAuthError) {
+      res.status(401).json({ error: error.message });
+      return;
     }
 
     if (error instanceof CandidateNotFoundError) {
-      throw new HttpsError('not-found', error.message);
+      res.status(404).json({ error: error.message });
+      return;
     }
 
     if (error instanceof JobNotFoundError) {
-      throw new HttpsError('not-found', error.message);
+      res.status(404).json({ error: error.message });
+      return;
     }
 
     if (error instanceof JobNotOpenError) {
-      throw new HttpsError('failed-precondition', error.message);
+      res.status(422).json({ error: error.message });
+      return;
     }
 
     if (error instanceof ApplicationAlreadyExistsError) {
-      throw new HttpsError('already-exists', error.message);
+      res.status(409).json({ error: error.message });
+      return;
     }
 
     logger.error('Error inesperado al registrar postulación', error);
-
-    throw new HttpsError('internal', 'No se pudo registrar la postulación.');
+    res.status(500).json({ error: 'No se pudo registrar la postulación.' });
   }
 });

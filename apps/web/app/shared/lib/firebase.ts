@@ -41,6 +41,7 @@ if (isNew && useEmulators) {
   signInAnonymously(auth);
 }
 
+/** @deprecated Usar los módulos en shared/api/ con fetch hacia onRequest en lugar de onCall */
 export function callFunction<TData, TResult>(name: string, data: TData) {
   return httpsCallable<TData, TResult>(functions, name)(data);
 }

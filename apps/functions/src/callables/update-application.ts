@@ -22,7 +22,6 @@ export const updateApplicationStage = onRequest(async (request, response) => {
     await requireAuthenticatedUser(request);
 
     const payload = request.body as Partial<UpdateApplicationStagePayload>;
-
     validateUpdateApplicationStagePayload(payload);
 
     const result = await updateApplicationStageService.updateStage(payload);

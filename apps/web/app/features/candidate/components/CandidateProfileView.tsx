@@ -660,7 +660,9 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
 
       <Dialog
         open={profile.newNoteModalOpen}
-        onClose={() => !profile.isSavingNote && profile.setNewNoteModalOpen(false)}
+        onClose={() =>
+          !profile.isSavingNote && profile.setNewNoteModalOpen(false)
+        }
         maxWidth="sm"
         fullWidth
       >
@@ -690,7 +692,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                 disabled={profile.isSavingNote}
                 error={Boolean(
                   profile.newNoteDate &&
-                    Number.isNaN(new Date(profile.newNoteDate).getTime()),
+                  Number.isNaN(new Date(profile.newNoteDate).getTime()),
                 )}
                 helperText={
                   profile.newNoteDate &&
@@ -746,7 +748,9 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
 
       <Dialog
         open={profile.stageDialogOpen}
-        onClose={() => !profile.isUpdatingStage && profile.setStageDialogOpen(false)}
+        onClose={() =>
+          !profile.isUpdatingStage && profile.setStageDialogOpen(false)
+        }
         maxWidth="sm"
         fullWidth
       >
@@ -797,7 +801,9 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
 
       <Dialog
         open={profile.rejectDialogOpen}
-        onClose={() => !profile.isUpdatingStage && profile.setRejectDialogOpen(false)}
+        onClose={() =>
+          !profile.isUpdatingStage && profile.setRejectDialogOpen(false)
+        }
         maxWidth="sm"
         fullWidth
       >

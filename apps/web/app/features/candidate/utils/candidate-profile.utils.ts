@@ -95,7 +95,9 @@ export function mapApplicationToProfile(
         ]
       : [],
     stageHistory: buildStageHistory(application.stage),
-    currentStage: stageKey ? (STAGE_LABELS[stageKey] ?? application.stage) : application.stage,
+    currentStage: stageKey
+      ? (STAGE_LABELS[stageKey] ?? application.stage)
+      : application.stage,
     cvMockUrl: null,
   };
 }

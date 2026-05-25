@@ -3,7 +3,6 @@ import { onRequest } from 'firebase-functions/v2/https';
 
 import type { GetApplicationsByJobPayload } from '@ats/shared-types';
 
-import { HttpAuthError, requireAuthenticatedUser } from '../core/http-auth';
 import {
   validateGetApplicationsByJobPayload,
   GetApplicationsByJobValidationError,
@@ -13,6 +12,7 @@ import {
   GetApplicationsByJobServiceError,
   JobNotFoundError,
 } from '../services/get-applications-by-job-service';
+import { HttpAuthError, requireAuthenticatedUser } from '../core/http-auth';
 
 const getApplicationsByJobService = new GetApplicationsByJobService();
 

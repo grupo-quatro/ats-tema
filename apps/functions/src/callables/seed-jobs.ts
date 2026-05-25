@@ -1,5 +1,5 @@
 import { logger } from 'firebase-functions';
-import { HttpsError, onCall } from 'firebase-functions/v2/https';
+import { onRequest } from 'firebase-functions/v2/https';
 
 import { SeedJobsService } from '../services/seed-jobs-service';
 
@@ -12,22 +12,27 @@ function isEmulatorEnvironment(): boolean {
   );
 }
 
-export const seedJobs = onCall(async () => {
+export const seedJobs = onRequest(async (req, res) => {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method Not Allowed.' });
+    return;
+  }
+
   if (!isEmulatorEnvironment()) {
-    throw new HttpsError(
-      'failed-precondition',
-      'La carga de semillas de puestos solo está habilitada en emuladores.',
-    );
+    res.status(403).json({
+      error:
+        'La carga de semillas de puestos solo está habilitada en emuladores.',
+    });
+    return;
   }
 
   try {
-    return await seedJobsService.seedJobs();
+    const result = await seedJobsService.seedJobs();
+    res.status(200).json(result);
   } catch (error) {
     logger.error('Error cargando semillas de puestos', error);
-
-    throw new HttpsError(
-      'internal',
-      'No se pudieron cargar las semillas de puestos.',
-    );
+    res
+      .status(500)
+      .json({ error: 'No se pudieron cargar las semillas de puestos.' });
   }
 });

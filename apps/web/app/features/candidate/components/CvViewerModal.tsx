@@ -69,7 +69,9 @@ export function CvViewerModal({
         </IconButton>
       </Box>
 
-      <DialogContent sx={{ p: 0, minHeight: 520, bgcolor: '#f1f5f9', position: 'relative' }}>
+      <DialogContent
+        sx={{ p: 0, minHeight: 520, bgcolor: '#f1f5f9', position: 'relative' }}
+      >
         {cvUrl ? (
           <>
             {isLoading && (

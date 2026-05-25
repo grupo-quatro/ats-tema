@@ -16,7 +16,10 @@ interface Props {
   onSave?: (note: CandidateInterviewNote) => void | Promise<void>;
 }
 
-export function HrInterviewForm({ /* candidateName, */ onClose, onSave }: Props) {
+export function HrInterviewForm({
+  /* candidateName, */ onClose,
+  onSave,
+}: Props) {
   const [communication, setCommunication] = useState<number>(0);
   const [teamwork, setTeamwork] = useState<number>(0);
   const [salaryExpectation, setSalaryExpectation] = useState('');
@@ -159,9 +162,7 @@ export function HrInterviewForm({ /* candidateName, */ onClose, onSave }: Props)
         <Button
           variant="contained"
           onClick={handleSave}
-          disabled={
-            isSaving || !communication || !teamwork || !decision.trim()
-          }
+          disabled={isSaving || !communication || !teamwork || !decision.trim()}
           startIcon={
             isSaving ? <CircularProgress size={16} color="inherit" /> : null
           }

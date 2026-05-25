@@ -37,7 +37,9 @@ export function TechnicalInterviewForm({
 
   const handleSave = async () => {
     if (!overall || !decision.trim()) {
-      setErrorMessage('Completá la calificación general y la decisión recomendada.');
+      setErrorMessage(
+        'Completá la calificación general y la decisión recomendada.',
+      );
       return;
     }
 
