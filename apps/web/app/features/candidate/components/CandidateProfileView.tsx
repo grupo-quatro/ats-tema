@@ -264,12 +264,15 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                               flexShrink: 0,
                               bgcolor: 'white',
                               border: '2.5px solid',
-                              borderColor: isRejected ? 'error.main' : 'primary.main',
-                              boxShadow: i === 0
-                                ? isRejected
-                                  ? '0 0 0 3px #fee2e2'
-                                  : '0 0 0 3px #dbeafe'
-                                : 'none',
+                              borderColor: isRejected
+                                ? 'error.main'
+                                : 'primary.main',
+                              boxShadow:
+                                i === 0
+                                  ? isRejected
+                                    ? '0 0 0 3px #fee2e2'
+                                    : '0 0 0 3px #dbeafe'
+                                  : 'none',
                             }}
                           />
                           {!isLast && (
@@ -298,20 +301,27 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                               sx={{
                                 fontSize: 13,
                                 fontWeight: i === 0 ? 600 : 500,
-                                color: i === 0
-                                  ? isRejected ? 'error.main' : 'primary.main'
-                                  : 'text.primary',
+                                color:
+                                  i === 0
+                                    ? isRejected
+                                      ? 'error.main'
+                                      : 'primary.main'
+                                    : 'text.primary',
                                 lineHeight: 1.4,
                               }}
                             >
                               {(() => {
-                              const key = STAGE_KEY_MAP[entry.stage];
-                              return key ? STAGE_LABELS[key] : entry.stage;
-                            })()}
+                                const key = STAGE_KEY_MAP[entry.stage];
+                                return key ? STAGE_LABELS[key] : entry.stage;
+                              })()}
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ flexShrink: 0, fontSize: 11, color: 'text.secondary' }}
+                              sx={{
+                                flexShrink: 0,
+                                fontSize: 11,
+                                color: 'text.secondary',
+                              }}
                             >
                               {changedAt.toLocaleDateString('es-AR')}{' '}
                               {changedAt.toLocaleTimeString('es-AR', {
@@ -320,11 +330,24 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                               })}
                             </Typography>
                           </Box>
-                          <Typography sx={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.4 }}>
+                          <Typography
+                            sx={{
+                              fontSize: 11,
+                              color: '#94a3b8',
+                              lineHeight: 1.4,
+                            }}
+                          >
                             {entry.changedByEmail}
                           </Typography>
                           {entry.rejectionReason && (
-                            <Typography sx={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.4, mt: 0.25 }}>
+                            <Typography
+                              sx={{
+                                fontSize: 11,
+                                color: '#94a3b8',
+                                lineHeight: 1.4,
+                                mt: 0.25,
+                              }}
+                            >
                               Motivo: {entry.rejectionReason}
                             </Typography>
                           )}
