@@ -9,6 +9,8 @@ import {
   type CandidateStageEntry,
   type CandidateStageKey,
 } from '../mock/candidateMock';
+import { updateApplicationStage } from '@/shared/api/applications-api';
+import { CANDIDATE_STAGE_TO_APP_STAGE } from '../utils/candidate-profile.utils';
 
 type SnackbarState = { message: string; severity: 'success' | 'error' } | null;
 
@@ -189,7 +191,10 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
 
     setIsUpdatingStage(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await updateApplicationStage({
+        applicationId: candidate.applicationId,
+        stage: CANDIDATE_STAGE_TO_APP_STAGE[selectedStageKey],
+      });
 
       setStageHistory((current) => applyStageChange(current, selectedStageKey));
       setCurrentStage(STAGE_LABELS[selectedStageKey]);
@@ -206,14 +211,18 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     } finally {
       setIsUpdatingStage(false);
     }
-  }, [selectedStageKey]);
+  }, [selectedStageKey, candidate.applicationId]);
 
   const handleReject = useCallback(async () => {
     if (!rejectReason.trim()) return;
 
     setIsUpdatingStage(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await updateApplicationStage({
+        applicationId: candidate.applicationId,
+        stage: 'rejected',
+        rejectionReason: rejectReason.trim(),
+      });
 
       setStageHistory((current) =>
         applyRejection(current, rejectReason.trim()),
@@ -230,7 +239,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     } finally {
       setIsUpdatingStage(false);
     }
-  }, [rejectReason]);
+  }, [rejectReason, candidate.applicationId]);
 
   const handleInterviewSave = useCallback(
     async (note: CandidateInterviewNote) => {

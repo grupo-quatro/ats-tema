@@ -66,6 +66,7 @@ export interface CandidateStageEntry {
 
 export interface CandidateMockProfile {
   id: string;
+  applicationId: string;
   fullName: string;
   initials: string;
   title: string;
@@ -87,6 +88,7 @@ export interface CandidateMockProfile {
 export const CANDIDATES_MOCK: CandidateMockProfile[] = [
   {
     id: 'c1',
+    applicationId: '',
     fullName: 'María García López',
     initials: 'MG',
     title: 'Senior Frontend Developer',
