@@ -86,35 +86,16 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
             mb: 4,
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box
-              sx={(theme) => ({
-                width: 56,
-                height: 56,
-                borderRadius: '50%',
-                bgcolor: theme.palette.primary.main,
-                color: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 20,
-                fontWeight: 700,
-                flexShrink: 0,
-              })}
+          <Box>
+            <Typography
+              variant="h2"
+              sx={{ fontWeight: 600, lineHeight: 1.2 }}
             >
-              {candidate.initials}
-            </Box>
-            <Box>
-              <Typography
-                variant="h2"
-                sx={{ fontWeight: 600, lineHeight: 1.2 }}
-              >
-                {candidate.fullName}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {candidate.title}
-              </Typography>
-            </Box>
+              {candidate.fullName}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {candidate.title}
+            </Typography>
           </Box>
 
           <Box

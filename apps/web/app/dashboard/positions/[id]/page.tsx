@@ -45,6 +45,37 @@ const statusLabels: Record<
   closed: { label: 'Cerrada', color: 'error' },
 };
 
+type DateLike =
+  | Date
+  | string
+  | number
+  | { seconds?: number; _seconds?: number; toDate?: () => Date };
+
+function formatPublishedDate(value?: DateLike): string {
+  if (!value) return '-';
+
+  const date =
+    value instanceof Date
+      ? value
+      : typeof value === 'object' && typeof value.toDate === 'function'
+        ? value.toDate()
+        : typeof value === 'object' &&
+            (typeof value.seconds === 'number' ||
+              typeof value._seconds === 'number')
+          ? new Date((value.seconds ?? value._seconds ?? 0) * 1000)
+          : typeof value === 'string' || typeof value === 'number'
+            ? new Date(value)
+            : null;
+
+  if (!date || Number.isNaN(date.getTime())) return '-';
+
+  return date.toLocaleDateString('es-AR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
 function InfoCard({
   title,
   value,
@@ -124,15 +155,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
     color: 'primary',
   };
 
-  // Formateo de fecha
-  const formattedDate = job.publishedAt
-    ? job.publishedAt instanceof Date
-      ? job.publishedAt.toLocaleDateString('es-AR', {
-          day: 'numeric',
-          month: 'short',
-        })
-      : String(job.publishedAt)
-    : '-';
+  const formattedDate = formatPublishedDate(job.publishedAt);
 
   return (
     <Container maxWidth="xl" sx={{ py: 4, minHeight: '100vh' }}>

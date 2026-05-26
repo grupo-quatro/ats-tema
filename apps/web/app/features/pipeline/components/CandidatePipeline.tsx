@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react';
 import {
   Alert,
-  Avatar,
   Box,
   Button,
   Chip,
@@ -41,17 +40,6 @@ type SortField = 'candidateName' | 'fitScore' | 'stage' | 'updatedAt';
 type SortDirection = 'asc' | 'desc';
 
 const ALL_STAGES = 'Todos los estados';
-
-function getInitials(name?: string): string {
-  if (!name) return '?';
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase();
-}
 
 function formatDate(value?: Date | string): string {
   if (!value) return '-';
@@ -125,7 +113,6 @@ function LoadingRows() {
         <TableRow key={item}>
           <TableCell>
             <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
-              <Skeleton variant="circular" width={42} height={42} />
               <Box sx={{ flex: 1 }}>
                 <Skeleton width="50%" height={22} />
                 <Skeleton width="34%" height={18} />
@@ -388,45 +375,27 @@ export default function CandidatePipeline({
                         }}
                       >
                         <TableCell>
-                          <Stack
-                            direction="row"
-                            spacing={1.5}
-                            sx={{ alignItems: 'center' }}
-                          >
-                            <Avatar
+                          <Stack spacing={0.4} sx={{ minWidth: 0 }}>
+                            <Typography
                               sx={{
-                                bgcolor: '#2563eb',
-                                width: 42,
-                                height: 42,
-                                fontSize: '0.9rem',
-                                fontWeight: 700,
+                                color: '#0f172a',
+                                fontSize: '1rem',
+                                fontWeight: 600,
+                                lineHeight: 1.25,
                               }}
                             >
-                              {getInitials(candidate.candidateName)}
-                            </Avatar>
-                            <Box sx={{ minWidth: 0 }}>
-                              <Typography
-                                sx={{
-                                  color: '#0f172a',
-                                  fontSize: '1rem',
-                                  fontWeight: 600,
-                                  lineHeight: 1.25,
-                                }}
-                              >
-                                {candidate.candidateName ??
-                                  'Candidato sin nombre'}
-                              </Typography>
-                              <Typography
-                                sx={{
-                                  color: '#334155',
-                                  fontSize: '0.9rem',
-                                  mt: 0.4,
-                                  lineHeight: 1.2,
-                                }}
-                              >
-                                {jobTitle}
-                              </Typography>
-                            </Box>
+                              {candidate.candidateName ??
+                                'Candidato sin nombre'}
+                            </Typography>
+                            <Typography
+                              sx={{
+                                color: '#334155',
+                                fontSize: '0.9rem',
+                                lineHeight: 1.2,
+                              }}
+                            >
+                              {jobTitle}
+                            </Typography>
                           </Stack>
                         </TableCell>
                         <TableCell>
