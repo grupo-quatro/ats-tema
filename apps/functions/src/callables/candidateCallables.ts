@@ -1,4 +1,4 @@
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { onRequest } from 'firebase-functions/v2/https';
 import { logger } from 'firebase-functions';
 import {
   CandidatePostulationCVPayload,
@@ -15,154 +15,127 @@ import {
   validateRegisterCandidatePayload,
   validateStartApplicationWithCVPayload,
 } from '../validators/candidateValidator';
+import { HttpAuthError, requireAuthenticatedUser } from '../core/http-auth';
 
 const candidateRegistrationCVService = new CandidateRegistrationCVService();
-export const registerCandidateCV = onCall(async (request) => {
-  if (!request.auth) {
-    throw new HttpsError(
-      'unauthenticated',
-      'El usuario debe estar autenticado para iniciar una postulación por CV.',
-    );
-  }
+const candidateRegistrationService = new CandidateRegistrationService();
 
-  const candidateId =
-    request.auth.uid ||
-    request.auth.token?.uid ||
-    request.auth.token?.user_id ||
-    request.auth.token?.sub;
-
-  if (!candidateId) {
-    logger.error('No se pudo resolver candidateId desde request.auth', {
-      auth: request.auth,
-    });
-
-    throw new HttpsError(
-      'unauthenticated',
-      'No se pudo identificar al usuario autenticado.',
-    );
-  }
-
+export const registerCandidateCV = onRequest(async (req, res) => {
   try {
-    const payload = request.data as Partial<CandidatePostulationCVPayload>;
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method Not Allowed.' });
+      return;
+    }
 
+    const candidateId = await requireAuthenticatedUser(req);
+
+    const payload = req.body as Partial<CandidatePostulationCVPayload>;
     validateStartApplicationWithCVPayload(payload);
 
-    return await candidateRegistrationCVService.registerCandidateCV(
+    const result = await candidateRegistrationCVService.registerCandidateCV(
       candidateId,
       payload,
     );
+    res.status(200).json(result);
   } catch (error) {
-    if (error instanceof HttpsError) {
-      throw error;
+    if (error instanceof HttpAuthError) {
+      res.status(401).json({ error: error.message });
+      return;
     }
 
     logger.error('Error inesperado iniciando postulación por CV', error);
-
-    throw new HttpsError(
-      'internal',
-      'No se pudo iniciar la postulación por CV.',
-    );
+    res
+      .status(500)
+      .json({ error: 'No se pudo iniciar la postulación por CV.' });
   }
 });
 
-const candidateRegistrationService = new CandidateRegistrationService();
-
-export const registerCandidate = onCall(async (request) => {
-  if (!request.auth) {
-    throw new HttpsError(
-      'unauthenticated',
-      'El usuario debe estar autenticado para registrar un candidato.',
-    );
-  }
-
-  const candidateId =
-    request.auth.uid ||
-    request.auth.token?.uid ||
-    request.auth.token?.user_id ||
-    request.auth.token?.sub;
-
-  if (!candidateId) {
-    logger.error('No se pudo resolver candidateId desde request.auth', {
-      auth: request.auth,
-    });
-
-    throw new HttpsError(
-      'unauthenticated',
-      'No se pudo identificar al usuario autenticado.',
-    );
-  }
-
+export const registerCandidate = onRequest(async (req, res) => {
   try {
-    const payload = request.data as Partial<CandidatePostulationPayload>;
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method Not Allowed.' });
+      return;
+    }
 
+    const candidateId = await requireAuthenticatedUser(req);
+
+    const payload = req.body as Partial<CandidatePostulationPayload>;
     validateRegisterCandidatePayload(payload);
 
-    return await candidateRegistrationService.registerCandidate(
+    const result = await candidateRegistrationService.registerCandidate(
       candidateId,
       payload,
     );
+    res.status(200).json(result);
   } catch (error) {
-    if (error instanceof HttpsError) {
-      throw error;
+    if (error instanceof HttpAuthError) {
+      res.status(401).json({ error: error.message });
+      return;
     }
 
     if (error instanceof CandidateRegistrationConflictError) {
-      throw new HttpsError('already-exists', error.message);
+      res.status(409).json({ error: error.message });
+      return;
     }
 
     logger.error('Error inesperado registrando candidato', error);
-
-    throw new HttpsError('internal', 'No se pudo registrar el candidato.');
+    res.status(500).json({ error: 'No se pudo registrar el candidato.' });
   }
 });
 
-export const confirmCandidateProfile = onCall<ConfirmCandidateProfilePayload>(
-  async (request) => {
-    if (!request.auth) {
-      throw new HttpsError(
-        'unauthenticated',
-        'El usuario debe estar autenticado para confirmar su postulación.',
-      );
+export const confirmCandidateProfile = onRequest(async (req, res) => {
+  try {
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method Not Allowed.' });
+      return;
+    }
+
+    await requireAuthenticatedUser(req);
+
+    const data = req.body as Partial<ConfirmCandidateProfilePayload>;
+
+    if (!data.candidateId || !data.profile) {
+      res.status(400).json({
+        error:
+          'Faltan argumentos mandatorios: candidateId y profile son requeridos.',
+      });
+      return;
     }
 
     logger.info('Iniciando confirmación de perfil de candidato', {
-      uid: request.auth.uid,
-      candidateId: request.data.candidateId,
-      applicationId: request.data.applicationId,
+      candidateId: data.candidateId,
+      applicationId: data.applicationId,
     });
 
-    if (!request.data.candidateId || !request.data.profile) {
-      throw new HttpsError(
-        'invalid-argument',
-        'Faltan argumentos mandatorios: candidateId y profile son requeridos.',
-      );
+    const result = await candidateRegistrationService.confirmCandidateProfile(
+      data as ConfirmCandidateProfilePayload,
+    );
+
+    logger.info('Perfil de candidato confirmado con éxito', {
+      candidateId: result.candidateId,
+      applicationId: result.applicationId,
+    });
+
+    res.status(200).json(result);
+  } catch (error: any) {
+    if (error instanceof HttpAuthError) {
+      res.status(401).json({ error: error.message });
+      return;
     }
 
-    try {
-      const result = await candidateRegistrationService.confirmCandidateProfile(
-        request.data,
-      );
+    logger.error('Error fatal al confirmar el perfil del candidato', {
+      error: error.message,
+      payload: req.body,
+    });
 
-      logger.info('Perfil de candidato confirmado con éxito', {
-        candidateId: result.candidateId,
-        applicationId: result.applicationId,
-      });
+    if (error.message?.includes('CANDIDATE_NOT_FOUND')) {
+      res.status(404).json({ error: error.message });
+      return;
+    }
 
-      return result;
-    } catch (error: any) {
-      logger.error('Error fatal al confirmar el perfil del candidato', {
-        error: error.message,
-        payload: request.data,
-      });
-
-      if (error.message.includes('CANDIDATE_NOT_FOUND')) {
-        throw new HttpsError('not-found', error.message);
-      }
-
-      throw new HttpsError(
-        'internal',
+    res.status(500).json({
+      error:
         'Ocurrió un error interno en el servidor al procesar la confirmación.',
-      );
-    }
-  },
-);
+    });
+  }
+});

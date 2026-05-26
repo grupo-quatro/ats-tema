@@ -4,6 +4,9 @@ import type {
   CreateJobDTO,
   Job,
   JobStatus,
+  ListPositionsFilters,
+  ListPositionsOrderBy,
+  ListPositionsResponse,
   UpdateJobDTO,
 } from '@ats/shared-types';
 
@@ -163,6 +166,73 @@ export class JobsRepository implements JobsRepositoryContract {
     } catch (error) {
       throw new JobsRepositoryError(
         `No se pudo crear o actualizar el puesto ${jobId}.`,
+        error,
+      );
+    }
+  }
+
+  async findWithFilters(
+    filters: ListPositionsFilters,
+  ): Promise<ListPositionsResponse> {
+    try {
+      let query: FirebaseFirestore.Query = this.collection;
+
+      if (filters.status) {
+        query = query.where('status', '==', filters.status);
+      }
+
+      const hasSearch = Boolean(filters.search);
+      const orderBy = filters.orderBy ?? 'publishedAt';
+      const orderDir = filters.orderDir ?? 'desc';
+
+      if (hasSearch) {
+        const search = filters.search;
+        query = query
+          .where('title', '>=', search)
+          .where('title', '<=', search + '')
+          .orderBy('title');
+      } else {
+        query = query.orderBy(orderBy, orderDir);
+      }
+
+      const snapshot = await query.get();
+      let jobs = snapshot.docs.map((doc) =>
+        this.mapToJob(doc.data() as FirestoreJob),
+      );
+
+      if (filters.location) {
+        jobs = jobs.filter((j) => j.location === filters.location);
+      }
+
+      if (filters.department) {
+        jobs = jobs.filter((j) => j.department === filters.department);
+      }
+
+      const total = jobs.length;
+      const page = filters.page ?? 1;
+      const limit = filters.limit ?? 10;
+      const totalPages = Math.ceil(total / limit);
+      const paginated = jobs.slice((page - 1) * limit, page * limit);
+
+      return { jobs: paginated, total, page, totalPages };
+    } catch (error) {
+      throw new JobsRepositoryError(
+        'No se pudieron obtener las posiciones.',
+        error,
+      );
+    }
+  }
+
+  async findDepartments(): Promise<string[]> {
+    try {
+      const snapshot = await this.collection.get();
+      const departments = snapshot.docs
+        .map((doc) => doc.data().department as string)
+        .filter(Boolean);
+      return [...new Set(departments)].sort();
+    } catch (error) {
+      throw new JobsRepositoryError(
+        'No se pudieron obtener los departamentos.',
         error,
       );
     }

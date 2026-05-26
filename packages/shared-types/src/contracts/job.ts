@@ -1,6 +1,7 @@
 import type {
   CreateJobDTO,
   Job,
+  JobLocation,
   JobStatus,
   Skill,
   UpdateJobDTO,
@@ -51,3 +52,30 @@ export interface GetPositionPayload {
 }
 
 export type GetPositionResponse = Job;
+
+export type ListPositionsOrderBy =
+  | 'publishedAt'
+  | 'title'
+  | 'department'
+  | 'status';
+export type ListPositionsOrderDir = 'asc' | 'desc';
+
+export interface ListPositionsFilters {
+  search?: string;
+  status?: JobStatus;
+  location?: JobLocation;
+  department?: string;
+  page?: number;
+  limit?: number;
+  orderBy?: ListPositionsOrderBy;
+  orderDir?: ListPositionsOrderDir;
+}
+
+export interface ListPositionsResponse {
+  jobs: Job[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+export type ListDepartmentsResponse = string[];

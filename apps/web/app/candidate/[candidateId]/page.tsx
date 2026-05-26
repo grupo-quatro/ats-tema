@@ -1,19 +1,58 @@
-import { notFound } from 'next/navigation';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { Box, CircularProgress, Container, Typography } from '@mui/material';
+import type { ApplicationWithCandidateDTO } from '@ats/shared-types';
 import { CandidateProfileView } from '@/features/candidate/components/CandidateProfileView';
-import { CANDIDATES_MOCK } from '@/features/candidate/mock/candidateMock';
+import { CANDIDATE_SESSION_KEY } from '@/features/pipeline/components/CandidatePipelineRoute';
+import type { CandidateMockProfile } from '@/features/candidate/mock/candidateMock';
+import { mapApplicationToProfile } from '@/features/candidate/utils/candidate-profile.utils';
 
-interface CandidatePageProps {
-  params: Promise<{ candidateId: string }>;
-}
+export default function CandidatePage() {
+  const params = useParams();
+  const [profile, setProfile] = useState<CandidateMockProfile | null>(null);
+  const [notFound, setNotFound] = useState(false);
 
-export default async function CandidatePage({ params }: CandidatePageProps) {
-  const { candidateId } = await params;
+  useEffect(() => {
+    const raw = sessionStorage.getItem(CANDIDATE_SESSION_KEY);
+    if (!raw) {
+      setNotFound(true);
+      return;
+    }
 
-  const candidate = CANDIDATES_MOCK.find((c) => c.id === candidateId);
+    try {
+      const application = JSON.parse(raw) as ApplicationWithCandidateDTO;
+      if (application.candidateId !== params.candidateId) {
+        setNotFound(true);
+        return;
+      }
+      setProfile(mapApplicationToProfile(application));
+    } catch {
+      setNotFound(true);
+    }
+  }, [params.candidateId]);
 
-  if (!candidate) {
-    return notFound();
+  if (notFound) {
+    return (
+      <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
+        <Typography variant="h5" sx={{ mb: 2 }}>
+          Candidato no encontrado
+        </Typography>
+        <Typography color="text.secondary" sx={{ mb: 3 }}>
+          Accedé al perfil desde el listado de candidatos de una posición.
+        </Typography>
+      </Container>
+    );
   }
 
-  return <CandidateProfileView candidate={candidate} />;
+  if (!profile) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  return <CandidateProfileView candidate={profile} />;
 }

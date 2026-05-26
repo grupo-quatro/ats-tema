@@ -60,9 +60,9 @@ const inputSx = {
   },
 };
 
-function formatDate(date?: Date) {
+function formatDate(date?: Date | string) {
   if (!date) return '-';
-  return date.toLocaleDateString('es-AR', {
+  return new Date(date).toLocaleDateString('es-AR', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
@@ -453,12 +453,18 @@ export default function PositionEditView({ job, onSave }: Props) {
   const [mandatorySkills, setMandatorySkills] = useState<EditableSkill[]>(() =>
     job.skills
       .filter((skill) => skill.type === 'mandatory')
-      .map((skill, index) => ({ ...skill, years: index === 0 ? 4 : 3 })),
+      .map((skill) => ({
+        ...skill,
+        years: skill.yearsOfExperience,
+      })),
   );
   const [desirableSkills, setDesirableSkills] = useState<EditableSkill[]>(() =>
     job.skills
       .filter((skill) => skill.type === 'desirable')
-      .map((skill) => ({ ...skill, years: 2 })),
+      .map((skill) => ({
+        ...skill,
+        years: skill.yearsOfExperience,
+      })),
   );
   const [mandatoryDraft, setMandatoryDraft] = useState<SkillDraft>({
     name: '',
@@ -495,8 +501,9 @@ export default function PositionEditView({ job, onSave }: Props) {
         description: value.description,
         observations: value.criteria,
         skills: [...mandatorySkills, ...desirableSkills].map(
-          ({ name, weight, type }) => ({
+          ({ name, years, weight, type }) => ({
             name,
+            yearsOfExperience: years,
             weight,
             type,
           }),
@@ -523,6 +530,7 @@ export default function PositionEditView({ job, onSave }: Props) {
       {
         name: draft.name.trim(),
         years: Number(draft.years) || 0,
+        yearsOfExperience: Number(draft.years) || 0,
         weight: Math.min(10, Math.max(1, Number(draft.weight) || 1)),
         type,
       },
