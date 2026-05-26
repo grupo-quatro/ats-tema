@@ -5,6 +5,12 @@ import {
   ApplicationNotFoundError,
 } from '../update-application-service';
 
+vi.mock('../../core/firebase-admin', () => ({
+  auth: {
+    getUser: vi.fn().mockResolvedValue({ email: 'test@example.com' }),
+  },
+}));
+
 const makeApplication = (
   overrides: Partial<Application> = {},
 ): Application => ({

@@ -13,7 +13,6 @@ import type {
 } from '@ats/shared-types';
 import { httpsCallable } from 'firebase/functions';
 import { getDownloadURL, ref } from 'firebase/storage';
-
 import { functions, getFunctionUrl, storage } from '../lib/firebase';
 import { getToken } from '../lib/auth';
 
@@ -87,7 +86,6 @@ export async function getCvDownloadUrl(applicationId: string): Promise<string> {
   const result = await fn({ applicationId });
   return getDownloadURL(ref(storage, result.data.cvStoragePath));
 }
-
 export async function getStageHistory(
   applicationId: string,
 ): Promise<GetStageHistoryResponse> {
