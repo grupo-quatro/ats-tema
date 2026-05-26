@@ -4,7 +4,7 @@ import type {
   ApplicationStatus,
 } from '../models/application';
 import type { ParsedEducation, ParsedExperience } from '../models/parsing';
-import type { SkillMatchStats } from '../models/skill-match';
+import type { SkillMatchStats } from '../models/skillMatch';
 
 // ─── Payload ──────────────────────────────────────────────────────────────────
 

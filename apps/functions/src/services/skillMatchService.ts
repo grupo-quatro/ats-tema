@@ -6,7 +6,7 @@ import {
   buildCandidateSkillSet,
   computeWeightedMatch,
   parseJobSkills,
-} from './skill-match-calculator';
+} from './skillMatchCalculator';
 
 // ─── Tipos internos ────────────────────────────────────────────────────────────
 

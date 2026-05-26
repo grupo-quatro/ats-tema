@@ -18,12 +18,12 @@ export {
   confirmCandidateProfile,
 } from './callables/candidateCallables';
 export { getApplicationsByJob } from './callables/get-applications-by-job';
-export { getApplicationsByCandidate } from './callables/get-applications-by-candidate';
-export { getApplicationDetail } from './callables/get-application-detail';
+export { getApplicationsByCandidate } from './callables/getApplicationsByCandidate';
+export { getApplicationDetail } from './callables/getApplicationDetail';
 export {
   updateApplication,
   updateApplicationStage,
-} from './callables/update-application';
+} from './callables/updateApplication';
 export { onCVUploaded } from './triggers/onCvUploaded';
 export { onApplicationCreated } from './triggers/onApplicationCreated';
 export { submitApplication } from './callables/submit-application';
