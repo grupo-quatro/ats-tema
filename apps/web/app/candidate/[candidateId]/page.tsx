@@ -7,7 +7,8 @@ import type { ApplicationWithCandidateDTO } from '@ats/shared-types';
 import { CandidateProfileView } from '@/features/candidate/components/CandidateProfileView';
 import { CANDIDATE_SESSION_KEY } from '@/features/pipeline/components/CandidatePipelineRoute';
 import type { CandidateMockProfile } from '@/features/candidate/mock/candidateMock';
-import { mapApplicationToProfile } from '@/features/candidate/utils/candidate-profile.utils';
+import { mapDetailToProfile } from '@/features/candidate/utils/candidate-profile.utils';
+import { getApplicationDetail } from '@/shared/api/applications-api';
 
 export default function CandidatePage() {
   const params = useParams();
@@ -27,7 +28,10 @@ export default function CandidatePage() {
         setNotFound(true);
         return;
       }
-      setProfile(mapApplicationToProfile(application));
+
+      getApplicationDetail(application.id)
+        .then((detail) => setProfile(mapDetailToProfile(detail)))
+        .catch(() => setNotFound(true));
     } catch {
       setNotFound(true);
     }

@@ -3,16 +3,18 @@ import {
   Alert,
   Box,
   Button,
+  Chip,
   CircularProgress,
   Rating,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
+import type { Skill } from '@ats/shared-types';
 import type { CandidateInterviewNote } from '../mock/candidateMock';
 
 interface Props {
-  skills: string[];
+  skills: Skill[];
   candidateName: string;
   onClose: () => void;
   onSave?: (note: CandidateInterviewNote) => void | Promise<void>;
@@ -25,7 +27,7 @@ export function TechnicalInterviewForm({
   onSave,
 }: Props) {
   const initialRatings: Record<string, number> = {};
-  skills.forEach((s) => (initialRatings[s] = 0));
+  skills.forEach((s) => (initialRatings[s.name] = 0));
 
   const [ratings, setRatings] =
     useState<Record<string, number>>(initialRatings);
@@ -57,7 +59,7 @@ export function TechnicalInterviewForm({
           `Decisión: ${decision.trim()}.`,
           comments.trim(),
           `Skills evaluadas: ${skills
-            .map((skill) => `${skill} (${ratings[skill] || 0}/5)`)
+            .map((skill) => `${skill.name} (${ratings[skill.name] || 0}/5)`)
             .join(', ')}.`,
         ]
           .filter(Boolean)
@@ -73,38 +75,76 @@ export function TechnicalInterviewForm({
     }
   };
 
+  const mandatory = skills.filter((s) => s.type === 'mandatory');
+  const desirable = skills.filter((s) => s.type === 'desirable');
+
+  const renderSkillRow = (skill: Skill) => (
+    <Box
+      key={skill.name}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 2,
+      }}
+    >
+      <Typography sx={{ fontWeight: 600, minWidth: 160 }}>
+        {skill.name}
+      </Typography>
+      <Rating
+        value={ratings[skill.name] || 0}
+        onChange={(_, value) =>
+          setRatings((current) => ({ ...current, [skill.name]: value || 0 }))
+        }
+        disabled={isSaving}
+      />
+    </Box>
+  );
+
   return (
     <Box>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Evaluación por Skill de la JD
+      <Typography variant="h6" sx={{ mb: 0.5 }}>
+        Evaluación por Skill requerido de la posición
       </Typography>
-      <Stack spacing={2} sx={{ mb: 2 }}>
-        {skills.map((skill) => (
-          <Box
-            key={skill}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: 2,
-            }}
-          >
-            <Box sx={{ minWidth: 200 }}>
-              <Typography sx={{ fontWeight: 600 }}>{skill}</Typography>
-              <Typography variant="caption" color="text.secondary">
-                Evalúa conocimientos y experiencia relacionados
-              </Typography>
-            </Box>
-            <Rating
-              value={ratings[skill] || 0}
-              onChange={(_, value) =>
-                setRatings((current) => ({ ...current, [skill]: value || 0 }))
-              }
-              disabled={isSaving}
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ mb: 2.5, display: 'block' }}
+      >
+        Evaluá conocimientos y experiencia relacionados para cada skill
+      </Typography>
+
+      {mandatory.length > 0 && (
+        <>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+            <Chip
+              label="Obligatorias"
+              size="small"
+              color="error"
+              variant="outlined"
             />
           </Box>
-        ))}
-      </Stack>
+          <Stack spacing={2} sx={{ mb: 2.5 }}>
+            {mandatory.map(renderSkillRow)}
+          </Stack>
+        </>
+      )}
+
+      {desirable.length > 0 && (
+        <>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+            <Chip
+              label="Deseables"
+              size="small"
+              color="info"
+              variant="outlined"
+            />
+          </Box>
+          <Stack spacing={2} sx={{ mb: 2.5 }}>
+            {desirable.map(renderSkillRow)}
+          </Stack>
+        </>
+      )}
 
       <Typography variant="h6" sx={{ mb: 1 }}>
         Evaluación General

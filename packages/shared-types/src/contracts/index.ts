@@ -9,3 +9,4 @@ export * from './confirmCandidate';
 export * from './update-application';
 export * from './get-applications-by-candidate';
 export * from './getStageHistory';
+export * from './register-candidates';

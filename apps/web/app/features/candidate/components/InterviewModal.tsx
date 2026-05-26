@@ -8,6 +8,7 @@ import {
   Typography,
 } from '@mui/material';
 import { X } from 'lucide-react';
+import type { Skill } from '@ats/shared-types';
 import type { CandidateInterviewNote } from '../mock/candidateMock';
 import TechnicalInterviewForm from './TechnicalInterviewForm';
 import HrInterviewForm from './HrInterviewForm';
@@ -17,7 +18,7 @@ interface InterviewModalProps {
   onClose: () => void;
   candidateName: string;
   type?: 'tech' | 'hr';
-  skills?: string[];
+  skills?: Skill[];
   onSave?: (note: CandidateInterviewNote) => void | Promise<void>;
 }
 
@@ -35,7 +36,7 @@ export function InterviewModal({
       onClose={onClose}
       maxWidth="sm"
       fullWidth
-      PaperProps={{ sx: { overflow: 'hidden' } }}
+      slotProps={{ paper: { sx: { overflow: 'hidden' } } }}
     >
       <Box
         sx={(theme) => ({

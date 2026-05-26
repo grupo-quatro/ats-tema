@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react';
 import {
   Alert,
-  Avatar,
   Box,
   Button,
   Chip,
@@ -41,17 +40,6 @@ type SortField = 'candidateName' | 'fitScore' | 'stage' | 'updatedAt';
 type SortDirection = 'asc' | 'desc';
 
 const ALL_STAGES = 'Todos los estados';
-
-function getInitials(name?: string): string {
-  if (!name) return '?';
-  return name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase();
-}
 
 function formatDate(value?: Date | string): string {
   if (!value) return '-';
@@ -393,17 +381,6 @@ export default function CandidatePipeline({
                             spacing={1.5}
                             sx={{ alignItems: 'center' }}
                           >
-                            <Avatar
-                              sx={{
-                                bgcolor: '#2563eb',
-                                width: 42,
-                                height: 42,
-                                fontSize: '0.9rem',
-                                fontWeight: 700,
-                              }}
-                            >
-                              {getInitials(candidate.candidateName)}
-                            </Avatar>
                             <Box sx={{ minWidth: 0 }}>
                               <Typography
                                 sx={{

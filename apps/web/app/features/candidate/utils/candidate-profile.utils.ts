@@ -1,4 +1,5 @@
 import type {
+  ApplicationDetailDTO,
   ApplicationWithCandidateDTO,
   ApplicationStage,
 } from '@ats/shared-types';
@@ -81,6 +82,13 @@ export function buildStageHistory(
   }).filter(Boolean) as CandidateStageEntry[];
 }
 
+function formatPeriod(startDate?: string, endDate?: string): string {
+  if (!startDate && !endDate) return '';
+  if (startDate && !endDate) return startDate;
+  if (!startDate && endDate) return endDate;
+  return `${startDate} - ${endDate}`;
+}
+
 export function mapApplicationToProfile(
   application: ApplicationWithCandidateDTO,
 ): CandidateMockProfile {
@@ -100,6 +108,7 @@ export function mapApplicationToProfile(
     fitScore: application.fitScore ?? 0,
     detectedSkills: [],
     gapSkills: [],
+    jobSkills: [],
     strengths: application.fitSummary ? [application.fitSummary] : [],
     interviewNotes: application.notes
       ? [
@@ -115,6 +124,56 @@ export function mapApplicationToProfile(
     currentStage: stageKey
       ? (STAGE_LABELS[stageKey] ?? application.stage)
       : application.stage,
+    cvMockUrl: null,
+  };
+}
+
+export function mapDetailToProfile(
+  detail: ApplicationDetailDTO,
+): CandidateMockProfile {
+  const { candidate, skillMatchStats } = detail;
+  const stageKey = STAGE_KEY_MAP[detail.stage];
+
+  return {
+    id: candidate.id,
+    applicationId: detail.id,
+    fullName: candidate.fullName ?? 'Candidato sin nombre',
+    initials: getInitials(candidate.fullName),
+    title: detail.job.title,
+    email: candidate.email ?? '',
+    phone: candidate.phone ?? '',
+    location: candidate.location ?? '',
+    experience:
+      candidate.parsedExperience?.map((exp) => ({
+        role: exp.role ?? '',
+        company: exp.company ?? '',
+        period: formatPeriod(exp.startDate, exp.endDate),
+      })) ?? [],
+    education:
+      candidate.parsedEducation?.map((edu) => ({
+        degree: edu.degree ?? '',
+        institution: edu.institution ?? '',
+        period: formatPeriod(edu.startDate, edu.endDate),
+      })) ?? [],
+    fitScore: detail.fitScore ?? 0,
+    detectedSkills: candidate.technicalSkills ?? [],
+    gapSkills: skillMatchStats?.skillsFaltantes.map((s) => s.name) ?? [],
+    jobSkills: detail.job.skills,
+    strengths: detail.fitSummary ? [detail.fitSummary] : [],
+    interviewNotes: detail.notes
+      ? [
+          {
+            authorName: 'Reclutador',
+            date: new Date(detail.updatedAt).toLocaleDateString('es-AR'),
+            rating: 0,
+            note: detail.notes,
+          },
+        ]
+      : [],
+    stageHistory: buildStageHistory(detail.stage),
+    currentStage: stageKey
+      ? (STAGE_LABELS[stageKey] ?? detail.stage)
+      : detail.stage,
     cvMockUrl: null,
   };
 }

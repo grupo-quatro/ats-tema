@@ -105,7 +105,11 @@ export default function JobCard({ job }: JobCardProps) {
         <Typography variant="caption">
           Publicada el{' '}
           {job.publishedAt
-            ? new Date(job.publishedAt).toLocaleDateString()
+            ? new Date(job.publishedAt).toLocaleDateString('es-AR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })
             : ''}
         </Typography>
       </Stack>

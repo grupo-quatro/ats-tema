@@ -126,12 +126,11 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
 
   // Formateo de fecha
   const formattedDate = job.publishedAt
-    ? job.publishedAt instanceof Date
-      ? job.publishedAt.toLocaleDateString('es-AR', {
-          day: 'numeric',
-          month: 'short',
-        })
-      : String(job.publishedAt)
+    ? new Date(job.publishedAt).toLocaleDateString('es-AR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
     : '-';
 
   return (

@@ -3,6 +3,7 @@ import type {
   ApplicationStage,
   ApplicationStatus,
 } from '../models/application';
+import type { Skill } from '../models/job';
 import type { ParsedEducation, ParsedExperience } from '../models/parsing';
 import type { SkillMatchStats } from '../models/skill-match';
 
@@ -36,6 +37,7 @@ export interface ApplicationDetailCandidateDTO {
 export interface ApplicationDetailJobDTO {
   id: string;
   title: string;
+  skills: Skill[];
 }
 
 // ─── DTO principal ────────────────────────────────────────────────────────────

@@ -1,6 +1,7 @@
 import type {
   ApplicationStage,
   ApplicationStatus,
+  Candidate,
   CreateApplicationDTO,
   CreateCandidateDTO,
 } from '@ats/shared-types';
@@ -11,6 +12,7 @@ import { CandidatesRepository } from '../repositories/candidateRepository';
 type SeedCandidateDefinition = {
   id: string;
   data: CreateCandidateDTO;
+  parsedCv?: Candidate['parsedCv'];
 };
 
 type SeedApplicationDefinition = {
@@ -61,6 +63,34 @@ const CANDIDATE_SEEDS: SeedCandidateDefinition[] = [
       registrationSource: 'cv_upload',
       cvParseStatus: 'done',
     },
+    parsedCv: {
+      experience: [
+        {
+          role: 'Frontend Developer Senior',
+          company: 'Mercado Libre',
+          startDate: 'Mar 2022',
+          endDate: 'Actualidad',
+          description:
+            'Desarrollo de micro-frontends con Next.js y SSR. Optimización de Core Web Vitals.',
+        },
+        {
+          role: 'Frontend Developer',
+          company: 'Despegar',
+          startDate: 'Ene 2020',
+          endDate: 'Feb 2022',
+          description:
+            'Implementación de landing pages y flujos de checkout con React y TypeScript.',
+        },
+      ],
+      education: [
+        {
+          degree: 'Licenciatura en Sistemas',
+          institution: 'Universidad de Buenos Aires (UBA)',
+          startDate: '2015',
+          endDate: '2020',
+        },
+      ],
+    },
   },
   {
     id: 'seed-candidate-02',
@@ -106,6 +136,34 @@ const CANDIDATE_SEEDS: SeedCandidateDefinition[] = [
       registrationSource: 'cv_upload',
       cvParseStatus: 'done',
     },
+    parsedCv: {
+      experience: [
+        {
+          role: 'Backend Developer',
+          company: 'Naranja X',
+          startDate: 'Jun 2022',
+          endDate: 'Actualidad',
+          description:
+            'Diseño e implementación de Cloud Functions para procesamiento de pagos. Arquitectura serverless en Firebase.',
+        },
+        {
+          role: 'Desarrolladora Node.js',
+          company: 'Snoop Consulting',
+          startDate: 'Mar 2020',
+          endDate: 'May 2022',
+          description:
+            'APIs REST con Node.js y TypeScript. Integración con bases de datos NoSQL.',
+        },
+      ],
+      education: [
+        {
+          degree: 'Analista en Sistemas',
+          institution: 'UADE',
+          startDate: '2016',
+          endDate: '2020',
+        },
+      ],
+    },
   },
   {
     id: 'seed-candidate-04',
@@ -131,6 +189,42 @@ const CANDIDATE_SEEDS: SeedCandidateDefinition[] = [
       registrationType: 'specific',
       registrationSource: 'cv_upload',
       cvParseStatus: 'done',
+    },
+    parsedCv: {
+      experience: [
+        {
+          role: 'Senior Backend Engineer',
+          company: 'Ualá',
+          startDate: 'Ago 2021',
+          endDate: 'Actualidad',
+          description:
+            'Integración de OpenAI API para scoring automático de solicitudes de crédito. Diseño de pipelines serverless con Firebase Functions.',
+        },
+        {
+          role: 'Backend Developer',
+          company: 'Globant',
+          startDate: 'Feb 2019',
+          endDate: 'Jul 2021',
+          description:
+            'Desarrollo de microservicios con Node.js y TypeScript para cliente del sector financiero.',
+        },
+        {
+          role: 'Desarrollador Node.js',
+          company: 'MercadoLibre',
+          startDate: 'Ene 2018',
+          endDate: 'Ene 2019',
+          description:
+            'Mantenimiento y evolución de servicios de notificaciones.',
+        },
+      ],
+      education: [
+        {
+          degree: 'Ingeniería en Software',
+          institution: 'ITBA',
+          startDate: '2013',
+          endDate: '2018',
+        },
+      ],
     },
   },
   {
@@ -182,6 +276,34 @@ const CANDIDATE_SEEDS: SeedCandidateDefinition[] = [
       registrationSource: 'cv_upload',
       cvParseStatus: 'done',
     },
+    parsedCv: {
+      experience: [
+        {
+          role: 'QA Automation Analyst',
+          company: 'Brubank',
+          startDate: 'Mar 2023',
+          endDate: 'Actualidad',
+          description:
+            'Diseño de suite de pruebas E2E con Playwright para app móvil fintech. Integración con CI/CD en GitHub Actions.',
+        },
+        {
+          role: 'QA Engineer',
+          company: 'Practia',
+          startDate: 'Jun 2021',
+          endDate: 'Feb 2023',
+          description:
+            'Testing funcional y automatización con Cypress en proyectos de banca digital.',
+        },
+      ],
+      education: [
+        {
+          degree: 'Ingeniería en Sistemas',
+          institution: 'UNCuyo',
+          startDate: '2016',
+          endDate: '2021',
+        },
+      ],
+    },
   },
   {
     id: 'seed-candidate-07',
@@ -227,6 +349,41 @@ const CANDIDATE_SEEDS: SeedCandidateDefinition[] = [
       registrationType: 'specific',
       registrationSource: 'cv_upload',
       cvParseStatus: 'done',
+    },
+    parsedCv: {
+      experience: [
+        {
+          role: 'Tech Lead Backend',
+          company: 'Telecom Argentina',
+          startDate: 'Ene 2020',
+          endDate: 'Actualidad',
+          description:
+            'Liderazgo técnico de equipo de 4 desarrolladores. Migración de arquitectura monolítica a Firebase serverless.',
+        },
+        {
+          role: 'Firebase Developer',
+          company: 'Accenture',
+          startDate: 'Mar 2017',
+          endDate: 'Dic 2019',
+          description:
+            'Implementación de soluciones Firebase para clientes enterprise. Firestore, Functions y Emulator Suite.',
+        },
+        {
+          role: 'Backend Developer',
+          company: 'Freelance',
+          startDate: 'Jun 2015',
+          endDate: 'Feb 2017',
+          description: 'Desarrollo de APIs y backends para startups locales.',
+        },
+      ],
+      education: [
+        {
+          degree: 'Ingeniería en Sistemas',
+          institution: 'Universidad de Buenos Aires (UBA)',
+          startDate: '2010',
+          endDate: '2015',
+        },
+      ],
     },
   },
 ];
@@ -361,6 +518,12 @@ export class SeedCandidatesService {
           seed.id,
           seed.data,
         );
+
+        if (seed.parsedCv) {
+          await this.candidatesRepository.update(seed.id, {
+            parsedCv: seed.parsedCv,
+          });
+        }
 
         if (existing) {
           candidatesUpdated += 1;

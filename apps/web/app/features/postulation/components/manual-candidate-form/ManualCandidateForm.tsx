@@ -10,7 +10,9 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  Divider,
   IconButton,
+  TextField,
   Typography,
 } from '@mui/material';
 import Link from 'next/link';
@@ -22,11 +24,14 @@ import {
   Mail,
   MapPin,
   Phone,
+  Plus,
   Sparkles,
+  Trash2,
   Upload,
   User,
   X,
 } from 'lucide-react';
+import type { ParsedEducation, ParsedExperience } from '@ats/shared-types';
 
 import type { MinimalFormFieldComponent } from './ManualProfileFormField';
 import { ManualProfileFormField } from './ManualProfileFormField';
@@ -40,9 +45,6 @@ type ManualCandidateValues = {
   email: string;
   phone: string;
   location: string;
-  desiredPosition: string;
-  experienceYears: string;
-  education: string;
   technicalSkills: string;
   professionalSummary: string;
 };
@@ -53,12 +55,23 @@ const defaultValues: ManualCandidateValues = {
   email: '',
   phone: '',
   location: '',
-  desiredPosition: '',
-  experienceYears: '',
-  education: '',
   technicalSkills: '',
   professionalSummary: '',
 };
+
+const emptyExperience = (): ParsedExperience => ({
+  role: '',
+  company: '',
+  startDate: '',
+  endDate: '',
+});
+
+const emptyEducation = (): ParsedEducation => ({
+  degree: '',
+  institution: '',
+  startDate: '',
+  endDate: '',
+});
 
 function requiredTrim(message: string) {
   const fn = ({ value }: { value: string }) =>
@@ -85,7 +98,6 @@ const v = {
   lastName: requiredTrim('Los apellidos son requeridos'),
   email: { onBlur: validateEmail, onSubmit: validateEmail },
   phone: { onBlur: validatePhone, onSubmit: validatePhone },
-  desiredPosition: requiredTrim('La posición deseada es requerida'),
 };
 
 const PAGE_MAX_WIDTH = 900;
@@ -99,6 +111,23 @@ type ManualCandidateFormProps = {
   preloadedFile?: File;
 };
 
+function SectionHeader({
+  icon,
+  label,
+}: {
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+      {icon}
+      <Typography variant="body1" sx={{ fontWeight: 600 }}>
+        {label}
+      </Typography>
+    </Box>
+  );
+}
+
 export function ManualCandidateForm({
   jobId,
   jobTitle,
@@ -111,6 +140,12 @@ export function ManualCandidateForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [cvFile, setCvFile] = useState<File | null>(preloadedFile ?? null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [experiences, setExperiences] = useState<ParsedExperience[]>([
+    emptyExperience(),
+  ]);
+  const [educations, setEducations] = useState<ParsedEducation[]>([
+    emptyEducation(),
+  ]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
@@ -122,10 +157,37 @@ export function ManualCandidateForm({
     setCvFile(file);
   };
 
+  const updateExperience = (
+    index: number,
+    field: keyof ParsedExperience,
+    value: string,
+  ) => {
+    setExperiences((prev) =>
+      prev.map((exp, i) => (i === index ? { ...exp, [field]: value } : exp)),
+    );
+  };
+
+  const updateEducation = (
+    index: number,
+    field: keyof ParsedEducation,
+    value: string,
+  ) => {
+    setEducations((prev) =>
+      prev.map((edu, i) => (i === index ? { ...edu, [field]: value } : edu)),
+    );
+  };
+
   const form = useForm({
     defaultValues: { ...defaultValues, ...initialValues },
     onSubmit: async ({ value }) => {
       try {
+        const parsedExperience = experiences.filter(
+          (e) => e.role?.trim() || e.company?.trim(),
+        );
+        const parsedEducation = educations.filter(
+          (e) => e.degree?.trim() || e.institution?.trim(),
+        );
+
         const result = await mutateAsync({
           payload: {
             jobId,
@@ -134,10 +196,6 @@ export function ManualCandidateForm({
             email: value.email.trim(),
             phone: value.phone.trim(),
             location: value.location.trim() || undefined,
-            yearsOfExperience: value.experienceYears
-              ? parseInt(value.experienceYears, 10) || undefined
-              : undefined,
-            education: value.education.trim() || undefined,
             technicalSkills: value.technicalSkills
               ? value.technicalSkills
                   .split(',')
@@ -145,6 +203,12 @@ export function ManualCandidateForm({
                   .filter(Boolean)
               : undefined,
             professionalSummary: value.professionalSummary.trim() || undefined,
+            parsedExperience: parsedExperience.length
+              ? parsedExperience
+              : undefined,
+            parsedEducation: parsedEducation.length
+              ? parsedEducation
+              : undefined,
           },
           file: cvFile ?? undefined,
         });
@@ -238,20 +302,9 @@ export function ManualCandidateForm({
             }}
             noValidate
           >
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: {
-                  xs: '1fr',
-                  md: 'repeat(2, minmax(0, 1fr))',
-                },
-                gap: 3,
-                mb: 3,
-              }}
-            >
-              <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                CV *
-              </Typography>
+            {/* CV */}
+            <Box sx={{ mb: 4 }}>
+              <SectionHeader icon={<FileText size={16} />} label="CV" />
               <Box
                 sx={{
                   border: '2px dashed',
@@ -261,7 +314,6 @@ export function ManualCandidateForm({
                   textAlign: 'center',
                   cursor: 'pointer',
                   transition: 'border-color 0.2s',
-                  mb: 2,
                   '&:hover': { borderColor: 'primary.main' },
                 }}
                 onClick={() => fileInputRef.current?.click()}
@@ -295,100 +347,305 @@ export function ManualCandidateForm({
                   </>
                 )}
               </Box>
-
               {fileError && (
-                <Alert severity="error" sx={{ mb: 2 }}>
+                <Alert severity="error" sx={{ mt: 1 }}>
                   {fileError}
                 </Alert>
               )}
-
               {cvFile && (
                 <Button
                   variant="outlined"
                   size="small"
                   startIcon={<Sparkles size={16} />}
                   disabled
-                  sx={{ mb: 2, textTransform: 'none', borderRadius: '10px' }}
+                  sx={{ mt: 1.5, textTransform: 'none', borderRadius: '10px' }}
                 >
                   Autocompletar desde CV
                 </Button>
               )}
+            </Box>
 
-              <ManualProfileFormField
-                Field={Field}
-                name="firstName"
-                label="Nombre"
-                Icon={User}
-                required
-                validators={v.firstName}
+            <Divider sx={{ mb: 4 }} />
+
+            {/* Información de contacto */}
+            <Box sx={{ mb: 4 }}>
+              <SectionHeader
+                icon={<User size={16} />}
+                label="Información de Contacto"
               />
-              <ManualProfileFormField
-                Field={Field}
-                name="lastName"
-                label="Apellidos"
-                Icon={User}
-                required
-                validators={v.lastName}
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                  gap: 3,
+                }}
+              >
+                <ManualProfileFormField
+                  Field={Field}
+                  name="firstName"
+                  label="Nombre"
+                  Icon={User}
+                  required
+                  validators={v.firstName}
+                />
+                <ManualProfileFormField
+                  Field={Field}
+                  name="lastName"
+                  label="Apellidos"
+                  Icon={User}
+                  required
+                  validators={v.lastName}
+                />
+                <ManualProfileFormField
+                  Field={Field}
+                  name="email"
+                  label="Email"
+                  Icon={Mail}
+                  required
+                  validators={v.email}
+                  fieldType="email"
+                  autoComplete="email"
+                />
+                <ManualProfileFormField
+                  Field={Field}
+                  name="phone"
+                  label="Teléfono"
+                  Icon={Phone}
+                  required
+                  validators={v.phone}
+                  fieldType="tel"
+                  autoComplete="tel"
+                />
+                <ManualProfileFormField
+                  Field={Field}
+                  name="location"
+                  label="Ubicación"
+                  Icon={MapPin}
+                  gridColumnFull
+                />
+              </Box>
+            </Box>
+
+            <Divider sx={{ mb: 4 }} />
+
+            {/* Experiencia laboral */}
+            <Box sx={{ mb: 4 }}>
+              <SectionHeader
+                icon={<Briefcase size={16} />}
+                label="Experiencia Laboral"
               />
-              <ManualProfileFormField
-                Field={Field}
-                name="email"
-                label="Email"
-                Icon={Mail}
-                required
-                validators={v.email}
-                fieldType="email"
-                autoComplete="email"
-              />
-              <ManualProfileFormField
-                Field={Field}
-                name="phone"
-                label="Teléfono"
-                Icon={Phone}
-                required
-                validators={v.phone}
-                fieldType="tel"
-                autoComplete="tel"
-              />
-              <ManualProfileFormField
-                Field={Field}
-                name="location"
-                label="Ubicación"
-                Icon={MapPin}
-              />
-              <ManualProfileFormField
-                Field={Field}
-                name="experienceYears"
-                label="Años de experiencia"
-                Icon={Briefcase}
-                placeholder="Ej. 5"
-                fieldType="number"
-              />
-              <ManualProfileFormField
-                Field={Field}
-                name="education"
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {experiences.map((exp, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      p: 2.5,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 2,
+                      position: 'relative',
+                    }}
+                  >
+                    {experiences.length > 1 && (
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setExperiences((prev) =>
+                            prev.filter((_, i) => i !== index),
+                          )
+                        }
+                        sx={{ position: 'absolute', top: 8, right: 8 }}
+                        aria-label="Eliminar experiencia"
+                      >
+                        <Trash2 size={15} />
+                      </IconButton>
+                    )}
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: {
+                          xs: '1fr',
+                          md: 'repeat(2, 1fr)',
+                        },
+                        gap: 2,
+                      }}
+                    >
+                      <TextField
+                        label="Cargo"
+                        value={exp.role ?? ''}
+                        onChange={(e) =>
+                          updateExperience(index, 'role', e.target.value)
+                        }
+                        fullWidth
+                        size="small"
+                      />
+                      <TextField
+                        label="Empresa"
+                        value={exp.company ?? ''}
+                        onChange={(e) =>
+                          updateExperience(index, 'company', e.target.value)
+                        }
+                        fullWidth
+                        size="small"
+                      />
+                      <TextField
+                        label="Desde"
+                        value={exp.startDate ?? ''}
+                        onChange={(e) =>
+                          updateExperience(index, 'startDate', e.target.value)
+                        }
+                        fullWidth
+                        size="small"
+                        placeholder="Ej. Mar 2020"
+                      />
+                      <TextField
+                        label="Hasta"
+                        value={exp.endDate ?? ''}
+                        onChange={(e) =>
+                          updateExperience(index, 'endDate', e.target.value)
+                        }
+                        fullWidth
+                        size="small"
+                        placeholder="Ej. Actualidad"
+                      />
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+              <Button
+                startIcon={<Plus size={16} />}
+                onClick={() =>
+                  setExperiences((prev) => [...prev, emptyExperience()])
+                }
+                sx={{ mt: 2, textTransform: 'none' }}
+              >
+                Agregar experiencia
+              </Button>
+            </Box>
+
+            <Divider sx={{ mb: 4 }} />
+
+            {/* Educación */}
+            <Box sx={{ mb: 4 }}>
+              <SectionHeader
+                icon={<GraduationCap size={16} />}
                 label="Educación"
-                Icon={GraduationCap}
-                placeholder="Título académico e institución"
               />
-              <ManualProfileFormField
-                Field={Field}
-                name="technicalSkills"
-                label="Habilidades técnicas"
-                Icon={Briefcase}
-                gridColumnFull
-                placeholder="Separá con coma (ej. React, TypeScript)"
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {educations.map((edu, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      p: 2.5,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 2,
+                      position: 'relative',
+                    }}
+                  >
+                    {educations.length > 1 && (
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setEducations((prev) =>
+                            prev.filter((_, i) => i !== index),
+                          )
+                        }
+                        sx={{ position: 'absolute', top: 8, right: 8 }}
+                        aria-label="Eliminar educación"
+                      >
+                        <Trash2 size={15} />
+                      </IconButton>
+                    )}
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: {
+                          xs: '1fr',
+                          md: 'repeat(2, 1fr)',
+                        },
+                        gap: 2,
+                      }}
+                    >
+                      <TextField
+                        label="Título"
+                        value={edu.degree ?? ''}
+                        onChange={(e) =>
+                          updateEducation(index, 'degree', e.target.value)
+                        }
+                        fullWidth
+                        size="small"
+                      />
+                      <TextField
+                        label="Institución"
+                        value={edu.institution ?? ''}
+                        onChange={(e) =>
+                          updateEducation(index, 'institution', e.target.value)
+                        }
+                        fullWidth
+                        size="small"
+                      />
+                      <TextField
+                        label="Desde"
+                        value={edu.startDate ?? ''}
+                        onChange={(e) =>
+                          updateEducation(index, 'startDate', e.target.value)
+                        }
+                        fullWidth
+                        size="small"
+                        placeholder="Ej. 2016"
+                      />
+                      <TextField
+                        label="Hasta"
+                        value={edu.endDate ?? ''}
+                        onChange={(e) =>
+                          updateEducation(index, 'endDate', e.target.value)
+                        }
+                        fullWidth
+                        size="small"
+                        placeholder="Ej. 2020"
+                      />
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+              <Button
+                startIcon={<Plus size={16} />}
+                onClick={() =>
+                  setEducations((prev) => [...prev, emptyEducation()])
+                }
+                sx={{ mt: 2, textTransform: 'none' }}
+              >
+                Agregar educación
+              </Button>
+            </Box>
+
+            <Divider sx={{ mb: 4 }} />
+
+            {/* Perfil profesional */}
+            <Box sx={{ mb: 4 }}>
+              <SectionHeader
+                icon={<Briefcase size={16} />}
+                label="Perfil Profesional"
               />
-              <ManualProfileFormField
-                Field={Field}
-                name="professionalSummary"
-                label="Resumen profesional"
-                Icon={FileText}
-                gridColumnFull
-                multiline
-                minRows={4}
-                placeholder="Contá tu experiencia y objetivos en pocas líneas."
-              />
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <ManualProfileFormField
+                  Field={Field}
+                  name="technicalSkills"
+                  label="Habilidades técnicas"
+                  Icon={Briefcase}
+                  placeholder="Separá con coma (ej. React, TypeScript)"
+                />
+                <ManualProfileFormField
+                  Field={Field}
+                  name="professionalSummary"
+                  label="Resumen profesional"
+                  Icon={FileText}
+                  multiline
+                  minRows={4}
+                  placeholder="Contá tu experiencia y objetivos en pocas líneas."
+                />
+              </Box>
             </Box>
 
             {isError && (
@@ -424,7 +681,7 @@ export function ManualCandidateForm({
                   <Button
                     type="submit"
                     variant="contained"
-                    disabled={isSubmitting || isPending || !cvFile}
+                    disabled={isSubmitting || isPending}
                     startIcon={
                       isPending ? (
                         <CircularProgress size={16} color="inherit" />

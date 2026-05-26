@@ -151,6 +151,15 @@ export class CandidateRegistrationService {
         candidateData,
       );
 
+      if (payload.parsedExperience?.length || payload.parsedEducation?.length) {
+        await this.candidatesRepository.update(candidateId, {
+          parsedCv: {
+            experience: payload.parsedExperience ?? [],
+            education: payload.parsedEducation ?? [],
+          },
+        });
+      }
+
       const applicationId =
         await this.applicationRegistrationService.createApplicationForCandidate(
           candidateId,

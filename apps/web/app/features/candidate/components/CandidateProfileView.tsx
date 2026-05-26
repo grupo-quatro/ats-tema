@@ -87,23 +87,6 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box
-              sx={(theme) => ({
-                width: 56,
-                height: 56,
-                borderRadius: '50%',
-                bgcolor: theme.palette.primary.main,
-                color: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 20,
-                fontWeight: 700,
-                flexShrink: 0,
-              })}
-            >
-              {candidate.initials}
-            </Box>
             <Box>
               <Typography
                 variant="h2"
@@ -672,7 +655,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
         onClose={() => profile.setInterviewModalOpen(false)}
         candidateName={candidate.fullName}
         type={profile.interviewType}
-        skills={candidate.detectedSkills}
+        skills={candidate.jobSkills}
         onSave={profile.handleInterviewSave}
       />
 

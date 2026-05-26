@@ -79,7 +79,7 @@ describe('buildStageHistory', () => {
     const history = buildStageHistory('applied');
     const pending = history.filter((s) => s.status === 'pending');
     expect(pending.length).toBeGreaterThan(0);
-    expect(history[0].status).toBe('current');
+    expect(history[0]!.status).toBe('current');
   });
 
   it('retorna una entrada por cada stage del orden (excluyendo rejected/withdrawn)', () => {
@@ -90,7 +90,7 @@ describe('buildStageHistory', () => {
   it('cuando el stage es hired todas las etapas anteriores son completed', () => {
     const history = buildStageHistory('hired');
     const nonPending = history.filter((s) => s.status !== 'pending');
-    const lastEntry = history[history.length - 1];
+    const lastEntry = history[history.length - 1]!;
     expect(lastEntry.status).toBe('current');
     expect(lastEntry.key).toBe('contratado');
     expect(nonPending.length).toBe(history.length);
@@ -139,7 +139,7 @@ describe('mapApplicationToProfile', () => {
       makeApplication({ notes: 'Candidato muy comunicativo.' }),
     );
     expect(profile.interviewNotes).toHaveLength(1);
-    expect(profile.interviewNotes[0].note).toBe('Candidato muy comunicativo.');
+    expect(profile.interviewNotes[0]!.note).toBe('Candidato muy comunicativo.');
   });
 
   it('retorna interviewNotes vacío cuando notes no está definido', () => {

@@ -23,11 +23,7 @@ import { Plus, Sparkles, Star, FileText, CircleAlert, X } from 'lucide-react';
 
 import { useState } from 'react';
 
-import {
-  CreateJobDTO,
-  Skill,
-  JobLocation,
-} from '../../../../../../../../packages/shared-types/src/models/job';
+import type { CreateJobDTO, Skill, JobLocation } from '@ats/shared-types';
 
 interface PositionFormProps {
   onSubmit: (data: CreateJobDTO) => Promise<void>;
@@ -100,6 +96,7 @@ export default function PositionForm({
         name: mandatorySkillForm.name,
         weight: parseInt(mandatorySkillForm.weight),
         type: 'mandatory',
+        yearsOfExperience: 0,
       },
     ]);
 
@@ -120,6 +117,7 @@ export default function PositionForm({
         name: desirableSkillForm.name,
         weight: parseInt(desirableSkillForm.weight),
         type: 'desirable',
+        yearsOfExperience: 0,
       },
     ]);
 

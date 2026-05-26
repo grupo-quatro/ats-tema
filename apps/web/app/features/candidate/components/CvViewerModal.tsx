@@ -40,7 +40,7 @@ export function CvViewerModal({
       onClose={onClose}
       maxWidth="md"
       fullWidth
-      PaperProps={{ sx: { overflow: 'hidden' } }}
+      slotProps={{ paper: { sx: { overflow: 'hidden' } } }}
     >
       <Box
         sx={(theme) => ({

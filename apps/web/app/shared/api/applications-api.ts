@@ -1,12 +1,17 @@
 import type {
+  ApplicationDetailDTO,
+  GetApplicationDetailPayload,
+  GetApplicationsByCandidatePayload,
+  GetApplicationsByCandidateResponse,
   GetApplicationsByJobPayload,
   GetApplicationsByJobResponse,
   GetStageHistoryResponse,
   UpdateApplicationStagePayload,
   UpdateApplicationStageResponse,
 } from '@ats/shared-types';
+import { httpsCallable } from 'firebase/functions';
 
-import { getFunctionUrl } from '../lib/firebase';
+import { functions, getFunctionUrl } from '../lib/firebase';
 import { getToken } from '../lib/auth';
 
 export async function getApplicationsByJob(
@@ -47,6 +52,28 @@ export async function updateApplicationStage(
     throw new Error(error.error || 'Error al actualizar la postulación');
   }
   return res.json();
+}
+
+export async function getApplicationDetail(
+  applicationId: string,
+): Promise<ApplicationDetailDTO> {
+  const fn = httpsCallable<GetApplicationDetailPayload, ApplicationDetailDTO>(
+    functions,
+    'getApplicationDetail',
+  );
+  const result = await fn({ applicationId });
+  return result.data;
+}
+
+export async function getApplicationsByCandidate(
+  payload: GetApplicationsByCandidatePayload,
+): Promise<GetApplicationsByCandidateResponse> {
+  const fn = httpsCallable<
+    GetApplicationsByCandidatePayload,
+    GetApplicationsByCandidateResponse
+  >(functions, 'getApplicationsByCandidate');
+  const result = await fn(payload);
+  return result.data;
 }
 
 export async function getStageHistory(
