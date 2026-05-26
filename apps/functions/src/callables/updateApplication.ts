@@ -77,7 +77,10 @@ export const updateApplicationStage = onRequest(async (request, response) => {
     const payload = request.body as Partial<UpdateApplicationStagePayload>;
     validateUpdateApplicationStagePayload(payload);
 
-    const result = await updateApplicationStageService.updateStage(payload, uid);
+    const result = await updateApplicationStageService.updateStage(
+      payload,
+      uid,
+    );
 
     response.status(200).json(result);
   } catch (error) {
