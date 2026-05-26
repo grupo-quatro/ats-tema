@@ -6,7 +6,7 @@ import type { GetApplicationsByCandidatePayload } from '@ats/shared-types';
 import {
   GetApplicationsByCandidateService,
   GetApplicationsByCandidateServiceError,
-} from '../services/get-applications-by-candidate-service';
+} from '../services/getApplicationsByCandidateService';
 
 const getApplicationsByCandidateService =
   new GetApplicationsByCandidateService();

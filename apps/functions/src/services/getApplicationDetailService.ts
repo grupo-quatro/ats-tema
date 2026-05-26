@@ -99,7 +99,6 @@ export class GetApplicationDetailService {
       job: {
         id: application.jobId,
         title: job?.title ?? application.jobTitle ?? '',
-        skills: job?.skills ?? [],
       },
     };
   }

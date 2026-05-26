@@ -1,5 +1,5 @@
 // branch: fb-50-57
-import type { SkillMatchStats } from './skill-match';
+import type { SkillMatchStats } from './skillMatch';
 
 export type ApplicationStage =
   | 'profile_pending' // TODO: migrar a 'applied' cuando se consolide el flujo CV (candidateService)

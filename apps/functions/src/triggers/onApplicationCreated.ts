@@ -5,7 +5,7 @@ import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import {
   SkillMatchService,
   SkillMatchServiceError,
-} from '../services/skill-match-service';
+} from '../services/skillMatchService';
 
 const skillMatchService = new SkillMatchService();
 

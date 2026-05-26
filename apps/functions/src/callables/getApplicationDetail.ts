@@ -7,7 +7,7 @@ import type { GetApplicationDetailPayload } from '@ats/shared-types';
 import {
   ApplicationDetailNotFoundError,
   GetApplicationDetailService,
-} from '../services/get-application-detail-service';
+} from '../services/getApplicationDetailService';
 
 const getApplicationDetailService = new GetApplicationDetailService();
 
