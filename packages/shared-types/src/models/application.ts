@@ -1,3 +1,6 @@
+// branch: fb-50-57
+import type { SkillMatchStats } from './skillMatch';
+
 export type ApplicationStage =
   | 'profile_pending' // TODO: migrar a 'applied' cuando se consolide el flujo CV (candidateService)
   | 'applied'
@@ -35,8 +38,17 @@ export interface Application {
   fitSummary?: string; // resumen generado por AI
   coverLetter?: string;
 
+  /**
+   * Estadísticas de match de skills calculadas automáticamente por Cloud Function
+   * al momento de crear la postulación. Usa los pesos (weight) y tipos (type)
+   * de Job.skills para ponderar el score.
+   */
+  skillMatchStats?: SkillMatchStats;
+
   rejectionReason?: string;
   notes?: string;
+  /** Fortalezas de la candidatura evaluadas por el reclutador. Editable desde el perfil del candidato. */ // branch: fb-50-57
+  fortalezas?: string[];
 
   createdAt: Date;
   updatedAt: Date;
