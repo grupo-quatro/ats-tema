@@ -69,6 +69,7 @@ export class GetApplicationDetailService {
           professionalSummary: candidate.professionalSummary,
           parsedExperience: candidate.parsedCv?.experience,
           parsedEducation: candidate.parsedCv?.education,
+          cvStoragePath: candidate.cvStoragePath ?? null,
         }
       : {
           // Fallback con los datos denormalizados en la postulación

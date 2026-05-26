@@ -28,3 +28,4 @@ export { getStageHistory } from './callables/getStageHistory';
 export { onCVUploaded } from './triggers/onCvUploaded';
 export { onApplicationCreated } from './triggers/onApplicationCreated';
 export { submitApplication } from './callables/submit-application';
+export { getCvSignedUrl } from './callables/getCvSignedUrl';

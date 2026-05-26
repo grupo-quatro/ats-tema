@@ -8,6 +8,8 @@ import { CandidateProfileView } from '@/features/candidate/components/CandidateP
 import { CANDIDATE_SESSION_KEY } from '@/features/pipeline/components/CandidatePipelineRoute';
 import type { CandidateMockProfile } from '@/features/candidate/mock/candidateMock';
 import { mapDetailToProfile } from '@/features/candidate/utils/candidate-profile.utils';
+import { ref, getDownloadURL } from 'firebase/storage';
+import { storage } from '@/shared/lib/firebase';
 import { getApplicationDetail } from '@/shared/api/applications-api';
 
 export default function CandidatePage() {
@@ -30,7 +32,19 @@ export default function CandidatePage() {
       }
 
       getApplicationDetail(application.id)
-        .then((detail) => setProfile(mapDetailToProfile(detail)))
+        .then(async (detail) => {
+          const profile = mapDetailToProfile(detail);
+          if (detail.candidate.cvStoragePath) {
+            try {
+              profile.cvMockUrl = await getDownloadURL(
+                ref(storage, detail.candidate.cvStoragePath),
+              );
+            } catch (err) {
+              console.error('[CandidatePage] getDownloadURL falló:', err);
+            }
+          }
+          setProfile(profile);
+        })
         .catch(() => setNotFound(true));
     } catch {
       setNotFound(true);

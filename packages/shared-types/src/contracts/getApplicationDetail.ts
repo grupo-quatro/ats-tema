@@ -31,6 +31,8 @@ export interface ApplicationDetailCandidateDTO {
   parsedExperience?: ParsedExperience[];
   /** Educación estructurada extraída del CV parseado. Null si no tiene CV. */
   parsedEducation?: ParsedEducation[];
+  /** Path en Firebase Storage, e.g. cvs/candidateId/cv.pdf. Null si no subió CV. */
+  cvStoragePath?: string | null;
 }
 
 export interface ApplicationDetailJobDTO {

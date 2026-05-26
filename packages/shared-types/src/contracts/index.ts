@@ -10,3 +10,4 @@ export * from './confirmCandidate';
 export * from './update-application';
 export * from './getStageHistory';
 export * from './register-candidates';
+export * from './getCvSignedUrl';

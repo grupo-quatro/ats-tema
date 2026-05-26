@@ -5,13 +5,16 @@ import type {
   GetApplicationsByCandidateResponse,
   GetApplicationsByJobPayload,
   GetApplicationsByJobResponse,
+  GetCvSignedUrlPayload,
+  GetCvSignedUrlResponse,
   GetStageHistoryResponse,
   UpdateApplicationStagePayload,
   UpdateApplicationStageResponse,
 } from '@ats/shared-types';
 import { httpsCallable } from 'firebase/functions';
+import { getDownloadURL, ref } from 'firebase/storage';
 
-import { functions, getFunctionUrl } from '../lib/firebase';
+import { functions, getFunctionUrl, storage } from '../lib/firebase';
 import { getToken } from '../lib/auth';
 
 export async function getApplicationsByJob(
@@ -74,6 +77,15 @@ export async function getApplicationsByCandidate(
   >(functions, 'getApplicationsByCandidate');
   const result = await fn(payload);
   return result.data;
+}
+
+export async function getCvDownloadUrl(applicationId: string): Promise<string> {
+  const fn = httpsCallable<GetCvSignedUrlPayload, GetCvSignedUrlResponse>(
+    functions,
+    'getCvSignedUrl',
+  );
+  const result = await fn({ applicationId });
+  return getDownloadURL(ref(storage, result.data.cvStoragePath));
 }
 
 export async function getStageHistory(
