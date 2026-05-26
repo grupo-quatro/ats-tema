@@ -87,10 +87,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
           }}
         >
           <Box>
-            <Typography
-              variant="h2"
-              sx={{ fontWeight: 600, lineHeight: 1.2 }}
-            >
+            <Typography variant="h2" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
               {candidate.fullName}
             </Typography>
             <Typography variant="body2" color="text.secondary">
