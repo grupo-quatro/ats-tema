@@ -1,72 +1,70 @@
-import { logger } from 'firebase-functions';
-import { CandidatesRepository } from '../repositories/candidateRepository';
-import { CvParseStatus } from '@ats/shared-types';
+import { getStorage } from 'firebase-admin/storage';
+import { getFirestore } from 'firebase-admin/firestore';
 import { CvParsingService } from './parsing/cvParsingService';
+import { CvParsingError } from '../core/errors/cvParsingError';
 
-/**
- * Servicio Orquestador del ciclo de vida de ingesta de Currículums.
- * Coordina el registro inicial del binario, la invocación asincrónica
- * al motor cognitivo de IA y la persistencia de los resultados estructurados.
- */
 export class CvUploadService {
-  constructor(
-    private readonly candidatesRepository: CandidatesRepository = new CandidatesRepository(),
-    private readonly cvParsingService: CvParsingService = new CvParsingService(),
-  ) {}
+  private parsingService: CvParsingService;
+
+  constructor() {
+    this.parsingService = new CvParsingService();
+  }
 
   /**
-   * Maneja de manera reactiva el evento de carga física de un CV en Cloud Storage.
+   * Función orquestadora: Descarga archivo -> Llama a IA -> Actualiza DB
    */
-  async handleCvUploaded(
+  async processUploadedCv(
     candidateId: string,
-    cvStoragePath: string,
+    bucketName: string,
+    filePath: string,
+    mimeType: string,
   ): Promise<void> {
-    const candidate = await this.candidatesRepository.findById(candidateId);
+    const db = getFirestore();
+    const candidateRef = db.collection('candidates').doc(candidateId);
 
-    if (!candidate) {
-      logger.warn(
-        `Se recibió un CV para un candidato inexistente. candidateId=${candidateId}, path=${cvStoragePath}`,
+    try {
+      // 1. Cambiar estado a 'processing' (Le avisa al frontend que muestre el spinner)
+      await candidateRef.update({ cvParseStatus: 'processing' });
+
+      // 2. Descargar el archivo a la memoria RAM (Buffer)
+      // Justificación On-Premise: Si un día usan MinIO, solo cambian este bloque.
+      const bucket = getStorage().bucket(bucketName);
+      const file = bucket.file(filePath);
+      const [fileBuffer] = await file.download();
+
+      // 3. Delegar el procesamiento cognitivo al servicio de IA
+      const parsedData = await this.parsingService.parseCvFromBuffer(
+        fileBuffer,
+        mimeType,
       );
-      return;
-    }
-    const nextCvParseStatus: CvParseStatus =
-      candidate.registrationSource === 'manual' ? 'not_required' : 'processing';
 
-    await this.candidatesRepository.updateCvStoragePath(
-      candidateId,
-      cvStoragePath,
-      nextCvParseStatus,
-    );
+      // 4. Guardar éxito en base de datos
+      await candidateRef.update({
+        cvParseStatus: 'done',
+        parsedData: parsedData,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error(
+        `[CvUploadService] Error crítico procesando CV del candidato ${candidateId}:`,
+        error,
+      );
 
-    logger.info(
-      `[CvUploadService] Registro inicial completado. candidateId=${candidateId}, registrationSource=${candidate.registrationSource}, cvParseStatus=${nextCvParseStatus}`,
-    );
+      // Best-Effort: Si algo falla (ej. IA caída o PDF corrupto), avisar al frontend
+      const errorMessage =
+        error instanceof CvParsingError
+          ? error.message
+          : 'Error interno al procesar CV';
 
-    if (nextCvParseStatus === 'processing') {
-      try {
-        logger.info(
-          `[CvUploadService] Iniciando extracción cognitiva en Vertex AI para candidateId=${candidateId}`,
+      await candidateRef
+        .update({
+          cvParseStatus: 'failed',
+          cvParseError: errorMessage,
+          updatedAt: new Date().toISOString(),
+        })
+        .catch((err) =>
+          console.error('Fallo al actualizar estado de error en DB:', err),
         );
-
-        const parsedCvResults =
-          await this.cvParsingService.parseDocument(cvStoragePath);
-
-        await this.candidatesRepository.updateCvParseSuccess(
-          candidateId,
-          parsedCvResults,
-        );
-
-        logger.info(
-          `[CvUploadService] Pipeline finalizado con éxito. Transición a 'done' confirmada para candidateId=${candidateId}`,
-        );
-      } catch (error) {
-        logger.error(
-          `[CvUploadService] Error crítico detectado en el pipeline cognitivo para candidateId=${candidateId}. Activando degradación elegante a 'failed'.`,
-          error,
-        );
-
-        await this.candidatesRepository.updateCvParseFailure(candidateId);
-      }
     }
   }
 }

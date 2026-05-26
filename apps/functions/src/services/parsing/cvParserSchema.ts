@@ -1,94 +1,50 @@
-import { Schema, SchemaType } from '@google-cloud/vertexai';
-
-export const CV_PARSER_JSON_SCHEMA: Schema = {
-  type: SchemaType.OBJECT,
+export const CV_PROFILE_SCHEMA = {
+  type: 'OBJECT',
   properties: {
-    fullName: {
-      type: SchemaType.STRING,
-      description: 'Nombre completo del candidato extraído del currículum',
-    },
-    email: {
-      type: SchemaType.STRING,
-      description: 'Correo electrónico institucional o personal de contacto',
-    },
-    phone: {
-      type: SchemaType.STRING,
-      description: 'Número telefónico de contacto con código de área',
-    },
-    location: {
-      type: SchemaType.STRING,
-      description:
-        'Ciudad, provincia o país de residencia actual del postulante',
-    },
-    summary: {
-      type: SchemaType.STRING,
-      description:
-        'Breve resumen, extracto o introducción del perfil profesional',
-    },
-    skills: {
-      type: SchemaType.ARRAY,
-      items: { type: SchemaType.STRING },
-      description:
-        'Listado unificado de conocimientos, herramientas y palabras clave técnicas',
-    },
-    education: {
-      type: SchemaType.ARRAY,
-      description:
-        'Historial completo de formación académica y cursos realizados',
-      items: {
-        type: SchemaType.OBJECT,
-        properties: {
-          institution: {
-            type: SchemaType.STRING,
-            description: 'Nombre de la universidad o entidad educativa',
-          },
-          degree: {
-            type: SchemaType.STRING,
-            description: 'Título obtenido o nombre de la certificación',
-          },
-          startDate: {
-            type: SchemaType.STRING,
-            description: 'Año o fecha estimada de inicio de la cursada',
-          },
-          endDate: {
-            type: SchemaType.STRING,
-            description: "Año de egreso o la palabra 'Actualidad'",
-          },
-        },
+    personalInfo: {
+      type: 'OBJECT',
+      properties: {
+        firstName: { type: 'STRING' },
+        lastName: { type: 'STRING' },
+        email: { type: 'STRING' },
+        phone: { type: 'STRING' },
       },
+      required: ['firstName', 'lastName'],
     },
     experience: {
-      type: SchemaType.ARRAY,
-      description:
-        'Historial cronológico de la trayectoria laboral del candidato',
+      type: 'ARRAY',
       items: {
-        type: SchemaType.OBJECT,
+        type: 'OBJECT',
         properties: {
-          company: {
-            type: SchemaType.STRING,
-            description: 'Nombre de la organización o empresa contratante',
-          },
-          role: {
-            type: SchemaType.STRING,
-            description: 'Cargo, puesto o rol ocupado',
-          },
-          startDate: {
-            type: SchemaType.STRING,
-            description: 'Fecha o año de ingreso al puesto',
-          },
+          company: { type: 'STRING' },
+          position: { type: 'STRING' },
+          startDate: { type: 'STRING', description: 'Format: YYYY-MM' },
           endDate: {
-            type: SchemaType.STRING,
-            description:
-              "Fecha de egreso o la palabra 'Actualidad' si continúa trabajando",
+            type: 'STRING',
+            description: "Format: YYYY-MM or 'Present'",
           },
-          description: {
-            type: SchemaType.STRING,
-            description:
-              'Resumen de responsabilidades primarias, tareas y logros clave',
-          },
+          description: { type: 'STRING' },
+        },
+        required: ['company', 'position', 'startDate'],
+      },
+    },
+    education: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          institution: { type: 'STRING' },
+          degree: { type: 'STRING' },
+          year: { type: 'STRING' },
         },
       },
     },
+    skills: {
+      type: 'ARRAY',
+      items: { type: 'STRING' },
+      description:
+        "Normalizar nombres de tecnologías (ej: 'React' en lugar de 'ReactJS')",
+    },
   },
-  required: [],
+  required: ['personalInfo', 'experience', 'skills'],
 };

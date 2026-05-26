@@ -1,151 +1,76 @@
-import { getStorage } from 'firebase-admin/storage';
-import { VertexAI } from '@google-cloud/vertexai';
-import { logger } from 'firebase-functions';
-
-import { CV_PARSER_JSON_SCHEMA } from './cvParserSchema';
-import type { ParsedCV } from '@ats/shared-types';
+import { VertexAI, Part } from '@google-cloud/vertexai';
+import { CV_PROFILE_SCHEMA } from './cvParserSchema';
+import { CvParsingError } from '../../core/errors/cvParsingError';
 
 export class CvParsingService {
-  private vertexAI: VertexAI | null = null;
+  private readonly SYSTEM_PROMPT = `
+    Eres un experto reclutador de TEMA. Tu tarea es extraer la información del siguiente CV.
+    Instrucciones estrictas:
+    1. Responde ÚNICAMENTE con un JSON válido que respete el esquema proporcionado.
+    2. Las fechas deben estar en formato YYYY-MM.
+    3. Normaliza las habilidades (ej. escribe 'Node.js' en lugar de 'node js').
+    4. Si un dato no existe, omite el campo o usa null, no inventes información.
+  `;
 
-  constructor() {
-    if (process.env.FUNCTIONS_EMULATOR !== 'true') {
-      this.vertexAI = new VertexAI({
+  /**
+   * Procesa un documento desde memoria RAM (Buffer), siendo agnóstico a la infraestructura.
+   */
+  async parseCvFromBuffer(fileBuffer: Buffer, mimeType: string): Promise<any> {
+    try {
+      const vertexClient = new VertexAI({
         project: process.env.GCLOUD_PROJECT || 'ats-tema-ort',
         location: 'us-central1',
       });
-    }
-  }
 
-  /**
-   * Descarga el CV de Storage, invoca a Gemini 1.5 Flash
-   * con Structured Outputs y retorna la metadata estructurada limpia.
-   */
-  async parseDocument(cvStoragePath: string): Promise<ParsedCV> {
-    if (process.env.FUNCTIONS_EMULATOR === 'true') {
-      logger.info(
-        `[CvParsingService] Entorno local detectado. Retornando Mock controlado para path: ${cvStoragePath}`,
-      );
-      return this.getMockParsedData();
-    }
-
-    try {
-      logger.info(
-        `[CvParsingService] Iniciando descarga en memoria para el CV: ${cvStoragePath}`,
-      );
-
-      const bucket = getStorage().bucket();
-      const fileRef = bucket.file(cvStoragePath);
-
-      const [exists] = await fileRef.exists();
-      if (!exists) {
-        throw new Error(
-          `El archivo físico no existe en el bucket de Storage: ${cvStoragePath}`,
-        );
-      }
-
-      const [fileBuffer] = await fileRef.download();
-      const base64Pdf = fileBuffer.toString('base64');
-
-      if (!this.vertexAI) {
-        throw new Error(
-          'El SDK corporativo de Vertex AI no fue inicializado correctamente.',
-        );
-      }
-
-      const generativeModel = this.vertexAI.getGenerativeModel({
+      const generativeModel = vertexClient.getGenerativeModel({
         model: 'gemini-1.5-flash',
         generationConfig: {
           responseMimeType: 'application/json',
-          responseSchema: CV_PARSER_JSON_SCHEMA,
-          temperature: 0.1,
+          responseSchema: CV_PROFILE_SCHEMA as any, // Evita errores de inferencia estricta de TS
+          temperature: 0.1, // Baja temperatura para respuestas determinísticas
+        },
+        // IMPORTANTE: Vertex AI exige que el systemInstruction sea un objeto Content, no un string
+        systemInstruction: {
+          role: 'system',
+          parts: [{ text: this.SYSTEM_PROMPT }],
         },
       });
 
-      logger.info(
-        `[CvParsingService] Enviando payload multimodal a Gemini 1.5 Flash...`,
-      );
+      // 2. Preparar el archivo asegurando el tipo 'Part'
+      const filePart: Part = {
+        inlineData: {
+          data: fileBuffer.toString('base64'),
+          mimeType: mimeType, // Ej: 'application/pdf'
+        },
+      };
 
-      const responseStream = await generativeModel.generateContent({
+      // 3. Llamar a la IA
+      const response = await generativeModel.generateContent({
         contents: [
           {
             role: 'user',
             parts: [
-              {
-                inlineData: {
-                  data: base64Pdf,
-                  mimeType: 'application/pdf',
-                },
-              },
-              {
-                text: 'Analizá el documento PDF adjunto que corresponde al currículum de un postulante. Extraé de forma precisa y estructurada todos los datos requeridos cumpliendo con rigurosidad el JSON Schema provisto.',
-              },
+              filePart,
+              { text: 'Extraer datos del CV' },
             ],
           },
         ],
       });
 
-      const responseText =
-        responseStream.response.candidates?.[0]?.content?.parts?.[0]?.text;
+      const jsonText =
+        response.response.candidates?.[0]?.content?.parts?.[0]?.text;
 
-      if (!responseText) {
-        throw new Error(
-          'Gemini retornó una respuesta cognitiva vacía o malformada.',
-        );
+      if (!jsonText) {
+        throw new Error('La IA no devolvió contenido de texto.');
       }
 
-      const parsedData: ParsedCV = JSON.parse(responseText);
-      logger.info(
-        `[CvParsingService] Parseo de CV finalizado con éxito para path: ${cvStoragePath}`,
+      // 4. Parsear y devolver
+      return JSON.parse(jsonText);
+    } catch (error: any) {
+      // Lanzamos un error propio para que el orquestador sepa cómo manejarlo
+      throw new CvParsingError(
+        `Fallo al procesar el CV con IA: ${error.message}`,
       );
-
-      return parsedData;
-    } catch (error) {
-      logger.error(
-        `[CvParsingService] Error crítico durante el pipeline cognitivo de parsing para path: ${cvStoragePath}`,
-        error,
-      );
-      throw error;
     }
-  }
-
-  /**
-   * Datos estáticos controlados para el Firebase Local Emulator.
-   * Evita bloqueos entre integrantes de Front y Back en el día a día.
-   */
-  private getMockParsedData(): ParsedCV {
-    return {
-      fullName: 'Juan Pérez Emulado',
-      email: 'juan.perez.mock@ort.edu.ar',
-      phone: '+54 9 11 5555-1234',
-      location: 'Buenos Aires, Argentina',
-      summary:
-        'Desarrollador Full Stack con amplia experiencia académica orientada a metodologías ágiles en entornos de nube y arquitecturas serverless.',
-      skills: [
-        'TypeScript',
-        'React',
-        'Next.js',
-        'Node.js',
-        'Firebase Emulators',
-      ],
-      education: [
-        {
-          institution: 'Universidad ORT',
-          degree: 'Analista de Sistemas / Ingeniería de Software',
-          startDate: '2023',
-          endDate: 'Actualidad',
-        },
-      ],
-      experience: [
-        {
-          company: 'Proyecto ATS Tema (Sprint 3)',
-          role: 'Backend Core Developer',
-          startDate: 'Marzo 2026',
-          endDate: 'Mayo 2026',
-          description:
-            'Implementación del pipeline de ingesta de talento y automatización asincrónica mediante Cloud Functions v2 y Vertex AI.',
-        },
-      ],
-    };
   }
 }
