@@ -49,10 +49,7 @@ export class CvParsingService {
         contents: [
           {
             role: 'user',
-            parts: [
-              filePart,
-              { text: 'Extraer datos del CV' },
-            ],
+            parts: [filePart, { text: 'Extraer datos del CV' }],
           },
         ],
       });

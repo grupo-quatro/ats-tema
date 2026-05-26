@@ -42,7 +42,12 @@ export const onCVUploaded = onObjectFinalized(async (event) => {
 
   const bucketName = event.bucket;
 
-  await cvUploadService.processUploadedCv(candidateId, bucketName, filePath, contentType || 'application/pdf');
+  await cvUploadService.processUploadedCv(
+    candidateId,
+    bucketName,
+    filePath,
+    contentType || 'application/pdf',
+  );
 
   logger.info(
     `CV recibido correctamente. candidateId=${candidateId}, path=${filePath}`,
