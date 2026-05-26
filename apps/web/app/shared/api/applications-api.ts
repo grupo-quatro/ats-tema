@@ -1,6 +1,7 @@
 import type {
   GetApplicationsByJobPayload,
   GetApplicationsByJobResponse,
+  GetStageHistoryResponse,
   UpdateApplicationStagePayload,
   UpdateApplicationStageResponse,
 } from '@ats/shared-types';
@@ -44,6 +45,21 @@ export async function updateApplicationStage(
   if (!res.ok) {
     const error = await res.json();
     throw new Error(error.error || 'Error al actualizar la postulación');
+  }
+  return res.json();
+}
+
+export async function getStageHistory(
+  applicationId: string,
+): Promise<GetStageHistoryResponse> {
+  const token = await getToken();
+  const params = new URLSearchParams({ applicationId });
+  const res = await fetch(`${getFunctionUrl('getStageHistory')}?${params}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Error al obtener el historial de etapa');
   }
   return res.json();
 }

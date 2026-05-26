@@ -37,6 +37,22 @@ export const STAGE_KEY_MAP: Partial<
   withdrawn: 'descartado',
 };
 
+export const CANDIDATE_STAGE_TO_APP_STAGE: Record<
+  CandidateStageKey,
+  ApplicationStage
+> = {
+  postulacion_recibida: 'applied',
+  en_revision: 'screening',
+  cv_presentado_area: 'cv_submitted',
+  entrevista1_agendada: 'interview_1_scheduled',
+  entrevista1_evaluacion: 'interview_1_done',
+  entrevista2_agendada: 'interview_2_scheduled',
+  entrevista2_evaluacion: 'interview_2_done',
+  oferta_enviada: 'offer_sent',
+  contratado: 'hired',
+  descartado: 'rejected',
+};
+
 export function getInitials(name?: string): string {
   if (!name) return '?';
   return name
@@ -72,6 +88,7 @@ export function mapApplicationToProfile(
 
   return {
     id: application.candidateId,
+    applicationId: application.id,
     fullName: application.candidateName ?? 'Candidato sin nombre',
     initials: getInitials(application.candidateName),
     title: '',

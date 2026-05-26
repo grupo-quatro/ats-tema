@@ -55,6 +55,21 @@ export interface Application {
   stageUpdatedAt: Date; // para calcular tiempo en cada etapa
 }
 
+export interface StageHistoryEntry {
+  id: string;
+  stage: ApplicationStage;
+  changedAt: Date;
+  changedBy: string;
+  changedByEmail: string;
+  notes?: string;
+  rejectionReason?: string;
+}
+
+export type CreateStageHistoryEntryDTO = Omit<
+  StageHistoryEntry,
+  'id' | 'changedAt'
+>;
+
 export type CreateApplicationDTO = Omit<
   Application,
   | 'id'

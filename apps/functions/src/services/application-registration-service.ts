@@ -4,6 +4,7 @@ import type {
   CreateApplicationDTO,
 } from '@ats/shared-types';
 
+import { auth } from '../core/firebase-admin';
 import { ApplicationsRepository } from '../repositories/application-repository';
 import { CandidatesRepository } from '../repositories/candidateRepository';
 
@@ -50,11 +51,12 @@ export class ApplicationRegistrationService {
       }
 
       //en el flujo CV directo, si primero creás un candidate draft sin nombre/email por eso estan opcionales
+      const stage = this.resolveInitialStage(source);
       const applicationData: CreateApplicationDTO = {
         jobId,
         candidateId,
         status: this.resolveInitialStatus(source),
-        stage: this.resolveInitialStage(source),
+        stage,
       };
 
       if (candidate.fullName) {
@@ -65,7 +67,18 @@ export class ApplicationRegistrationService {
         applicationData.candidateEmail = candidate.email;
       }
 
-      return await this.applicationsRepository.create(applicationData);
+      const [applicationId, userRecord] = await Promise.all([
+        this.applicationsRepository.create(applicationData),
+        auth.getUser(candidateId).catch(() => null),
+      ]);
+
+      await this.applicationsRepository.addStageHistoryEntry(applicationId, {
+        stage,
+        changedBy: candidateId,
+        changedByEmail: userRecord?.email ?? candidateId,
+      });
+
+      return applicationId;
     } catch (error) {
       if (error instanceof ApplicationRegistrationServiceError) {
         throw error;

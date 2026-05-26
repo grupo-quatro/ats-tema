@@ -26,12 +26,15 @@ export const updateApplicationStage = onRequest(async (request, response) => {
       return;
     }
 
-    await requireAuthenticatedUser(request);
+    const uid = await requireAuthenticatedUser(request);
 
     const payload = request.body as Partial<UpdateApplicationStagePayload>;
     validateUpdateApplicationStagePayload(payload);
 
-    const result = await updateApplicationStageService.updateStage(payload);
+    const result = await updateApplicationStageService.updateStage(
+      payload,
+      uid,
+    );
 
     response.status(200).json(result);
   } catch (error) {

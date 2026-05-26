@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { STAGE_LABELS, type CandidateMockProfile } from '../mock/candidateMock';
+import { STAGE_KEY_MAP } from '../utils/candidate-profile.utils';
 import { useCandidateProfile } from '../hooks/useCandidateProfile';
 import { CandidateInfoCard } from './CandidateInfoCard';
 import { CvViewerModal } from './CvViewerModal';
@@ -230,100 +231,105 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                 </Typography>
               </Box>
 
-              <Box>
-                {profile.stageHistory.map((stage, i) => {
-                  const isLast = i === profile.stageHistory.length - 1;
-                  const isCompleted = stage.status === 'completed';
-                  const isCurrent = stage.status === 'current';
+              {profile.realStageHistory.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                  Aún no hay cambios de etapa registrados.
+                </Typography>
+              ) : (
+                <Box>
+                  {profile.realStageHistory.map((entry, i) => {
+                    const isLast = i === profile.realStageHistory.length - 1;
+                    const isRejected = entry.stage === 'rejected';
+                    const changedAt =
+                      entry.changedAt instanceof Date
+                        ? entry.changedAt
+                        : new Date(entry.changedAt);
 
-                  return (
-                    <Box key={stage.key} sx={{ display: 'flex', gap: 1.5 }}>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          width: 14,
-                          flexShrink: 0,
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            width: 12,
-                            height: 12,
-                            borderRadius: '50%',
-                            flexShrink: 0,
-                            ...(isCompleted && { bgcolor: 'primary.main' }),
-                            ...(isCurrent && {
-                              bgcolor: 'white',
-                              border: '2.5px solid',
-                              borderColor:
-                                stage.key === 'descartado'
-                                  ? 'error.main'
-                                  : 'primary.main',
-                              boxShadow:
-                                stage.key === 'descartado'
-                                  ? '0 0 0 3px #fee2e2'
-                                  : '0 0 0 3px #dbeafe',
-                            }),
-                            ...(!isCompleted &&
-                              !isCurrent && {
-                                bgcolor: 'white',
-                                border: '2px solid #cbd5e1',
-                              }),
-                          }}
-                        />
-                        {!isLast && (
-                          <Box
-                            sx={{
-                              flex: 1,
-                              width: '2px',
-                              bgcolor: isCompleted ? 'primary.main' : '#e2e8f0',
-                              mt: 0.5,
-                              minHeight: 20,
-                            }}
-                          />
-                        )}
-                      </Box>
-
-                      <Box sx={{ pb: isLast ? 0 : 2, flex: 1, minWidth: 0 }}>
+                    return (
+                      <Box key={entry.id} sx={{ display: 'flex', gap: 1.5 }}>
                         <Box
                           sx={{
                             display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'baseline',
-                            gap: 0.5,
-                            mb: stage.description ? 0.25 : 0,
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            width: 14,
+                            flexShrink: 0,
                           }}
                         >
-                          <Typography
+                          <Box
                             sx={{
-                              fontSize: 13,
-                              fontWeight: isCurrent ? 600 : 500,
-                              color: isCurrent
-                                ? stage.key === 'descartado'
-                                  ? 'error.main'
-                                  : 'primary.main'
-                                : isCompleted
-                                  ? 'text.primary'
-                                  : 'text.secondary',
-                              lineHeight: 1.4,
-                            }}
-                          >
-                            {STAGE_LABELS[stage.key]}
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{
+                              width: 12,
+                              height: 12,
+                              borderRadius: '50%',
                               flexShrink: 0,
-                              fontSize: 11,
-                              color: stage.date ? 'text.secondary' : '#cbd5e1',
+                              bgcolor: 'white',
+                              border: '2.5px solid',
+                              borderColor: isRejected
+                                ? 'error.main'
+                                : 'primary.main',
+                              boxShadow:
+                                i === 0
+                                  ? isRejected
+                                    ? '0 0 0 3px #fee2e2'
+                                    : '0 0 0 3px #dbeafe'
+                                  : 'none',
+                            }}
+                          />
+                          {!isLast && (
+                            <Box
+                              sx={{
+                                flex: 1,
+                                width: '2px',
+                                bgcolor: '#e2e8f0',
+                                mt: 0.5,
+                                minHeight: 20,
+                              }}
+                            />
+                          )}
+                        </Box>
+
+                        <Box sx={{ pb: isLast ? 0 : 2, flex: 1, minWidth: 0 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'baseline',
+                              gap: 0.5,
                             }}
                           >
-                            {stage.date ?? 'Pendiente'}
-                          </Typography>
-                        </Box>
-                        {stage.description && (
+                            <Typography
+                              sx={{
+                                fontSize: 13,
+                                fontWeight: i === 0 ? 600 : 500,
+                                color:
+                                  i === 0
+                                    ? isRejected
+                                      ? 'error.main'
+                                      : 'primary.main'
+                                    : 'text.primary',
+                                lineHeight: 1.4,
+                              }}
+                            >
+                              {(() => {
+                                const key = STAGE_KEY_MAP[entry.stage];
+                                return key ? STAGE_LABELS[key] : entry.stage;
+                              })()}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                flexShrink: 0,
+                                fontSize: 11,
+                                color: 'text.secondary',
+                              }}
+                            >
+                              {changedAt.toLocaleDateString('es-AR')}{' '}
+                              {changedAt.toLocaleTimeString('es-AR', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </Typography>
+                          </Box>
                           <Typography
                             sx={{
                               fontSize: 11,
@@ -331,14 +337,26 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                               lineHeight: 1.4,
                             }}
                           >
-                            {stage.description}
+                            {entry.changedByEmail}
                           </Typography>
-                        )}
+                          {entry.rejectionReason && (
+                            <Typography
+                              sx={{
+                                fontSize: 11,
+                                color: '#94a3b8',
+                                lineHeight: 1.4,
+                                mt: 0.25,
+                              }}
+                            >
+                              Motivo: {entry.rejectionReason}
+                            </Typography>
+                          )}
+                        </Box>
                       </Box>
-                    </Box>
-                  );
-                })}
-              </Box>
+                    );
+                  })}
+                </Box>
+              )}
             </Card>
           </Box>
 
