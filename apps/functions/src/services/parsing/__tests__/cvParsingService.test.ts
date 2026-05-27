@@ -74,7 +74,13 @@ describe('CvParsingService.parseFromBuffer', () => {
       firstName: 'Sofia',
       lastName: 'Demo',
       email: 'sofia.demo@example.com',
-      technicalSkills: ['TypeScript', 'React', 'Next.js', 'Node.js', 'Firebase'],
+      technicalSkills: [
+        'TypeScript',
+        'React',
+        'Next.js',
+        'Node.js',
+        'Firebase',
+      ],
     });
     expect(mocks.generateContent).not.toHaveBeenCalled();
     expect(mocks.getText).not.toHaveBeenCalled();

@@ -111,7 +111,6 @@ export class CvUploadService {
       }
     }
   }
-
 }
 
 async function defaultDownloadToBuffer(
