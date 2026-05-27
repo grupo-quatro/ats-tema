@@ -285,6 +285,99 @@ Si se setean ambas variables, `CV_PARSING_FORCE_REAL_AI=true` tiene prioridad so
 
 ---
 
+## Tests Unitarios
+
+Se agregaron tests unitarios para cubrir la logica nueva sin consumir IA real y sin depender de Storage real/emulado.
+
+Archivos:
+
+```txt
+apps/functions/src/services/__tests__/cvUploadService.test.ts
+apps/functions/src/services/parsing/__tests__/cvParsingService.test.ts
+```
+
+Para correrlos:
+
+```bash
+pnpm --filter @ats/functions test
+```
+
+Para validar TypeScript:
+
+```bash
+pnpm --filter @ats/functions build
+```
+
+### Que cubre `CvUploadService`
+
+El test de `CvUploadService` valida el orquestador del flujo de CV:
+
+```txt
+Storage event
+  ↓
+buscar candidato
+  ↓
+marcar processing
+  ↓
+descargar PDF
+  ↓
+parsear
+  ↓
+marcar done o failed
+```
+
+Casos cubiertos:
+
+1. Si el candidato no existe, ignora el evento.
+2. Si el candidato viene del flujo manual, marca `not_required` y no parsea.
+3. Si el mismo CV ya estaba en `done`, no lo reprocesa.
+4. Si `CV_PARSING_FORCE_REPROCESS=true`, permite reprocesar.
+5. Si el parsing sale bien, llama a `markParsingDone`.
+6. Si falla la IA/parser, llama a `markParsingFailed`.
+7. Si falla la descarga del PDF, tambien llama a `markParsingFailed`.
+
+### Por Que Existe `CvDownloader`
+
+`CvDownloader` es una funcion inyectable que descarga el PDF y devuelve un `Buffer`.
+
+En produccion no cambia el comportamiento:
+
+```ts
+private readonly downloadCvToBuffer: CvDownloader = defaultDownloadToBuffer
+```
+
+Si nadie pasa nada al constructor, se usa `defaultDownloadToBuffer`, que descarga desde Firebase Storage con `getStorage()`.
+
+En tests, en cambio, se pasa un downloader falso:
+
+```ts
+const downloader = vi.fn().mockResolvedValue(Buffer.from('pdf-content'));
+```
+
+Esto permite probar `CvUploadService` como unit test, sin levantar Storage, sin subir PDFs y sin depender de Firebase real. El test queda enfocado en la logica del servicio, no en la infraestructura.
+
+### Que cubre `CvParsingService`
+
+El test de `CvParsingService` evita llamadas reales a Vertex AI mockeando:
+
+```txt
+pdf-parse
+@google/genai
+firebase-admin
+firebase-functions/logger
+```
+
+Casos cubiertos:
+
+1. En emulator, devuelve el mock local y no llama a IA.
+2. Con `CV_PARSING_FORCE_REAL_AI=true`, usa el texto extraido localmente, llama al cliente de Gen AI mockeado y normaliza el output para guardar `technicalSkills`.
+
+Esto es importante porque valida la logica propia del parser sin consumir creditos, sin requerir ADC y sin depender de que Vertex AI este disponible.
+
+Los tests no reemplazan una prueba manual con un PDF real. La prueba real sigue siendo necesaria para validar credenciales, permisos IAM, API habilitada, billing y comportamiento del modelo con documentos reales.
+
+---
+
 ## Qué Es ADC
 
 ADC significa Application Default Credentials.

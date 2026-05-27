@@ -7,10 +7,13 @@ import { CvParsingService } from './parsing/cvParsingService';
 
 const DEFAULT_MIME_TYPE = 'application/pdf';
 
+type CvDownloader = (bucketName: string, filePath: string) => Promise<Buffer>;
+
 export class CvUploadService {
   constructor(
     private readonly candidatesRepository: CandidatesRepository = new CandidatesRepository(),
     private readonly parsingService: CvParsingService = new CvParsingService(),
+    private readonly downloadCvToBuffer: CvDownloader = defaultDownloadToBuffer,
   ) {}
 
   /**
@@ -64,7 +67,7 @@ export class CvUploadService {
         filePath,
       );
 
-      const fileBuffer = await this.downloadToBuffer(bucketName, filePath);
+      const fileBuffer = await this.downloadCvToBuffer(bucketName, filePath);
 
       const parsedData = await this.parsingService.parseFromBuffer(
         fileBuffer,
@@ -77,7 +80,11 @@ export class CvUploadService {
         candidateId,
         filePath,
         parserVersion: parsedData.parserVersion,
-        hardSkills: parsedData.hardSkills?.length ?? 0,
+        technicalSkills:
+          parsedData.technicalSkills?.length ??
+          parsedData.hardSkills?.length ??
+          parsedData.skills?.length ??
+          0,
       });
     } catch (error) {
       const errorMessage =
@@ -105,21 +112,22 @@ export class CvUploadService {
     }
   }
 
-  private async downloadToBuffer(
-    bucketName: string,
-    filePath: string,
-  ): Promise<Buffer> {
-    const bucket = getStorage().bucket(bucketName);
-    const file = bucket.file(filePath);
-    const [exists] = await file.exists();
+}
 
-    if (!exists) {
-      throw new CvParsingError(
-        `El archivo fisico no existe en Storage: ${filePath}`,
-      );
-    }
+async function defaultDownloadToBuffer(
+  bucketName: string,
+  filePath: string,
+): Promise<Buffer> {
+  const bucket = getStorage().bucket(bucketName);
+  const file = bucket.file(filePath);
+  const [exists] = await file.exists();
 
-    const [fileBuffer] = await file.download();
-    return fileBuffer;
+  if (!exists) {
+    throw new CvParsingError(
+      `El archivo fisico no existe en Storage: ${filePath}`,
+    );
   }
+
+  const [fileBuffer] = await file.download();
+  return fileBuffer;
 }
