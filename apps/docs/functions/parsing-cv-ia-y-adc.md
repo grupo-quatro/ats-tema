@@ -599,12 +599,12 @@ Blaze es la vinculacion del proyecto Firebase con Cloud Billing. No convierte Ve
 
 ### Matriz de costos por camino
 
-| Camino | Storage/Firestore | Functions | Vertex AI | Uso recomendado |
-|---|---|---|---|---|
-| Emulator sin flags | Local | Local | No | Desarrollo diario |
-| Emulator con `CV_PARSING_FORCE_REAL_AI=true` | Local | Local | Si | Pruebas controladas de IA |
-| Deploy real con mock | Real | Real | No | Validar infraestructura sin IA |
-| Deploy real con IA | Real | Real | Si | Produccion |
+| Camino                                       | Storage/Firestore | Functions | Vertex AI | Uso recomendado                |
+| -------------------------------------------- | ----------------- | --------- | --------- | ------------------------------ |
+| Emulator sin flags                           | Local             | Local     | No        | Desarrollo diario              |
+| Emulator con `CV_PARSING_FORCE_REAL_AI=true` | Local             | Local     | Si        | Pruebas controladas de IA      |
+| Deploy real con mock                         | Real              | Real      | No        | Validar infraestructura sin IA |
+| Deploy real con IA                           | Real              | Real      | Si        | Produccion                     |
 
 ### Estrategia para bajar costos
 

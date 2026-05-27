@@ -324,7 +324,9 @@ export class CvParsingService {
     return text.slice(0, MAX_TEXT_INPUT_CHARS);
   }
 
-  private isValidParsedProfile(data: unknown): data is ParsedCandidateProfileData {
+  private isValidParsedProfile(
+    data: unknown,
+  ): data is ParsedCandidateProfileData {
     if (typeof data !== 'object' || data === null) {
       return false;
     }
@@ -332,12 +334,12 @@ export class CvParsingService {
     const parsed = data as ParsedCandidateProfileData;
     return Boolean(
       parsed.firstName ||
-        parsed.lastName ||
-        parsed.fullName ||
-        parsed.email ||
-        (parsed.technicalSkills?.length ?? 0) > 0 ||
-        (parsed.hardSkills?.length ?? 0) > 0 ||
-        (parsed.skills?.length ?? 0) > 0,
+      parsed.lastName ||
+      parsed.fullName ||
+      parsed.email ||
+      (parsed.technicalSkills?.length ?? 0) > 0 ||
+      (parsed.hardSkills?.length ?? 0) > 0 ||
+      (parsed.skills?.length ?? 0) > 0,
     );
   }
 

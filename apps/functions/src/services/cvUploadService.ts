@@ -2,10 +2,7 @@ import { getStorage } from 'firebase-admin/storage';
 import { logger } from 'firebase-functions';
 
 import { CandidatesRepository } from '../repositories/candidateRepository';
-import {
-  CvParsingError,
-  serializeError,
-} from '../core/errors/cvParsingError';
+import { CvParsingError, serializeError } from '../core/errors/cvParsingError';
 import { CvParsingService } from './parsing/cvParsingService';
 
 const DEFAULT_MIME_TYPE = 'application/pdf';
@@ -29,10 +26,10 @@ export class CvUploadService {
     const candidate = await this.candidatesRepository.findById(candidateId);
 
     if (!candidate) {
-      logger.warn(
-        'Se recibio un CV para un candidato inexistente.',
-        { candidateId, filePath },
-      );
+      logger.warn('Se recibio un CV para un candidato inexistente.', {
+        candidateId,
+        filePath,
+      });
       return;
     }
 

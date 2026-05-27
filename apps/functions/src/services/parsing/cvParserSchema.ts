@@ -19,7 +19,8 @@ export const CV_PARSER_JSON_SCHEMA = {
     },
     phone: {
       type: 'STRING',
-      description: 'Telefono de contacto con codigo de area si esta disponible.',
+      description:
+        'Telefono de contacto con codigo de area si esta disponible.',
     },
     location: {
       type: 'STRING',
