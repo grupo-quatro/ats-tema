@@ -2,8 +2,39 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function hasRole(r) {
+      return isAuth() && request.auth.token.role == r;
+    }
+
+    function isAdminOrHr() {
+      return hasRole('admin') || hasRole('hr');
+    }
+
+    match /jobs/{jobId} {
+      allow read: if isAuth();
+      allow write: if isAdminOrHr();
+    }
+
+    match /applications/{appId} {
+      allow read, write: if isAuth();
+    }
+
+    match /candidates/{candidateId} {
+      allow read: if isAuth();
+      allow write: if isAdminOrHr();
+    }
+
+    match /employees/{empId} {
+      allow read, write: if hasRole('admin');
+    }
+
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }

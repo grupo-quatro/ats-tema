@@ -1,3 +1,4 @@
+import type { EmployeeRole } from '@ats/shared-types';
 import { auth } from './firebaseAdmin';
 
 export class HttpAuthError extends Error {
@@ -11,9 +12,14 @@ type HttpRequestLike = {
   header(name: string): string | undefined;
 };
 
+export interface AuthenticatedUser {
+  uid: string;
+  role: EmployeeRole | null;
+}
+
 export async function requireAuthenticatedUser(
   request: HttpRequestLike,
-): Promise<string> {
+): Promise<AuthenticatedUser> {
   const authorization = request.header('Authorization');
 
   if (!authorization?.startsWith('Bearer ')) {
@@ -26,22 +32,28 @@ export async function requireAuthenticatedUser(
     throw new HttpAuthError('Unauthorized.');
   }
 
-  if (process.env.FUNCTIONS_EMULATOR === 'true' && token === 'dev-recruiter') {
-    return 'recruiter-dev';
-  }
-
-  if (process.env.FUNCTIONS_EMULATOR === 'true' && token === 'dev-candidate') {
-    return 'candidate-dev';
+  if (process.env.FUNCTIONS_EMULATOR === 'true') {
+    if (token === 'dev-admin') {
+      return { uid: 'admin-dev', role: 'admin' };
+    }
+    if (token === 'dev-recruiter') {
+      return { uid: 'recruiter-dev', role: 'hr' };
+    }
+    if (token === 'dev-hiring-manager') {
+      return { uid: 'hiring-manager-dev', role: 'hiring_manager' };
+    }
+    if (token === 'dev-candidate') {
+      return { uid: 'candidate-dev', role: null };
+    }
   }
 
   const decodedToken = await auth.verifyIdToken(token);
 
-  return (
-    decodedToken.uid ||
-    decodedToken.user_id ||
-    decodedToken.sub ||
-    (() => {
-      throw new HttpAuthError('Unauthorized.');
-    })()
-  );
+  const uid = decodedToken.uid || decodedToken.user_id || decodedToken.sub;
+
+  if (!uid) {
+    throw new HttpAuthError('Unauthorized.');
+  }
+
+  return { uid, role: (decodedToken['role'] as EmployeeRole) ?? null };
 }

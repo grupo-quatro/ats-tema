@@ -5,7 +5,11 @@ import {
   connectFunctionsEmulator,
 } from 'firebase/functions';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
-import { getAuth, connectAuthEmulator, signInAnonymously } from 'firebase/auth';
+import {
+  getAuth,
+  connectAuthEmulator,
+  GoogleAuthProvider,
+} from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -23,6 +27,7 @@ export const functions = getFunctions(
 );
 export const storage = getStorage(app);
 export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
 
 const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === 'true';
 const functionsEmulatorPort =
@@ -36,9 +41,6 @@ if (isNew && useEmulators) {
     Number(functionsEmulatorPort),
   );
   connectStorageEmulator(storage, '127.0.0.1', 9199);
-  // En el emulador no hay sesión real — autenticar anónimamente para que
-  // los onCall reciban request.auth y no rechacen con 401.
-  signInAnonymously(auth);
 }
 
 /** @deprecated Usar los módulos en shared/api/ con fetch hacia onRequest en lugar de onCall */

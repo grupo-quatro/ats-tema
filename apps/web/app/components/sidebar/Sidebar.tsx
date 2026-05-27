@@ -3,13 +3,24 @@
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Box, IconButton, Tooltip, Typography, Divider } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  Tooltip,
+  Typography,
+  Divider,
+  Avatar,
+  Stack,
+} from '@mui/material';
 import {
   BriefcaseBusiness,
   Users,
   ChevronLeft,
   ChevronRight,
+  LogOut,
 } from 'lucide-react';
+import type { EmployeeRole } from '@ats/shared-types';
+import { useAuth } from '../../shared/lib/authContext';
 
 const SIDEBAR_WIDTH = 240;
 const SIDEBAR_COLLAPSED_WIDTH = 64;
@@ -28,9 +39,17 @@ const NAV_ITEMS = [
   },
 ];
 
+const ROLE_LABELS: Record<EmployeeRole, string> = {
+  hr: 'Recruiter',
+  hiring_manager: 'Management',
+  admin: 'Admin',
+  tech_lead: 'Tech Lead',
+};
+
 export default function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const { user, role, signOut } = useAuth();
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -186,14 +205,85 @@ export default function Sidebar() {
 
       <Divider />
 
-      {/* Footer label */}
-      {!collapsed && (
-        <Box sx={{ px: 2.5, py: 2 }}>
-          <Typography sx={{ fontSize: '0.7rem', color: '#94a3b8' }}>
-            ATS · Tema Consulting
-          </Typography>
-        </Box>
-      )}
+      {/* User info + logout */}
+      <Box sx={{ px: collapsed ? 1 : 2, py: 1.5 }}>
+        {collapsed ? (
+          <Stack sx={{ alignItems: 'center' }} spacing={1}>
+            <Tooltip title={user?.email ?? ''} placement="right">
+              <Avatar
+                src={user?.photoURL ?? undefined}
+                sx={{ width: 32, height: 32 }}
+              />
+            </Tooltip>
+            <Tooltip title="Cerrar sesión" placement="right">
+              <IconButton
+                onClick={signOut}
+                size="small"
+                sx={{ color: '#64748b' }}
+              >
+                <LogOut size={16} />
+              </IconButton>
+            </Tooltip>
+          </Stack>
+        ) : (
+          <Stack spacing={1}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+              <Avatar
+                src={user?.photoURL ?? undefined}
+                sx={{ width: 32, height: 32, flexShrink: 0 }}
+              />
+              <Box sx={{ overflow: 'hidden', flex: 1 }}>
+                <Typography
+                  variant="body2"
+                  noWrap
+                  sx={{
+                    fontWeight: 500,
+                    color: 'text.primary',
+                    fontSize: '0.813rem',
+                  }}
+                >
+                  {user?.displayName ?? '—'}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  noWrap
+                  sx={{
+                    color: '#94a3b8',
+                    fontSize: '0.7rem',
+                    display: 'block',
+                  }}
+                >
+                  {user?.email}
+                </Typography>
+                {role && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: '#64748b',
+                      fontSize: '0.7rem',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {ROLE_LABELS[role]}
+                  </Typography>
+                )}
+              </Box>
+              <Tooltip title="Cerrar sesión" placement="right">
+                <IconButton
+                  onClick={signOut}
+                  size="small"
+                  sx={{ color: '#64748b', flexShrink: 0 }}
+                >
+                  <LogOut size={16} />
+                </IconButton>
+              </Tooltip>
+            </Box>
+            <Typography sx={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+              ATS · Tema Consulting
+            </Typography>
+          </Stack>
+        )}
+      </Box>
     </Box>
   );
 }

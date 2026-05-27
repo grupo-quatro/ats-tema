@@ -11,3 +11,4 @@ export * from './updateApplication';
 export * from './getStageHistory';
 export * from './registerCandidates';
 export * from './getCvSignedUrl';
+export * from './auth';

@@ -22,7 +22,7 @@ export const submitApplication = onRequest(async (req, res) => {
       return;
     }
 
-    const candidateId = await requireAuthenticatedUser(req);
+    const { uid: candidateId } = await requireAuthenticatedUser(req);
 
     const payload = req.body as Partial<SubmitApplicationPayload>;
     validateSubmitApplicationPayload(payload);

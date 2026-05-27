@@ -41,7 +41,7 @@ export const createJob = onRequest(async (request, response) => {
       return;
     }
 
-    const recruiterId = await requireAuthenticatedUser(request);
+    const { uid: recruiterId } = await requireAuthenticatedUser(request);
     const payload = request.body as Partial<CreateJobPayload>;
 
     validateCreateJobPayload(payload);

@@ -29,3 +29,5 @@ export { onCVUploaded } from './triggers/onCvUploaded';
 export { onApplicationCreated } from './triggers/onApplicationCreated';
 export { submitApplication } from './callables/submitApplication';
 export { getCvSignedUrl } from './callables/getCvSignedUrl';
+export { setUserRole } from './callables/setUserRole';
+export { ensureEmployee } from './callables/ensureEmployee';

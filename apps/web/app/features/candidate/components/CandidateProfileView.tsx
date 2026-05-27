@@ -44,6 +44,7 @@ import { useCandidateProfile } from '../hooks/useCandidateProfile';
 import { CandidateInfoCard } from './CandidateInfoCard';
 import { CvViewerModal } from './CvViewerModal';
 import { InterviewModal } from './InterviewModal';
+import { useAuth } from '../../../shared/lib/authContext';
 
 interface CandidateProfileViewProps {
   candidate: CandidateMockProfile;
@@ -51,6 +52,11 @@ interface CandidateProfileViewProps {
 
 export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
   const profile = useCandidateProfile(candidate);
+  const { role } = useAuth();
+
+  const canDoHrInterview = role === 'hr' || role === 'admin';
+  const canDoTechInterview =
+    role === 'hiring_manager' || role === 'tech_lead' || role === 'admin';
 
   const isNewNoteInvalid =
     !profile.newNoteAuthor ||
@@ -136,23 +142,27 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
               />
             </Box>
 
-            <Button
-              variant="contained"
-              onClick={() => profile.openInterviewModal('tech')}
-              disabled={profile.currentStage === STAGE_LABELS.descartado}
-              sx={{ bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' } }}
-            >
-              Entrevista técnica
-            </Button>
+            {canDoTechInterview && (
+              <Button
+                variant="contained"
+                onClick={() => profile.openInterviewModal('tech')}
+                disabled={profile.currentStage === STAGE_LABELS.descartado}
+                sx={{ bgcolor: '#16a34a', '&:hover': { bgcolor: '#15803d' } }}
+              >
+                Entrevista técnica
+              </Button>
+            )}
 
-            <Button
-              variant="outlined"
-              onClick={() => profile.openInterviewModal('hr')}
-              disabled={profile.currentStage === STAGE_LABELS.descartado}
-              sx={{ textTransform: 'none' }}
-            >
-              Entrevista RRHH
-            </Button>
+            {canDoHrInterview && (
+              <Button
+                variant="outlined"
+                onClick={() => profile.openInterviewModal('hr')}
+                disabled={profile.currentStage === STAGE_LABELS.descartado}
+                sx={{ textTransform: 'none' }}
+              >
+                Entrevista RRHH
+              </Button>
+            )}
 
             <IconButton
               onClick={(e) => profile.setMenuAnchor(e.currentTarget)}
