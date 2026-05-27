@@ -15,7 +15,7 @@ import {
   validateRegisterCandidatePayload,
   validateStartApplicationWithCVPayload,
 } from '../validators/candidateValidator';
-import { auth } from '../core/firebase-admin';
+import { auth } from '../core/firebaseAdmin';
 
 type AuthContext = {
   uid?: string;
@@ -148,8 +148,6 @@ export const registerCandidateCV = onRequest(async (request, response) => {
     const authContext = await getAuthContext(request);
     const candidateId = resolveCandidateId(authContext);
     const payload = getPayload<CandidatePostulationCVPayload>(request.body);
-
-    const payload = req.body as Partial<CandidatePostulationCVPayload>;
     validateStartApplicationWithCVPayload(payload);
 
     const result = await candidateRegistrationCVService.registerCandidateCV(
@@ -175,8 +173,6 @@ export const registerCandidate = onRequest(async (request, response) => {
     const authContext = await getAuthContext(request);
     const candidateId = resolveCandidateId(authContext);
     const payload = getPayload<CandidatePostulationPayload>(request.body);
-
-    const payload = req.body as Partial<CandidatePostulationPayload>;
     validateRegisterCandidatePayload(payload);
 
     const result = await candidateRegistrationService.registerCandidate(

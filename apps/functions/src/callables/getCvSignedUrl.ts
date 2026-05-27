@@ -1,7 +1,10 @@
 import { logger } from 'firebase-functions';
 import { onRequest } from 'firebase-functions/v2/https';
 
-import type { GetCvSignedUrlPayload, GetCvSignedUrlResponse } from '@ats/shared-types';
+import type {
+  GetCvSignedUrlPayload,
+  GetCvSignedUrlResponse,
+} from '@ats/shared-types';
 
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
 import { ApplicationsRepository } from '../repositories/applicationRepository';
@@ -26,19 +29,27 @@ export const getCvSignedUrl = onRequest(async (request, response) => {
       return;
     }
 
-    const application = await applicationsRepository.findById(payload.applicationId.trim());
+    const application = await applicationsRepository.findById(
+      payload.applicationId.trim(),
+    );
     if (!application) {
       response.status(404).json({ error: 'Postulación no encontrada.' });
       return;
     }
 
-    const candidate = await candidatesRepository.findById(application.candidateId);
+    const candidate = await candidatesRepository.findById(
+      application.candidateId,
+    );
     if (!candidate?.cvStoragePath) {
-      response.status(404).json({ error: 'Este candidato no tiene CV cargado.' });
+      response
+        .status(404)
+        .json({ error: 'Este candidato no tiene CV cargado.' });
       return;
     }
 
-    const result: GetCvSignedUrlResponse = { cvStoragePath: candidate.cvStoragePath };
+    const result: GetCvSignedUrlResponse = {
+      cvStoragePath: candidate.cvStoragePath,
+    };
     response.status(200).json(result);
   } catch (error) {
     if (error instanceof HttpAuthError) {

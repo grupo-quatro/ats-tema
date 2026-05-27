@@ -1,4 +1,6 @@
 import type { ParsedCandidateProfileData } from './parsing/parsedData';
+import type { ParsedEducation } from './parsing/parsedEducation';
+import type { ParsedExperience } from './parsing/parsedExperience';
 
 export type CvParseStatus =
   | 'not_required'
@@ -28,6 +30,10 @@ export interface Candidate {
   technicalSkills?: string[];
   professionalSummary?: string;
   parsedData?: ParsedCandidateProfileData | null;
+  parsedCv?: {
+    experience?: ParsedExperience[];
+    education?: ParsedEducation[];
+  };
 
   profileStatus: CandidateProfileStatus;
   registrationType: RegistrationType;
@@ -54,6 +60,10 @@ export interface CreateCandidateDTO {
   technicalSkills?: string[];
   professionalSummary?: string;
   parsedData?: ParsedCandidateProfileData | null;
+  parsedCv?: {
+    experience?: ParsedExperience[];
+    education?: ParsedEducation[];
+  };
 
   profileStatus: CandidateProfileStatus;
   registrationType: RegistrationType;
