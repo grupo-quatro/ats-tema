@@ -1,70 +1,128 @@
 import { getStorage } from 'firebase-admin/storage';
-import { getFirestore } from 'firebase-admin/firestore';
+import { logger } from 'firebase-functions';
+
+import { CandidatesRepository } from '../repositories/candidateRepository';
+import {
+  CvParsingError,
+  serializeError,
+} from '../core/errors/cvParsingError';
 import { CvParsingService } from './parsing/cvParsingService';
-import { CvParsingError } from '../core/errors/cvParsingError';
+
+const DEFAULT_MIME_TYPE = 'application/pdf';
 
 export class CvUploadService {
-  private parsingService: CvParsingService;
-
-  constructor() {
-    this.parsingService = new CvParsingService();
-  }
+  constructor(
+    private readonly candidatesRepository: CandidatesRepository = new CandidatesRepository(),
+    private readonly parsingService: CvParsingService = new CvParsingService(),
+  ) {}
 
   /**
-   * Función orquestadora: Descarga archivo -> Llama a IA -> Actualiza DB
+   * Orquesta el flujo de CV: valida candidato, descarga el PDF a memoria,
+   * delega parsing y persiste el estado final para el frontend.
    */
   async processUploadedCv(
     candidateId: string,
     bucketName: string,
     filePath: string,
-    mimeType: string,
+    mimeType = DEFAULT_MIME_TYPE,
   ): Promise<void> {
-    const db = getFirestore();
-    const candidateRef = db.collection('candidates').doc(candidateId);
+    const candidate = await this.candidatesRepository.findById(candidateId);
+
+    if (!candidate) {
+      logger.warn(
+        'Se recibio un CV para un candidato inexistente.',
+        { candidateId, filePath },
+      );
+      return;
+    }
+
+    if (candidate.registrationSource === 'manual') {
+      await this.candidatesRepository.updateCvStoragePath(
+        candidateId,
+        filePath,
+        'not_required',
+      );
+      logger.info('CV adjuntado en flujo manual sin parsing.', {
+        candidateId,
+        filePath,
+      });
+      return;
+    }
+
+    if (
+      candidate.cvParseStatus === 'done' &&
+      candidate.cvStoragePath === filePath &&
+      process.env.CV_PARSING_FORCE_REPROCESS !== 'true'
+    ) {
+      logger.info('CV ignorado porque ya estaba parseado.', {
+        candidateId,
+        filePath,
+      });
+      return;
+    }
 
     try {
-      // 1. Cambiar estado a 'processing' (Le avisa al frontend que muestre el spinner)
-      await candidateRef.update({ cvParseStatus: 'processing' });
+      await this.candidatesRepository.markParsingProcessing(
+        candidateId,
+        filePath,
+      );
 
-      // 2. Descargar el archivo a la memoria RAM (Buffer)
-      // Justificación On-Premise: Si un día usan MinIO, solo cambian este bloque.
-      const bucket = getStorage().bucket(bucketName);
-      const file = bucket.file(filePath);
-      const [fileBuffer] = await file.download();
+      const fileBuffer = await this.downloadToBuffer(bucketName, filePath);
 
-      // 3. Delegar el procesamiento cognitivo al servicio de IA
-      const parsedData = await this.parsingService.parseCvFromBuffer(
+      const parsedData = await this.parsingService.parseFromBuffer(
         fileBuffer,
         mimeType,
       );
 
-      // 4. Guardar éxito en base de datos
-      await candidateRef.update({
-        cvParseStatus: 'done',
-        parsedData: parsedData,
-        updatedAt: new Date().toISOString(),
+      await this.candidatesRepository.markParsingDone(candidateId, parsedData);
+
+      logger.info('CV parseado correctamente.', {
+        candidateId,
+        filePath,
+        parserVersion: parsedData.parserVersion,
+        hardSkills: parsedData.hardSkills?.length ?? 0,
       });
     } catch (error) {
-      console.error(
-        `[CvUploadService] Error crítico procesando CV del candidato ${candidateId}:`,
-        error,
-      );
-
-      // Best-Effort: Si algo falla (ej. IA caída o PDF corrupto), avisar al frontend
       const errorMessage =
         error instanceof CvParsingError
           ? error.message
           : 'Error interno al procesar CV';
 
-      await candidateRef
-        .update({
-          cvParseStatus: 'failed',
-          cvParseError: errorMessage,
-          updatedAt: new Date().toISOString(),
-        })
-        .catch((err) =>
-          console.error('Fallo al actualizar estado de error en DB:', err),
+      logger.error('Fallo el parsing del CV.', {
+        candidateId,
+        filePath,
+        error: serializeError(error),
+      });
+
+      try {
+        await this.candidatesRepository.markParsingFailed(
+          candidateId,
+          errorMessage,
         );
+      } catch (statusError) {
+        logger.error('Tampoco se pudo marcar el parsing como failed.', {
+          candidateId,
+          statusError: serializeError(statusError),
+        });
+      }
     }
+  }
+
+  private async downloadToBuffer(
+    bucketName: string,
+    filePath: string,
+  ): Promise<Buffer> {
+    const bucket = getStorage().bucket(bucketName);
+    const file = bucket.file(filePath);
+    const [exists] = await file.exists();
+
+    if (!exists) {
+      throw new CvParsingError(
+        `El archivo fisico no existe en Storage: ${filePath}`,
+      );
+    }
+
+    const [fileBuffer] = await file.download();
+    return fileBuffer;
   }
 }
