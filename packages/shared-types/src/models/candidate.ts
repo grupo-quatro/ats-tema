@@ -1,4 +1,4 @@
-import type { ParsedCandidateProfileData } from './parsing';
+import type { ParsedCandidateProfileData } from './parsing/parsedData';
 
 export type CvParseStatus =
   | 'not_required'
