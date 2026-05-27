@@ -7,7 +7,7 @@ import type {
   ParsedCandidateProfileData,
 } from '@ats/shared-types';
 
-import { db } from '../core/firebase-admin';
+import { db } from '../core/firebaseAdmin';
 
 const CANDIDATES_COLLECTION = 'candidates';
 

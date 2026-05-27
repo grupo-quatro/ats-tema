@@ -1,3 +1,5 @@
+import type { ParsedEducation, ParsedExperience } from '../models/parsing';
+
 export interface CandidatePostulationBase {
   firstName: string;
   lastName: string;
@@ -10,4 +12,6 @@ export interface CandidatePostulationBase {
   education?: string;
   technicalSkills?: string[];
   professionalSummary?: string;
+  parsedExperience?: ParsedExperience[];
+  parsedEducation?: ParsedEducation[];
 }

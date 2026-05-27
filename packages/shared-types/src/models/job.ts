@@ -6,6 +6,7 @@ export type SkillType = 'mandatory' | 'desirable';
 
 export interface Skill {
   name: string;
+  yearsOfExperience: number;
   weight: number;
   type: SkillType;
 }
@@ -19,10 +20,15 @@ export interface Job {
   city?: string;
   description: string;
   skills: Skill[];
+  requirements?: string[];
   observations?: string;
+  additionalCriteria?: string[];
+  slug: string;
   salaryMin?: number;
   salaryMax?: number;
   currency?: string;
+  type?: string; // e.g. Full-time, Part-time
+  candidates?: number;
   status: JobStatus;
   responsabilities: string[];
   benefits: string[];

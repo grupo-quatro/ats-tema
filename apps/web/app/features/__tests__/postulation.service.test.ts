@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type {
-  RegisterCandidatePayload,
-  RegisterCandidateResponse,
+  CandidatePostulationPayload as RegisterCandidatePayload,
+  CandidatePostulationResponse as RegisterCandidateResponse,
 } from '@ats/shared-types';
 
 import {

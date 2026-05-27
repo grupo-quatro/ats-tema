@@ -20,8 +20,8 @@ import type {
 } from '@ats/shared-types';
 
 import { CandidatesRepository } from '../repositories/candidateRepository';
-import { ApplicationRegistrationService } from './application-registration-service';
-import { ApplicationsRepository } from '../repositories/application-repository';
+import { ApplicationRegistrationService } from './applicationRegistrationService';
+import { ApplicationsRepository } from '../repositories/applicationRepository';
 
 export class CandidateRegistrationCVServiceError extends Error {
   constructor(
@@ -150,6 +150,15 @@ export class CandidateRegistrationService {
         candidateId,
         candidateData,
       );
+
+      if (payload.parsedExperience?.length || payload.parsedEducation?.length) {
+        await this.candidatesRepository.update(candidateId, {
+          parsedCv: {
+            experience: payload.parsedExperience ?? [],
+            education: payload.parsedEducation ?? [],
+          },
+        });
+      }
 
       const applicationId =
         await this.applicationRegistrationService.createApplicationForCandidate(

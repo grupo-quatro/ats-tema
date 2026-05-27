@@ -59,37 +59,82 @@ pnpm audit --fix      # fix outdated deps if needed
 firebase login        # use grupo.quatro.ort@gmail.com
 ```
 
-## Development
+## Local development
+
+Necesitás 3 terminales la primera vez, 2 a partir de la segunda.
+
+### Primera vez
+
+**Terminal 1 — emulador Firebase**
 
 ```bash
-# Start Next.js dev server
-pnpm dev-web
-# or
-pnpm turbo run dev --filter=@ats/web
-
-# Start Firebase emulators (run once to init, then just start)
-firebase init emulators
-firebase emulators:start
-
-# Compile Cloud Functions
-pnpm compile-fn
-# or
-pnpm turbo run build --filter=@ats/functions
+firebase emulators:start --only auth,functions,firestore,storage
 ```
+
+Esperá a que aparezca `All emulators ready`.
+
+**Terminal 2 — seed de datos + frontend**
+
+```bash
+pnpm seed       # carga jobs y candidatos de prueba en el emulador
+pnpm dev-web    # levanta Next.js en http://localhost:3000
+```
+
+La Emulator UI queda disponible en `http://localhost:4000`.
+
+### A partir de la segunda vez
+
+El seed solo es necesario si el emulador perdió los datos (se reinició sin export). Si los datos ya están, alcanza con:
+
+```bash
+# Terminal 1
+firebase emulators:start --only auth,functions,firestore,storage
+
+# Terminal 2
+pnpm dev-web
+```
+
+### Si modificás Cloud Functions
+
+El emulador carga el JS compilado de `apps/functions/lib/`. Si cambiás código en `src/` necesitás recompilar para que el emulador tome los cambios:
+
+```bash
+pnpm compile-fn -- --watch   # recompila en cada cambio automáticamente
+```
+
+### Persistir datos del emulador entre reinicios
+
+Para no tener que correr `pnpm seed` cada vez, exportá los datos después de seedear:
+
+```bash
+# Con el emulador corriendo en otra terminal
+firebase emulators:export ./emulator-data
+```
+
+Y levantá siempre con import:
+
+```bash
+firebase emulators:start --only auth,functions,firestore,storage --import=./emulator-data --export-on-exit
+```
+
+> `emulator-data/` está en `.gitignore`. No commitear datos de emulador.
+
+---
 
 ## All scripts
 
-| Command            | Description                      |
-| ------------------ | -------------------------------- |
-| `pnpm dev`         | Start all apps in dev mode       |
-| `pnpm dev-web`     | Start Next.js only               |
-| `pnpm build`       | Build all apps                   |
-| `pnpm compile-fn`  | Build Cloud Functions only       |
-| `pnpm lint`        | Lint all packages                |
-| `pnpm format`      | Prettier format all TS/MD files  |
-| `pnpm check-types` | TypeScript check across monorepo |
-| `pnpm test`        | Run all tests                    |
-| `pnpm test:watch`  | Tests in watch mode              |
+| Command            | Description                           |
+| ------------------ | ------------------------------------- |
+| `pnpm dev`         | Start all apps in dev mode            |
+| `pnpm dev-web`     | Start Next.js only                    |
+| `pnpm build`       | Build all apps                        |
+| `pnpm compile-fn`  | Build Cloud Functions only            |
+| `pnpm seed`        | Seed jobs y candidatos en el emulador |
+| `pnpm lint`        | Lint all packages                     |
+| `pnpm format`      | Prettier format all TS/MD files       |
+| `pnpm check-types` | TypeScript check across monorepo      |
+| `pnpm test`        | Run all tests                         |
+| `pnpm test:watch`  | Tests in watch mode                   |
 
 **Deploy**
 
