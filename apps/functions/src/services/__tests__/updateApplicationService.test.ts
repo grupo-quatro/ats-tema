@@ -5,7 +5,7 @@ import {
   ApplicationNotFoundError,
 } from '../updateApplicationService';
 
-vi.mock('../../core/firebase-admin', () => ({
+vi.mock('../../core/firebaseAdmin', () => ({
   auth: {
     getUser: vi.fn().mockResolvedValue({ email: 'test@example.com' }),
   },
@@ -39,6 +39,7 @@ describe('UpdateApplicationStageService.updateStage', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockRepo.addStageHistoryEntry.mockResolvedValue(undefined);
     service = new UpdateApplicationStageService(mockRepo as any);
   });
 
