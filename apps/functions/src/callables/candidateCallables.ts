@@ -134,8 +134,6 @@ function resolveCandidateId(authContext: AuthContext): string {
       'No se pudo identificar al usuario autenticado.',
     );
   }
-    const { uid: candidateId } = await requireAuthenticatedUser(req);
-
   return candidateId;
 }
 
@@ -169,7 +167,6 @@ export const registerCandidate = onRequest(async (request, response) => {
   if (!assertPostMethod(request, response)) {
     return;
   }
-    const { uid: candidateId } = await requireAuthenticatedUser(req);
 
   try {
     const authContext = await getAuthContext(request);
