@@ -196,7 +196,7 @@ Limitacion: si el PDF es escaneado o es una imagen, la extraccion local puede de
 ## Flujo Funcional Completo
 
 ```txt
-POST registerCandidateCV
+POST registerCandidateCV (HTTP onRequest)
   ↓
 Se crea candidato draft
   ↓
@@ -914,6 +914,31 @@ firebase emulators:start --only functions,firestore,storage
 http://127.0.0.1:5001/ats-tema-ort/us-central1/registerCandidateCV
 ```
 
+Headers:
+
+```txt
+Authorization: Bearer <firebase_id_token>
+Content-Type: application/json
+```
+
+Body recomendado para endpoints `onRequest`:
+
+```json
+{
+  "jobId": "backend-firebase-developer"
+}
+```
+
+Por compatibilidad temporal con pruebas anteriores, el backend tambien acepta el body envuelto como callable:
+
+```json
+{
+  "data": {
+    "jobId": "backend-firebase-developer"
+  }
+}
+```
+
 2. Confirmar que el candidato queda:
 
 ```txt
@@ -969,27 +994,34 @@ Endpoint emulator:
 http://127.0.0.1:5001/ats-tema-ort/us-central1/confirmCandidateProfile
 ```
 
+Headers:
+
+```txt
+Authorization: Bearer <firebase_id_token>
+Content-Type: application/json
+```
+
 Body ejemplo:
 
 ```json
 {
-  "data": {
-    "candidateId": "CANDIDATE_ID",
-    "applicationId": "CANDIDATE_ID_backend-firebase-developer",
-    "profile": {
-      "firstName": "Sofia",
-      "lastName": "Loria",
-      "email": "sofia@example.com",
-      "phone": "",
-      "location": "Buenos Aires, Argentina",
-      "yearsOfExperience": 5,
-      "education": "Tecnicatura en Analisis de Sistemas | ORT Argentina",
-      "technicalSkills": ["Java", "Spring Boot", "MySQL"],
-      "professionalSummary": "Resumen profesional confirmado por el usuario."
-    }
+  "candidateId": "CANDIDATE_ID",
+  "applicationId": "CANDIDATE_ID_backend-firebase-developer",
+  "profile": {
+    "firstName": "Sofia",
+    "lastName": "Loria",
+    "email": "sofia@example.com",
+    "phone": "",
+    "location": "Buenos Aires, Argentina",
+    "yearsOfExperience": 5,
+    "education": "Tecnicatura en Analisis de Sistemas | ORT Argentina",
+    "technicalSkills": ["Java", "Spring Boot", "MySQL"],
+    "professionalSummary": "Resumen profesional confirmado por el usuario."
   }
 }
 ```
+
+Igual que `registerCandidateCV`, tambien acepta temporalmente `{ "data": { ... } }` para no romper pruebas existentes de Postman durante la migracion desde `onCall`.
 
 Resultado esperado:
 
@@ -1003,7 +1035,7 @@ application.stage = "applied"
 
 ## Relación con confirmCandidateProfile
 
-`confirmCandidateProfile` no deberia llamar a Vertex AI.
+`confirmCandidateProfile` es un endpoint HTTP `onRequest` y no deberia llamar a Vertex AI.
 
 El flujo esperado es:
 
@@ -1035,6 +1067,12 @@ candidate.professionalSummary
 ```
 
 `confirmCandidateProfile` recibe esos mismos datos ya confirmados/editados en `profile`.
+
+Como ahora es `onRequest`, el front debe enviar el Firebase ID token en:
+
+```txt
+Authorization: Bearer <firebase_id_token>
+```
 
 ---
 
