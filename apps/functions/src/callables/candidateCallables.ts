@@ -159,11 +159,7 @@ export const registerCandidateCV = onRequest(async (request, response) => {
     response.status(200).json(result);
   } catch (error) {
     logger.error('Error inesperado iniciando postulación por CV', error);
-    sendError(
-      response,
-      error,
-      'No se pudo iniciar la postulación por CV.',
-    );
+    sendError(response, error, 'No se pudo iniciar la postulación por CV.');
   }
 });
 
