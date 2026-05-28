@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { CandidatePostulationPayload } from '@ats/shared-types';
 import {
+  CandidateRegistrationCVService,
   CandidateRegistrationService,
   CandidateRegistrationConflictError,
   CandidateRegistrationServiceError,
@@ -18,7 +19,8 @@ const makePayload = (
 });
 
 const mockCandidatesRepo = {
-  findByEmail: vi.fn(),
+  createId: vi.fn(),
+  findManyByEmail: vi.fn(),
   createOrUpdateCandidate: vi.fn(),
   update: vi.fn(),
 };
@@ -28,6 +30,7 @@ const mockAppRegistrationService = {
 };
 
 const mockAppRepo = {
+  findByCandidateAndJob: vi.fn(),
   update: vi.fn(),
 };
 
@@ -36,12 +39,14 @@ describe('CandidateRegistrationService.registerCandidate', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCandidatesRepo.findByEmail.mockResolvedValue(null);
+    mockCandidatesRepo.createId.mockReturnValue('cand-1');
+    mockCandidatesRepo.findManyByEmail.mockResolvedValue([]);
     mockCandidatesRepo.createOrUpdateCandidate.mockResolvedValue(undefined);
     mockCandidatesRepo.update.mockResolvedValue(undefined);
     mockAppRegistrationService.createApplicationForCandidate.mockResolvedValue(
       'app-1',
     );
+    mockAppRepo.findByCandidateAndJob.mockResolvedValue(null);
 
     service = new CandidateRegistrationService(
       mockCandidatesRepo as any,
@@ -51,7 +56,7 @@ describe('CandidateRegistrationService.registerCandidate', () => {
   });
 
   it('crea el candidato y la postulación, retorna la respuesta correcta', async () => {
-    const result = await service.registerCandidate('cand-1', makePayload());
+    const result = await service.registerCandidate('auth-uid', makePayload());
 
     expect(mockCandidatesRepo.createOrUpdateCandidate).toHaveBeenCalledWith(
       'cand-1',
@@ -74,9 +79,24 @@ describe('CandidateRegistrationService.registerCandidate', () => {
     });
   });
 
+  it('genera un candidateId nuevo en lugar de usar el uid autenticado', async () => {
+    mockCandidatesRepo.createId.mockReturnValue('cand-generated');
+
+    const result = await service.registerCandidate('auth-uid', makePayload());
+
+    expect(mockCandidatesRepo.createOrUpdateCandidate).toHaveBeenCalledWith(
+      'cand-generated',
+      expect.any(Object),
+    );
+    expect(
+      mockAppRegistrationService.createApplicationForCandidate,
+    ).toHaveBeenCalledWith('cand-generated', 'job-1', 'manual');
+    expect(result.candidateId).toBe('cand-generated');
+  });
+
   it('llama a update con parsedCv cuando hay parsedExperience', async () => {
     await service.registerCandidate(
-      'cand-1',
+      'auth-uid',
       makePayload({
         parsedExperience: [{ role: 'Dev', company: 'Acme', startDate: '2020' }],
       }),
@@ -92,7 +112,7 @@ describe('CandidateRegistrationService.registerCandidate', () => {
 
   it('llama a update con parsedCv cuando hay parsedEducation', async () => {
     await service.registerCandidate(
-      'cand-1',
+      'auth-uid',
       makePayload({
         parsedEducation: [{ degree: 'Lic.', institution: 'UBA' }],
       }),
@@ -108,7 +128,7 @@ describe('CandidateRegistrationService.registerCandidate', () => {
 
   it('NO llama a update cuando parsedExperience y parsedEducation están vacíos', async () => {
     await service.registerCandidate(
-      'cand-1',
+      'auth-uid',
       makePayload({ parsedExperience: [], parsedEducation: [] }),
     );
 
@@ -116,13 +136,16 @@ describe('CandidateRegistrationService.registerCandidate', () => {
   });
 
   it('NO llama a update cuando parsedExperience y parsedEducation no están presentes', async () => {
-    await service.registerCandidate('cand-1', makePayload());
+    await service.registerCandidate('auth-uid', makePayload());
 
     expect(mockCandidatesRepo.update).not.toHaveBeenCalled();
   });
 
   it('resuelve registrationType como specific cuando hay jobId', async () => {
-    await service.registerCandidate('cand-1', makePayload({ jobId: 'job-1' }));
+    await service.registerCandidate(
+      'auth-uid',
+      makePayload({ jobId: 'job-1' }),
+    );
 
     expect(mockCandidatesRepo.createOrUpdateCandidate).toHaveBeenCalledWith(
       'cand-1',
@@ -131,7 +154,7 @@ describe('CandidateRegistrationService.registerCandidate', () => {
   });
 
   it('resuelve registrationType como general cuando jobId está vacío', async () => {
-    await service.registerCandidate('cand-1', makePayload({ jobId: '' }));
+    await service.registerCandidate('auth-uid', makePayload({ jobId: '' }));
 
     expect(mockCandidatesRepo.createOrUpdateCandidate).toHaveBeenCalledWith(
       'cand-1',
@@ -139,25 +162,103 @@ describe('CandidateRegistrationService.registerCandidate', () => {
     );
   });
 
-  it('lanza CandidateRegistrationConflictError cuando el email ya existe con otro id', async () => {
-    mockCandidatesRepo.findByEmail.mockResolvedValue({
-      id: 'otro-cand',
-      email: 'ana@example.com',
+  it('permite usar el mismo email si no existe postulación para el mismo job', async () => {
+    mockCandidatesRepo.findManyByEmail.mockResolvedValue([
+      {
+        id: 'existing-cand',
+        email: 'ana@example.com',
+      },
+    ]);
+
+    await expect(
+      service.registerCandidate('auth-uid', makePayload({ jobId: 'job-2' })),
+    ).resolves.toMatchObject({
+      candidateId: 'cand-1',
+      applicationId: 'app-1',
+    });
+
+    expect(mockAppRepo.findByCandidateAndJob).toHaveBeenCalledWith(
+      'existing-cand',
+      'job-2',
+    );
+  });
+
+  it('lanza CandidateRegistrationConflictError cuando el email ya tiene postulación para el mismo job', async () => {
+    mockCandidatesRepo.findManyByEmail.mockResolvedValue([
+      {
+        id: 'existing-cand',
+        email: 'ana@example.com',
+      },
+    ]);
+    mockAppRepo.findByCandidateAndJob.mockResolvedValue({
+      id: 'existing-cand_job-1',
+      candidateId: 'existing-cand',
+      jobId: 'job-1',
     });
 
     await expect(
-      service.registerCandidate('cand-1', makePayload()),
+      service.registerCandidate('auth-uid', makePayload()),
     ).rejects.toThrow(CandidateRegistrationConflictError);
   });
 
-  it('no lanza conflicto cuando el email existe con el mismo candidateId', async () => {
-    mockCandidatesRepo.findByEmail.mockResolvedValue({
-      id: 'cand-1',
-      email: 'ana@example.com',
-    });
+  it('revisa todas las coincidencias de email antes de crear una nueva postulación', async () => {
+    mockCandidatesRepo.findManyByEmail.mockResolvedValue([
+      {
+        id: 'existing-cand-1',
+        email: 'ana@example.com',
+      },
+      {
+        id: 'existing-cand-2',
+        email: 'ana@example.com',
+      },
+    ]);
+    mockAppRepo.findByCandidateAndJob
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        id: 'existing-cand-2_job-1',
+        candidateId: 'existing-cand-2',
+        jobId: 'job-1',
+      });
 
     await expect(
-      service.registerCandidate('cand-1', makePayload()),
+      service.registerCandidate('auth-uid', makePayload()),
+    ).rejects.toThrow(CandidateRegistrationConflictError);
+
+    expect(mockAppRepo.findByCandidateAndJob).toHaveBeenCalledTimes(2);
+    expect(mockCandidatesRepo.createOrUpdateCandidate).not.toHaveBeenCalled();
+  });
+
+  it('propaga CandidateRegistrationConflictError sin envolver', async () => {
+    mockCandidatesRepo.findManyByEmail.mockResolvedValue([
+      {
+        id: 'otro',
+        email: 'ana@example.com',
+      },
+    ]);
+    mockAppRepo.findByCandidateAndJob.mockResolvedValue({
+      id: 'otro_job-1',
+      candidateId: 'otro',
+      jobId: 'job-1',
+    });
+
+    const error = await service
+      .registerCandidate('auth-uid', makePayload())
+      .catch((e) => e);
+
+    expect(error).toBeInstanceOf(CandidateRegistrationConflictError);
+    expect(error).not.toBeInstanceOf(CandidateRegistrationServiceError);
+  });
+
+  it('no lanza conflicto cuando el email existe pero no tiene postulación para el job', async () => {
+    mockCandidatesRepo.findManyByEmail.mockResolvedValue([
+      {
+        id: 'cand-1',
+        email: 'ana@example.com',
+      },
+    ]);
+
+    await expect(
+      service.registerCandidate('auth-uid', makePayload()),
     ).resolves.toBeDefined();
   });
 
@@ -167,21 +268,50 @@ describe('CandidateRegistrationService.registerCandidate', () => {
     );
 
     await expect(
-      service.registerCandidate('cand-1', makePayload()),
+      service.registerCandidate('auth-uid', makePayload()),
     ).rejects.toThrow(CandidateRegistrationServiceError);
   });
+});
 
-  it('propaga CandidateRegistrationConflictError sin envolver', async () => {
-    mockCandidatesRepo.findByEmail.mockResolvedValue({
-      id: 'otro',
-      email: 'ana@example.com',
+describe('CandidateRegistrationCVService.registerCandidateCV', () => {
+  let service: CandidateRegistrationCVService;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCandidatesRepo.createId.mockReturnValue('cand-cv-1');
+    mockCandidatesRepo.createOrUpdateCandidate.mockResolvedValue(undefined);
+    mockAppRegistrationService.createApplicationForCandidate.mockResolvedValue(
+      'app-cv-1',
+    );
+
+    service = new CandidateRegistrationCVService(
+      mockCandidatesRepo as any,
+      mockAppRegistrationService as any,
+    );
+  });
+
+  it('crea una postulación por CV usando un candidateId nuevo', async () => {
+    const result = await service.registerCandidateCV('auth-uid', {
+      jobId: 'job-1',
     });
 
-    const error = await service
-      .registerCandidate('cand-1', makePayload())
-      .catch((e) => e);
-
-    expect(error).toBeInstanceOf(CandidateRegistrationConflictError);
-    expect(error).not.toBeInstanceOf(CandidateRegistrationServiceError);
+    expect(mockCandidatesRepo.createOrUpdateCandidate).toHaveBeenCalledWith(
+      'cand-cv-1',
+      expect.objectContaining({
+        profileStatus: 'draft',
+        registrationSource: 'cv_upload',
+        cvParseStatus: 'pending',
+      }),
+    );
+    expect(
+      mockAppRegistrationService.createApplicationForCandidate,
+    ).toHaveBeenCalledWith('cand-cv-1', 'job-1', 'cv_upload');
+    expect(result).toEqual({
+      candidateId: 'cand-cv-1',
+      applicationId: 'app-cv-1',
+      uploadBasePath: 'cvs/cand-cv-1/',
+      cvParseStatus: 'pending',
+      applicationStatus: 'draft',
+    });
   });
 });

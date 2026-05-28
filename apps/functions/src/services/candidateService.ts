@@ -40,9 +40,11 @@ export class CandidateRegistrationCVService {
   ) {}
 
   async registerCandidateCV(
-    candidateId: string,
+    _authenticatedUid: string,
     payload: CandidatePostulationCVPayload,
   ): Promise<CandidatePostulationCVResponse> {
+    const candidateId = this.candidatesRepository.createId();
+
     try {
       const cvParseStatus: CvParseStatus = 'pending';
 
@@ -108,18 +110,27 @@ export class CandidateRegistrationService {
   ) {}
 
   async registerCandidate(
-    candidateId: string,
+    _authenticatedUid: string,
     payload: CandidatePostulationPayload,
   ): Promise<CandidatePostulationResponse> {
-    try {
-      const existingCandidate = await this.candidatesRepository.findByEmail(
-        payload.email,
-      );
+    const candidateId = this.candidatesRepository.createId();
 
-      if (existingCandidate && existingCandidate.id !== candidateId) {
-        throw new CandidateRegistrationConflictError(
-          'Ya existe un candidato con ese email asociado a otro identificador.',
-        );
+    try {
+      const existingCandidates =
+        await this.candidatesRepository.findManyByEmail(payload.email.trim());
+
+      for (const existingCandidate of existingCandidates) {
+        const existingApplication =
+          await this.applicationRepository.findByCandidateAndJob(
+            existingCandidate.id,
+            payload.jobId,
+          );
+
+        if (existingApplication) {
+          throw new CandidateRegistrationConflictError(
+            'Ya existe una postulación para ese email y puesto.',
+          );
+        }
       }
 
       const registrationType = this.resolveRegistrationType(payload.jobId);
