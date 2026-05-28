@@ -67,13 +67,31 @@
         "properties": {
           "name": { "type": "string" },
           "yearsOfExperience": { "type": "number" },
-          "weight": { "type": "number", "description": "Relative weight for score calculation" },
+          "weight": {
+            "type": "number",
+            "description": "Relative weight for score calculation"
+          },
           "type": { "$ref": "#/components/schemas/SkillType" }
         }
       },
       "Job": {
         "type": "object",
-        "required": ["id", "title", "department", "seniority", "location", "description", "skills", "slug", "status", "responsabilities", "benefits", "hiringManagerId", "createdAt", "updatedAt"],
+        "required": [
+          "id",
+          "title",
+          "department",
+          "seniority",
+          "location",
+          "description",
+          "skills",
+          "slug",
+          "status",
+          "responsabilities",
+          "benefits",
+          "hiringManagerId",
+          "createdAt",
+          "updatedAt"
+        ],
         "properties": {
           "id": { "type": "string" },
           "title": { "type": "string" },
@@ -99,7 +117,10 @@
           "salaryMin": { "type": "number" },
           "salaryMax": { "type": "number" },
           "currency": { "type": "string" },
-          "type": { "type": "string", "description": "e.g. Full-time, Part-time" },
+          "type": {
+            "type": "string",
+            "description": "e.g. Full-time, Part-time"
+          },
           "candidates": { "type": "number" },
           "status": { "$ref": "#/components/schemas/JobStatus" },
           "responsabilities": {
@@ -159,7 +180,16 @@
       },
       "ApplicationWithCandidateDTO": {
         "type": "object",
-        "required": ["id", "jobId", "candidateId", "stage", "status", "createdAt", "updatedAt", "stageUpdatedAt"],
+        "required": [
+          "id",
+          "jobId",
+          "candidateId",
+          "stage",
+          "status",
+          "createdAt",
+          "updatedAt",
+          "stageUpdatedAt"
+        ],
         "properties": {
           "id": { "type": "string" },
           "jobId": { "type": "string" },
@@ -186,7 +216,10 @@
           "id": { "type": "string" },
           "stage": { "$ref": "#/components/schemas/ApplicationStage" },
           "changedAt": { "type": "string", "format": "date-time" },
-          "changedBy": { "type": "string", "description": "UID of the user who changed the stage" },
+          "changedBy": {
+            "type": "string",
+            "description": "UID of the user who changed the stage"
+          },
           "changedByEmail": { "type": "string" },
           "notes": { "type": "string" },
           "rejectionReason": { "type": "string" }
@@ -247,7 +280,16 @@
       },
       "ApplicationDetailDTO": {
         "type": "object",
-        "required": ["id", "stage", "status", "createdAt", "updatedAt", "stageUpdatedAt", "candidate", "job"],
+        "required": [
+          "id",
+          "stage",
+          "status",
+          "createdAt",
+          "updatedAt",
+          "stageUpdatedAt",
+          "candidate",
+          "job"
+        ],
         "properties": {
           "id": { "type": "string" },
           "stage": { "$ref": "#/components/schemas/ApplicationStage" },
@@ -261,7 +303,9 @@
           "createdAt": { "type": "string", "format": "date-time" },
           "updatedAt": { "type": "string", "format": "date-time" },
           "stageUpdatedAt": { "type": "string", "format": "date-time" },
-          "candidate": { "$ref": "#/components/schemas/ApplicationDetailCandidateDTO" },
+          "candidate": {
+            "$ref": "#/components/schemas/ApplicationDetailCandidateDTO"
+          },
           "job": {
             "type": "object",
             "required": ["id", "title", "skills"],
@@ -303,22 +347,61 @@
           }
         }
       },
+      "CandidateProfileForConfirmation": {
+        "type": "object",
+        "description": "Canonical candidate profile fields populated by manual input or CV parsing. All fields are optional because parsing can still be pending, processing, or failed.",
+        "properties": {
+          "firstName": { "type": "string" },
+          "lastName": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "phone": { "type": "string" },
+          "location": { "type": "string" },
+          "yearsOfExperience": { "type": "number" },
+          "education": { "type": "string" },
+          "technicalSkills": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "professionalSummary": { "type": "string" },
+          "parsedExperience": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ParsedExperience" }
+          },
+          "parsedEducation": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ParsedEducation" }
+          }
+        }
+      },
       "EmployeeRole": {
         "type": "string",
         "enum": ["hr", "tech_lead", "hiring_manager", "admin"]
       }
     }
   },
-  "security": [
-    { "bearerAuth": [] }
-  ],
+  "security": [{ "bearerAuth": [] }],
   "tags": [
     { "name": "Health", "description": "Service health check" },
-    { "name": "Jobs (Public)", "description": "Public job listing endpoints — no authentication required" },
-    { "name": "Jobs (Internal)", "description": "Internal position management — requires recruiter/admin role" },
-    { "name": "Candidates", "description": "Candidate registration and postulation flow" },
-    { "name": "Applications", "description": "Application management and pipeline operations" },
-    { "name": "Auth / Admin", "description": "User role assignment and employee provisioning" }
+    {
+      "name": "Jobs (Public)",
+      "description": "Public job listing endpoints — no authentication required"
+    },
+    {
+      "name": "Jobs (Internal)",
+      "description": "Internal position management — requires recruiter/admin role"
+    },
+    {
+      "name": "Candidates",
+      "description": "Candidate registration and postulation flow"
+    },
+    {
+      "name": "Applications",
+      "description": "Application management and pipeline operations"
+    },
+    {
+      "name": "Auth / Admin",
+      "description": "User role assignment and employee provisioning"
+    }
   ],
   "paths": {
     "/healthCheck": {
@@ -339,7 +422,10 @@
                   "properties": {
                     "status": { "type": "string", "example": "healthy" },
                     "timestamp": { "type": "string", "format": "date-time" },
-                    "uptime": { "type": "number", "description": "Process uptime in seconds" }
+                    "uptime": {
+                      "type": "number",
+                      "description": "Process uptime in seconds"
+                    }
                   }
                 }
               }
@@ -469,7 +555,12 @@
           {
             "name": "limit",
             "in": "query",
-            "schema": { "type": "integer", "default": 10, "minimum": 1, "maximum": 100 }
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "minimum": 1,
+              "maximum": 100
+            }
           },
           {
             "name": "orderBy",
@@ -637,7 +728,17 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["title", "department", "seniority", "location", "description", "skills", "slug", "responsabilities", "benefits"],
+                "required": [
+                  "title",
+                  "department",
+                  "seniority",
+                  "location",
+                  "description",
+                  "skills",
+                  "slug",
+                  "responsabilities",
+                  "benefits"
+                ],
                 "properties": {
                   "title": { "type": "string" },
                   "department": { "type": "string" },
@@ -683,7 +784,10 @@
                   "type": "object",
                   "required": ["id"],
                   "properties": {
-                    "id": { "type": "string", "description": "Firestore document ID of the created job" }
+                    "id": {
+                      "type": "string",
+                      "description": "Firestore document ID of the created job"
+                    }
                   }
                 }
               }
@@ -730,7 +834,10 @@
                 "type": "object",
                 "required": ["id"],
                 "properties": {
-                  "id": { "type": "string", "description": "Firestore document ID of the position" },
+                  "id": {
+                    "type": "string",
+                    "description": "Firestore document ID of the position"
+                  },
                   "title": { "type": "string" },
                   "department": { "type": "string" },
                   "seniority": { "type": "string" },
@@ -826,7 +933,10 @@
                 "type": "object",
                 "required": ["id", "status"],
                 "properties": {
-                  "id": { "type": "string", "description": "Firestore document ID of the position" },
+                  "id": {
+                    "type": "string",
+                    "description": "Firestore document ID of the position"
+                  },
                   "status": { "$ref": "#/components/schemas/JobStatus" }
                 }
               }
@@ -897,7 +1007,10 @@
                     "type": "object",
                     "required": ["jobId"],
                     "properties": {
-                      "jobId": { "type": "string", "description": "Firestore document ID of the target job" }
+                      "jobId": {
+                        "type": "string",
+                        "description": "Firestore document ID of the target job"
+                      }
                     }
                   }
                 ]
@@ -912,12 +1025,21 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["candidateId", "applicationId", "cvParseStatus", "applicationStatus"],
+                  "required": [
+                    "candidateId",
+                    "applicationId",
+                    "cvParseStatus",
+                    "applicationStatus"
+                  ],
                   "properties": {
                     "candidateId": { "type": "string" },
                     "applicationId": { "type": "string" },
-                    "cvParseStatus": { "$ref": "#/components/schemas/CvParseStatus" },
-                    "applicationStatus": { "$ref": "#/components/schemas/ApplicationStatus" }
+                    "cvParseStatus": {
+                      "$ref": "#/components/schemas/CvParseStatus"
+                    },
+                    "applicationStatus": {
+                      "$ref": "#/components/schemas/ApplicationStatus"
+                    }
                   }
                 }
               }
@@ -964,7 +1086,10 @@
                 "type": "object",
                 "required": ["jobId"],
                 "properties": {
-                  "jobId": { "type": "string", "description": "Firestore document ID of the target job" }
+                  "jobId": {
+                    "type": "string",
+                    "description": "Firestore document ID of the target job"
+                  }
                 }
               }
             }
@@ -977,7 +1102,13 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["candidateId", "applicationId", "uploadBasePath", "cvParseStatus", "applicationStatus"],
+                  "required": [
+                    "candidateId",
+                    "applicationId",
+                    "uploadBasePath",
+                    "cvParseStatus",
+                    "applicationStatus"
+                  ],
                   "properties": {
                     "candidateId": { "type": "string" },
                     "applicationId": { "type": "string" },
@@ -985,8 +1116,12 @@
                       "type": "string",
                       "description": "Firebase Storage base path where the CV must be uploaded, e.g. cvs/{candidateId}"
                     },
-                    "cvParseStatus": { "$ref": "#/components/schemas/CvParseStatus" },
-                    "applicationStatus": { "$ref": "#/components/schemas/ApplicationStatus" }
+                    "cvParseStatus": {
+                      "$ref": "#/components/schemas/CvParseStatus"
+                    },
+                    "applicationStatus": {
+                      "$ref": "#/components/schemas/ApplicationStatus"
+                    }
                   }
                 }
               }
@@ -994,6 +1129,107 @@
           },
           "401": {
             "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/getCandidateProfileForConfirmation": {
+      "post": {
+        "tags": ["Candidates"],
+        "operationId": "getCandidateProfileForConfirmation",
+        "summary": "Get CV parsing status and preliminary candidate profile",
+        "description": "Returns the current parsing status and canonical candidate profile fields for the CV confirmation screen. The frontend should poll this endpoint after uploading the CV until `cvParseStatus` becomes `done` or `failed`, then let the candidate review or complete the profile before calling `confirmCandidateProfile`.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["candidateId", "applicationId"],
+                "properties": {
+                  "candidateId": { "type": "string" },
+                  "applicationId": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Candidate profile status returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "candidateId",
+                    "applicationId",
+                    "cvParseStatus",
+                    "cvParseError",
+                    "profileStatus",
+                    "profile"
+                  ],
+                  "properties": {
+                    "candidateId": { "type": "string" },
+                    "applicationId": { "type": "string" },
+                    "cvParseStatus": {
+                      "$ref": "#/components/schemas/CvParseStatus"
+                    },
+                    "cvParseError": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "profileStatus": {
+                      "type": "string",
+                      "enum": ["draft", "completed"]
+                    },
+                    "profile": {
+                      "$ref": "#/components/schemas/CandidateProfileForConfirmation"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required fields",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "403": {
+            "description": "Application does not belong to candidate",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Candidate or application not found",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorResponse" }
@@ -1026,8 +1262,13 @@
                 "required": ["candidateId", "profile"],
                 "properties": {
                   "candidateId": { "type": "string" },
-                  "applicationId": { "type": "string", "description": "Optional. Links the confirmation to an existing application." },
-                  "profile": { "$ref": "#/components/schemas/CandidatePostulationBase" }
+                  "applicationId": {
+                    "type": "string",
+                    "description": "Optional. Links the confirmation to an existing application."
+                  },
+                  "profile": {
+                    "$ref": "#/components/schemas/CandidatePostulationBase"
+                  }
                 }
               }
             }
@@ -1044,10 +1285,21 @@
                   "properties": {
                     "candidateId": { "type": "string" },
                     "applicationId": { "type": "string" },
-                    "profileStatus": { "type": "string", "enum": ["completed"] },
-                    "applicationStatus": { "type": "string", "enum": ["active"] },
-                    "applicationStage": { "type": "string", "enum": ["applied"] },
-                    "cvParseStatus": { "$ref": "#/components/schemas/CvParseStatus" }
+                    "profileStatus": {
+                      "type": "string",
+                      "enum": ["completed"]
+                    },
+                    "applicationStatus": {
+                      "type": "string",
+                      "enum": ["active"]
+                    },
+                    "applicationStage": {
+                      "type": "string",
+                      "enum": ["applied"]
+                    },
+                    "cvParseStatus": {
+                      "$ref": "#/components/schemas/CvParseStatus"
+                    }
                   }
                 }
               }
@@ -1102,7 +1354,10 @@
                 "type": "object",
                 "required": ["jobId"],
                 "properties": {
-                  "jobId": { "type": "string", "description": "Firestore document ID of the job to apply to" }
+                  "jobId": {
+                    "type": "string",
+                    "description": "Firestore document ID of the job to apply to"
+                  }
                 }
               }
             }
@@ -1115,13 +1370,23 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["applicationId", "candidateId", "jobId", "stage", "status"],
+                  "required": [
+                    "applicationId",
+                    "candidateId",
+                    "jobId",
+                    "stage",
+                    "status"
+                  ],
                   "properties": {
                     "applicationId": { "type": "string" },
                     "candidateId": { "type": "string" },
                     "jobId": { "type": "string" },
-                    "stage": { "$ref": "#/components/schemas/ApplicationStage" },
-                    "status": { "$ref": "#/components/schemas/ApplicationStatus" }
+                    "stage": {
+                      "$ref": "#/components/schemas/ApplicationStage"
+                    },
+                    "status": {
+                      "$ref": "#/components/schemas/ApplicationStatus"
+                    }
                   }
                 }
               }
@@ -1212,7 +1477,9 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/ApplicationWithCandidateDTO" }
+                  "items": {
+                    "$ref": "#/components/schemas/ApplicationWithCandidateDTO"
+                  }
                 }
               }
             }
@@ -1524,7 +1791,11 @@
                 "properties": {
                   "email": { "type": "string", "format": "email" },
                   "displayName": { "type": "string" },
-                  "photoURL": { "type": "string", "format": "uri", "nullable": true }
+                  "photoURL": {
+                    "type": "string",
+                    "format": "uri",
+                    "nullable": true
+                  }
                 }
               }
             }
@@ -1589,7 +1860,10 @@
                 "type": "object",
                 "required": ["uid", "role"],
                 "properties": {
-                  "uid": { "type": "string", "description": "Firebase Auth UID of the target user" },
+                  "uid": {
+                    "type": "string",
+                    "description": "Firebase Auth UID of the target user"
+                  },
                   "role": { "$ref": "#/components/schemas/EmployeeRole" }
                 }
               }

@@ -1,6 +1,7 @@
 import type {
   CandidatePostulationCVPayload,
   CandidatePostulationPayload,
+  GetCandidateProfileForConfirmationPayload,
 } from '@ats/shared-types';
 import { HttpsError } from 'firebase-functions/v2/https';
 
@@ -50,6 +51,21 @@ export function validateRegisterCandidatePayload(
     throw new HttpsError(
       'invalid-argument',
       'El teléfono del candidato es obligatorio.',
+    );
+  }
+}
+
+export function validateGetCandidateProfileForConfirmationPayload(
+  payload: Partial<GetCandidateProfileForConfirmationPayload>,
+): asserts payload is GetCandidateProfileForConfirmationPayload {
+  if (!payload.candidateId || payload.candidateId.trim().length === 0) {
+    throw new HttpsError('invalid-argument', 'El candidateId es obligatorio.');
+  }
+
+  if (!payload.applicationId || payload.applicationId.trim().length === 0) {
+    throw new HttpsError(
+      'invalid-argument',
+      'El applicationId es obligatorio.',
     );
   }
 }

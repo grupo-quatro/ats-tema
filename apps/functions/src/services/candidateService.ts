@@ -8,6 +8,8 @@
 
 import type {
   ApplicationStatus,
+  Candidate,
+  CandidateProfileForConfirmation,
   CreateCandidateDTO,
   CvParseStatus,
   CandidatePostulationCVPayload,
@@ -17,6 +19,8 @@ import type {
   RegistrationType,
   ConfirmCandidateProfilePayload,
   ConfirmCandidateProfileResponse,
+  GetCandidateProfileForConfirmationPayload,
+  GetCandidateProfileForConfirmationResponse,
 } from '@ats/shared-types';
 
 import { CandidatesRepository } from '../repositories/candidateRepository';
@@ -99,6 +103,27 @@ export class CandidateRegistrationServiceError extends Error {
   ) {
     super(message);
     this.name = 'CandidateRegistrationServiceError';
+  }
+}
+
+export class CandidateProfileForConfirmationNotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CandidateProfileForConfirmationNotFoundError';
+  }
+}
+
+export class CandidateProfileForConfirmationApplicationNotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CandidateProfileForConfirmationApplicationNotFoundError';
+  }
+}
+
+export class CandidateProfileForConfirmationApplicationMismatchError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CandidateProfileForConfirmationApplicationMismatchError';
   }
 }
 
@@ -200,6 +225,61 @@ export class CandidateRegistrationService {
 
   private resolveRegistrationType(jobId: string): RegistrationType {
     return jobId ? 'specific' : 'general';
+  }
+
+  async getCandidateProfileForConfirmation(
+    payload: GetCandidateProfileForConfirmationPayload,
+  ): Promise<GetCandidateProfileForConfirmationResponse> {
+    const candidateId = payload.candidateId.trim();
+    const applicationId = payload.applicationId.trim();
+
+    const candidate = await this.candidatesRepository.findById(candidateId);
+    if (!candidate) {
+      throw new CandidateProfileForConfirmationNotFoundError(
+        `El candidato con ID ${candidateId} no existe.`,
+      );
+    }
+
+    const application =
+      await this.applicationRepository.findById(applicationId);
+    if (!application) {
+      throw new CandidateProfileForConfirmationApplicationNotFoundError(
+        `La postulación con ID ${applicationId} no existe.`,
+      );
+    }
+
+    if (application.candidateId !== candidate.id) {
+      throw new CandidateProfileForConfirmationApplicationMismatchError(
+        'La postulación no corresponde al candidato informado.',
+      );
+    }
+
+    return {
+      candidateId: candidate.id,
+      applicationId: application.id,
+      cvParseStatus: candidate.cvParseStatus,
+      cvParseError: candidate.cvParseError ?? null,
+      profileStatus: candidate.profileStatus,
+      profile: this.mapCandidateToProfileForConfirmation(candidate),
+    };
+  }
+
+  private mapCandidateToProfileForConfirmation(
+    candidate: Candidate,
+  ): CandidateProfileForConfirmation {
+    return {
+      firstName: candidate.firstName,
+      lastName: candidate.lastName,
+      email: candidate.email,
+      phone: candidate.phone,
+      location: candidate.location,
+      yearsOfExperience: candidate.yearsOfExperience,
+      education: candidate.education,
+      technicalSkills: candidate.technicalSkills,
+      professionalSummary: candidate.professionalSummary,
+      parsedExperience: candidate.parsedCv?.experience,
+      parsedEducation: candidate.parsedCv?.education,
+    };
   }
 
   async confirmCandidateProfile(

@@ -4,14 +4,19 @@ import {
   CandidatePostulationCVPayload,
   CandidatePostulationPayload,
   ConfirmCandidateProfilePayload,
+  GetCandidateProfileForConfirmationPayload,
 } from '@ats/shared-types';
 
 import { CandidateRegistrationCVService } from '../services/candidateService';
 import {
+  CandidateProfileForConfirmationApplicationMismatchError,
+  CandidateProfileForConfirmationApplicationNotFoundError,
+  CandidateProfileForConfirmationNotFoundError,
   CandidateRegistrationConflictError,
   CandidateRegistrationService,
 } from '../services/candidateService';
 import {
+  validateGetCandidateProfileForConfirmationPayload,
   validateRegisterCandidatePayload,
   validateStartApplicationWithCVPayload,
 } from '../validators/candidateValidator';
@@ -145,6 +150,58 @@ export const registerCandidate = onRequest(async (request, response) => {
     sendError(response, error, 'No se pudo registrar el candidato.');
   }
 });
+
+export const getCandidateProfileForConfirmation = onRequest(
+  async (request, response) => {
+    if (!assertPostMethod(request, response)) {
+      return;
+    }
+
+    try {
+      await requireAuthenticatedUser(request);
+      const payload = getPayload<GetCandidateProfileForConfirmationPayload>(
+        request.body,
+      );
+      validateGetCandidateProfileForConfirmationPayload(payload);
+
+      const result =
+        await candidateRegistrationService.getCandidateProfileForConfirmation(
+          payload,
+        );
+
+      response.status(200).json(result);
+    } catch (error) {
+      if (
+        error instanceof CandidateProfileForConfirmationNotFoundError ||
+        error instanceof CandidateProfileForConfirmationApplicationNotFoundError
+      ) {
+        sendError(
+          response,
+          new HttpsError('not-found', error.message),
+          'No se pudo obtener el perfil del candidato.',
+        );
+        return;
+      }
+
+      if (
+        error instanceof CandidateProfileForConfirmationApplicationMismatchError
+      ) {
+        sendError(
+          response,
+          new HttpsError('permission-denied', error.message),
+          'No se pudo obtener el perfil del candidato.',
+        );
+        return;
+      }
+
+      logger.error(
+        'Error inesperado obteniendo perfil de candidato para confirmación',
+        error,
+      );
+      sendError(response, error, 'No se pudo obtener el perfil del candidato.');
+    }
+  },
+);
 
 export const confirmCandidateProfile = onRequest(async (request, response) => {
   if (!assertPostMethod(request, response)) {

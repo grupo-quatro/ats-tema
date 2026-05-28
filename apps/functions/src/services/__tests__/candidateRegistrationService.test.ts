@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { CandidatePostulationPayload } from '@ats/shared-types';
 import {
+  CandidateProfileForConfirmationApplicationMismatchError,
+  CandidateProfileForConfirmationApplicationNotFoundError,
+  CandidateProfileForConfirmationNotFoundError,
   CandidateRegistrationCVService,
   CandidateRegistrationService,
   CandidateRegistrationConflictError,
@@ -20,6 +23,7 @@ const makePayload = (
 
 const mockCandidatesRepo = {
   createId: vi.fn(),
+  findById: vi.fn(),
   findManyByEmail: vi.fn(),
   createOrUpdateCandidate: vi.fn(),
   update: vi.fn(),
@@ -30,6 +34,7 @@ const mockAppRegistrationService = {
 };
 
 const mockAppRepo = {
+  findById: vi.fn(),
   findByCandidateAndJob: vi.fn(),
   update: vi.fn(),
 };
@@ -313,5 +318,149 @@ describe('CandidateRegistrationCVService.registerCandidateCV', () => {
       cvParseStatus: 'pending',
       applicationStatus: 'draft',
     });
+  });
+});
+
+describe('CandidateRegistrationService.getCandidateProfileForConfirmation', () => {
+  let service: CandidateRegistrationService;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCandidatesRepo.findById.mockResolvedValue({
+      id: 'cand-1',
+      firstName: 'Ana',
+      lastName: 'García',
+      email: 'ana@example.com',
+      phone: '11223344',
+      location: 'Buenos Aires',
+      yearsOfExperience: 3,
+      education: 'Analista de Sistemas',
+      technicalSkills: ['TypeScript', 'React'],
+      professionalSummary: 'Frontend developer.',
+      parsedCv: {
+        experience: [{ role: 'Dev', company: 'Acme', startDate: '2020' }],
+        education: [{ degree: 'Analista', institution: 'ORT' }],
+      },
+      profileStatus: 'draft',
+      registrationType: 'specific',
+      registrationSource: 'cv_upload',
+      cvParseStatus: 'done',
+      cvParseError: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    mockAppRepo.findById.mockResolvedValue({
+      id: 'app-1',
+      candidateId: 'cand-1',
+      jobId: 'job-1',
+      stage: 'profile_pending',
+      status: 'draft',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      stageUpdatedAt: new Date(),
+    });
+
+    service = new CandidateRegistrationService(
+      mockCandidatesRepo as any,
+      mockAppRegistrationService as any,
+      mockAppRepo as any,
+    );
+  });
+
+  it('devuelve estado de parsing y profile preliminar para confirmación', async () => {
+    const result = await service.getCandidateProfileForConfirmation({
+      candidateId: 'cand-1',
+      applicationId: 'app-1',
+    });
+
+    expect(mockCandidatesRepo.findById).toHaveBeenCalledWith('cand-1');
+    expect(mockAppRepo.findById).toHaveBeenCalledWith('app-1');
+    expect(result).toEqual({
+      candidateId: 'cand-1',
+      applicationId: 'app-1',
+      cvParseStatus: 'done',
+      cvParseError: null,
+      profileStatus: 'draft',
+      profile: {
+        firstName: 'Ana',
+        lastName: 'García',
+        email: 'ana@example.com',
+        phone: '11223344',
+        location: 'Buenos Aires',
+        yearsOfExperience: 3,
+        education: 'Analista de Sistemas',
+        technicalSkills: ['TypeScript', 'React'],
+        professionalSummary: 'Frontend developer.',
+        parsedExperience: [{ role: 'Dev', company: 'Acme', startDate: '2020' }],
+        parsedEducation: [{ degree: 'Analista', institution: 'ORT' }],
+      },
+    });
+  });
+
+  it('devuelve cvParseError cuando el parsing falló', async () => {
+    mockCandidatesRepo.findById.mockResolvedValue({
+      id: 'cand-1',
+      profileStatus: 'draft',
+      registrationType: 'specific',
+      registrationSource: 'cv_upload',
+      cvParseStatus: 'failed',
+      cvParseError: 'No se pudo parsear el CV.',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const result = await service.getCandidateProfileForConfirmation({
+      candidateId: 'cand-1',
+      applicationId: 'app-1',
+    });
+
+    expect(result).toMatchObject({
+      cvParseStatus: 'failed',
+      cvParseError: 'No se pudo parsear el CV.',
+      profileStatus: 'draft',
+      profile: {},
+    });
+  });
+
+  it('lanza error cuando el candidato no existe', async () => {
+    mockCandidatesRepo.findById.mockResolvedValue(null);
+
+    await expect(
+      service.getCandidateProfileForConfirmation({
+        candidateId: 'missing-candidate',
+        applicationId: 'app-1',
+      }),
+    ).rejects.toThrow(CandidateProfileForConfirmationNotFoundError);
+  });
+
+  it('lanza error cuando la postulación no existe', async () => {
+    mockAppRepo.findById.mockResolvedValue(null);
+
+    await expect(
+      service.getCandidateProfileForConfirmation({
+        candidateId: 'cand-1',
+        applicationId: 'missing-app',
+      }),
+    ).rejects.toThrow(CandidateProfileForConfirmationApplicationNotFoundError);
+  });
+
+  it('lanza error cuando la postulación no corresponde al candidato', async () => {
+    mockAppRepo.findById.mockResolvedValue({
+      id: 'app-1',
+      candidateId: 'other-candidate',
+      jobId: 'job-1',
+      stage: 'profile_pending',
+      status: 'draft',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      stageUpdatedAt: new Date(),
+    });
+
+    await expect(
+      service.getCandidateProfileForConfirmation({
+        candidateId: 'cand-1',
+        applicationId: 'app-1',
+      }),
+    ).rejects.toThrow(CandidateProfileForConfirmationApplicationMismatchError);
   });
 });

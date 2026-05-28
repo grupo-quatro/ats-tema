@@ -977,6 +977,73 @@ Si falla, revisar:
 
 Si el log dice `SERVICE_DISABLED` para `aiplatform.googleapis.com`, la llamada llego a Google Cloud pero Vertex AI API todavia no esta habilitada en el proyecto.
 
+### Consultar estado y perfil preliminar
+
+Despues de subir el PDF, el front no debe asumir que el parsing termino. Debe consultar el estado del candidato hasta que `cvParseStatus` sea `"done"` o `"failed"`.
+
+Endpoint emulator:
+
+```txt
+http://127.0.0.1:5001/ats-tema-ort/us-central1/getCandidateProfileForConfirmation
+```
+
+Headers:
+
+```txt
+Authorization: Bearer <firebase_id_token>
+Content-Type: application/json
+```
+
+En emulator se puede usar:
+
+```txt
+Authorization: Bearer dev-candidate
+```
+
+Body:
+
+```json
+{
+  "candidateId": "CANDIDATE_ID",
+  "applicationId": "APPLICATION_ID"
+}
+```
+
+Respuesta esperada:
+
+```json
+{
+  "candidateId": "CANDIDATE_ID",
+  "applicationId": "APPLICATION_ID",
+  "cvParseStatus": "processing",
+  "cvParseError": null,
+  "profileStatus": "draft",
+  "profile": {
+    "firstName": "Sofia",
+    "lastName": "Loria",
+    "email": "sofia@example.com",
+    "phone": "",
+    "location": "Buenos Aires, Argentina",
+    "yearsOfExperience": 5,
+    "education": "Tecnicatura en Analisis de Sistemas | ORT Argentina",
+    "technicalSkills": ["Java", "Spring Boot", "MySQL"],
+    "professionalSummary": "Resumen preliminar extraido del CV."
+  }
+}
+```
+
+Uso recomendado desde front:
+
+1. Llamar a `registerCandidateCV`.
+2. Subir el PDF a `uploadBasePath`.
+3. Hacer polling cada 2 segundos a `getCandidateProfileForConfirmation`.
+4. Mientras el estado sea `"pending"` o `"processing"`, mostrar pantalla o modal de procesamiento.
+5. Si el estado es `"done"`, mostrar el formulario de revision con `profile`.
+6. Si el estado es `"failed"`, mostrar `cvParseError` y permitir completar el perfil manualmente.
+7. Al finalizar la revision, llamar a `confirmCandidateProfile`.
+
+El endpoint exige `candidateId` y `applicationId` para validar que la postulacion consultada corresponde al candidato.
+
 ### Confirmar perfil por Postman
 
 Despues de que el parsing deja:
