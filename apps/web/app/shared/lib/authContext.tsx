@@ -51,6 +51,13 @@ const DEV_PASSWORD = 'pass123';
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+function getDevRoleFromToken(token: string | null): EmployeeRole | null {
+  if (token === 'dev-admin') return 'admin';
+  if (token === 'dev-recruiter') return 'hr';
+  if (token === 'dev-hiring-manager') return 'hiring_manager';
+  return null;
+}
+
 async function setSessionCookie(idToken: string): Promise<void> {
   await fetch('/api/auth/session', {
     method: 'POST',
@@ -89,11 +96,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         const tokenResult = await firebaseUser.getIdTokenResult();
-        const claimedRole = tokenResult.claims['role'] as
-          | EmployeeRole
-          | undefined;
+        const devRole = useEmulators
+          ? getDevRoleFromToken(localStorage.getItem('ats-dev-token'))
+          : null;
+        const claimedRole =
+          devRole ??
+          (tokenResult.claims['role'] as EmployeeRole | undefined) ??
+          null;
         setUser(firebaseUser);
-        setRole(claimedRole ?? null);
+        setRole(claimedRole);
         setIsPendingApproval(!claimedRole);
       } else {
         setUser(null);
@@ -104,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return unsubscribe;
-  }, []);
+  }, [useEmulators]);
 
   const signInWithGoogle = useCallback(
     async (devRole: DevRole = 'recruiter') => {
@@ -116,6 +127,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           DEV_PASSWORD,
         );
         localStorage.setItem('ats-dev-token', token);
+        setUser(credential.user);
+        setRole(getDevRoleFromToken(token));
+        setIsPendingApproval(false);
         const idToken = await credential.user.getIdToken();
         await setSessionCookie(idToken);
         return;

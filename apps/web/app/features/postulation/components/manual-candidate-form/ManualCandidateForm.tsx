@@ -45,6 +45,8 @@ type ManualCandidateValues = {
   email: string;
   phone: string;
   location: string;
+  yearsOfExperience: string;
+  education: string;
   technicalSkills: string;
   professionalSummary: string;
 };
@@ -55,6 +57,8 @@ const defaultValues: ManualCandidateValues = {
   email: '',
   phone: '',
   location: '',
+  yearsOfExperience: '',
+  education: '',
   technicalSkills: '',
   professionalSummary: '',
 };
@@ -93,11 +97,29 @@ function validatePhone({ value }: { value: string }): string | undefined {
   return undefined;
 }
 
+function validateYearsOfExperience({
+  value,
+}: {
+  value: string;
+}): string | undefined {
+  const trimmed = value?.trim() ?? '';
+  if (!trimmed) return undefined;
+  const parsed = Number(trimmed);
+  if (!Number.isInteger(parsed) || parsed < 0 || parsed > 80) {
+    return 'Ingresá un número válido';
+  }
+  return undefined;
+}
+
 const v = {
   firstName: requiredTrim('El nombre es requerido'),
   lastName: requiredTrim('Los apellidos son requeridos'),
   email: { onBlur: validateEmail, onSubmit: validateEmail },
   phone: { onBlur: validatePhone, onSubmit: validatePhone },
+  yearsOfExperience: {
+    onBlur: validateYearsOfExperience,
+    onSubmit: validateYearsOfExperience,
+  },
 };
 
 const PAGE_MAX_WIDTH = 900;
@@ -196,6 +218,10 @@ export function ManualCandidateForm({
             email: value.email.trim(),
             phone: value.phone.trim(),
             location: value.location.trim() || undefined,
+            yearsOfExperience: value.yearsOfExperience.trim()
+              ? Number(value.yearsOfExperience.trim())
+              : undefined,
+            education: value.education.trim() || undefined,
             technicalSkills: value.technicalSkills
               ? value.technicalSkills
                   .split(',')
@@ -422,6 +448,22 @@ export function ManualCandidateForm({
                   label="Ubicación"
                   Icon={MapPin}
                   gridColumnFull
+                />
+                <ManualProfileFormField
+                  Field={Field}
+                  name="yearsOfExperience"
+                  label="Años de experiencia"
+                  Icon={Briefcase}
+                  validators={v.yearsOfExperience}
+                  fieldType="number"
+                  autoComplete="off"
+                />
+                <ManualProfileFormField
+                  Field={Field}
+                  name="education"
+                  label="Formación principal"
+                  Icon={GraduationCap}
+                  placeholder="Ej. Tecnicatura en Análisis de Sistemas"
                 />
               </Box>
             </Box>
