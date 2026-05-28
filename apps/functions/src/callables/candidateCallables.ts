@@ -15,22 +15,20 @@ import {
   validateRegisterCandidatePayload,
   validateStartApplicationWithCVPayload,
 } from '../validators/candidateValidator';
-import { auth } from '../core/firebaseAdmin';
-
-type AuthContext = {
-  uid?: string;
-  token?: {
-    uid?: string;
-    user_id?: string;
-    sub?: string;
-  };
-};
+import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
 
 function sendError(
   response: Parameters<Parameters<typeof onRequest>[0]>[1],
   error: unknown,
   fallbackMessage: string,
 ): void {
+  if (error instanceof HttpAuthError) {
+    response
+      .status(401)
+      .json({ error: error.message, code: 'unauthenticated' });
+    return;
+  }
+
   if (error instanceof HttpsError) {
     const statusByCode: Partial<Record<typeof error.code, number>> = {
       'invalid-argument': 400,
@@ -92,51 +90,6 @@ function getPayload<T>(requestBody: unknown): Partial<T> {
   return requestBody as Partial<T>;
 }
 
-async function getAuthContext(
-  request: Parameters<Parameters<typeof onRequest>[0]>[0],
-): Promise<AuthContext> {
-  const authorization = request.header('authorization') ?? '';
-  const match = authorization.match(/^Bearer (.+)$/i);
-
-  if (!match) {
-    throw new HttpsError(
-      'unauthenticated',
-      'El usuario debe estar autenticado.',
-    );
-  }
-
-  const decodedToken = await auth.verifyIdToken(match[1]);
-
-  return {
-    uid: decodedToken.uid,
-    token: {
-      uid: decodedToken.uid,
-      user_id: decodedToken.user_id as string | undefined,
-      sub: decodedToken.sub,
-    },
-  };
-}
-
-function resolveCandidateId(authContext: AuthContext): string {
-  const candidateId =
-    authContext.uid ||
-    authContext.token?.uid ||
-    authContext.token?.user_id ||
-    authContext.token?.sub;
-
-  if (!candidateId) {
-    logger.error('No se pudo resolver candidateId desde authContext', {
-      auth: authContext,
-    });
-
-    throw new HttpsError(
-      'unauthenticated',
-      'No se pudo identificar al usuario autenticado.',
-    );
-  }
-  return candidateId;
-}
-
 const candidateRegistrationCVService = new CandidateRegistrationCVService();
 export const registerCandidateCV = onRequest(async (request, response) => {
   if (!assertPostMethod(request, response)) {
@@ -144,13 +97,12 @@ export const registerCandidateCV = onRequest(async (request, response) => {
   }
 
   try {
-    const authContext = await getAuthContext(request);
-    const candidateId = resolveCandidateId(authContext);
+    const { uid: authenticatedUid } = await requireAuthenticatedUser(request);
     const payload = getPayload<CandidatePostulationCVPayload>(request.body);
     validateStartApplicationWithCVPayload(payload);
 
     const result = await candidateRegistrationCVService.registerCandidateCV(
-      candidateId,
+      authenticatedUid,
       payload,
     );
 
@@ -169,13 +121,12 @@ export const registerCandidate = onRequest(async (request, response) => {
   }
 
   try {
-    const authContext = await getAuthContext(request);
-    const candidateId = resolveCandidateId(authContext);
+    const { uid: authenticatedUid } = await requireAuthenticatedUser(request);
     const payload = getPayload<CandidatePostulationPayload>(request.body);
     validateRegisterCandidatePayload(payload);
 
     const result = await candidateRegistrationService.registerCandidate(
-      candidateId,
+      authenticatedUid,
       payload,
     );
 
@@ -201,10 +152,10 @@ export const confirmCandidateProfile = onRequest(async (request, response) => {
   }
 
   try {
-    const authContext = await getAuthContext(request);
+    const { uid: authenticatedUid } = await requireAuthenticatedUser(request);
     const payload = getPayload<ConfirmCandidateProfilePayload>(request.body);
     logger.info('Iniciando confirmación de perfil de candidato', {
-      uid: authContext.uid,
+      uid: authenticatedUid,
       candidateId: payload.candidateId,
       applicationId: payload.applicationId,
     });
