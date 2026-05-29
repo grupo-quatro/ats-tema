@@ -2,6 +2,7 @@ import type {
   CandidatePostulationPayload,
   CandidatePostulationResponse,
   CandidatePostulationCVResponse,
+  GetCandidateProfileForConfirmationResponse,
 } from '@ats/shared-types';
 import type { ICandidateRepository } from '../../repositories/interfaces/candidate.repository';
 
@@ -45,6 +46,23 @@ export class PostulationService {
     } catch (error) {
       throw new PostulationServiceError(
         'No se pudo completar el registro con CV.',
+        error,
+      );
+    }
+  }
+
+  async getCandidateProfileForConfirmation(
+    candidateId: string,
+    applicationId: string,
+  ): Promise<GetCandidateProfileForConfirmationResponse> {
+    try {
+      return await this.repo.getCandidateProfileForConfirmation({
+        candidateId,
+        applicationId,
+      });
+    } catch (error) {
+      throw new PostulationServiceError(
+        'No se pudo obtener el perfil para confirmación.',
         error,
       );
     }

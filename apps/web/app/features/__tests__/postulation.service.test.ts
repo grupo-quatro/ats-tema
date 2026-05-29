@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type {
+  GetCandidateProfileForConfirmationResponse,
   CandidatePostulationPayload as RegisterCandidatePayload,
   CandidatePostulationResponse as RegisterCandidateResponse,
 } from '@ats/shared-types';
@@ -13,6 +14,7 @@ import type { ICandidateRepository } from '../../repositories/interfaces/candida
 const mockRepo: ICandidateRepository = {
   registerCandidate: vi.fn(),
   registerCandidateCV: vi.fn(),
+  getCandidateProfileForConfirmation: vi.fn(),
   uploadCv: vi.fn(),
 };
 
@@ -34,6 +36,22 @@ const manualResponse: RegisterCandidateResponse = {
 };
 
 const mockFile = new File(['content'], 'cv.pdf', { type: 'application/pdf' });
+
+const profileForConfirmationResponse: GetCandidateProfileForConfirmationResponse =
+  {
+    candidateId: 'cand-1',
+    applicationId: 'app-1',
+    cvParseStatus: 'done',
+    cvParseError: null,
+    profileStatus: 'draft',
+    profile: {
+      firstName: 'Ana',
+      lastName: 'García',
+      email: 'ana@example.com',
+      phone: '11223344',
+      technicalSkills: ['TypeScript'],
+    },
+  };
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -89,5 +107,37 @@ describe('PostulationService.registerManual', () => {
     await expect(service.registerManual(payload, mockFile)).rejects.toThrow(
       PostulationServiceError,
     );
+  });
+});
+
+describe('PostulationService.getCandidateProfileForConfirmation', () => {
+  it('consulta el perfil para confirmación con candidateId y applicationId', async () => {
+    vi.mocked(mockRepo.getCandidateProfileForConfirmation).mockResolvedValue(
+      profileForConfirmationResponse,
+    );
+
+    const result = await service.getCandidateProfileForConfirmation(
+      'cand-1',
+      'app-1',
+    );
+
+    expect(mockRepo.getCandidateProfileForConfirmation).toHaveBeenCalledWith({
+      candidateId: 'cand-1',
+      applicationId: 'app-1',
+    });
+    expect(result).toEqual(profileForConfirmationResponse);
+  });
+
+  it('lanza PostulationServiceError si falla la consulta del perfil', async () => {
+    vi.mocked(mockRepo.getCandidateProfileForConfirmation).mockRejectedValue(
+      new Error('Functions error'),
+    );
+
+    await expect(
+      service.getCandidateProfileForConfirmation('cand-1', 'app-1'),
+    ).rejects.toThrow(PostulationServiceError);
+    await expect(
+      service.getCandidateProfileForConfirmation('cand-1', 'app-1'),
+    ).rejects.toThrow('No se pudo obtener el perfil para confirmación.');
   });
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 import type { CandidatePostulationPayload } from '@ats/shared-types';
 
@@ -25,5 +25,26 @@ export function useRegisterCvFlow() {
   return useMutation({
     mutationFn: ({ jobId, file }: { jobId: string; file: File }) =>
       service.registerCvFlow(jobId, file),
+  });
+}
+
+export function useCandidateProfileForConfirmation({
+  candidateId,
+  applicationId,
+  enabled = true,
+}: {
+  candidateId?: string;
+  applicationId?: string;
+  enabled?: boolean;
+}) {
+  return useQuery({
+    queryKey: ['candidateProfileForConfirmation', candidateId, applicationId],
+    queryFn: () =>
+      service.getCandidateProfileForConfirmation(candidateId!, applicationId!),
+    enabled: enabled && Boolean(candidateId) && Boolean(applicationId),
+    refetchInterval: (query) => {
+      const status = query.state.data?.cvParseStatus;
+      return status === 'pending' || status === 'processing' ? 2000 : false;
+    },
   });
 }

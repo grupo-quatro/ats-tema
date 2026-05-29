@@ -3,6 +3,8 @@ import type {
   CandidatePostulationResponse,
   CandidatePostulationCVPayload,
   CandidatePostulationCVResponse,
+  GetCandidateProfileForConfirmationPayload,
+  GetCandidateProfileForConfirmationResponse,
 } from '@ats/shared-types';
 
 import { getFunctionUrl } from '../lib/firebase';
@@ -51,6 +53,30 @@ export async function registerCandidateCV(
   if (!res.ok) {
     const error = await res.json();
     throw new Error(error.error || 'Error al iniciar la postulación por CV');
+  }
+  return res.json();
+}
+
+export async function getCandidateProfileForConfirmation(
+  payload: GetCandidateProfileForConfirmationPayload,
+): Promise<GetCandidateProfileForConfirmationResponse> {
+  const token = await getCandidateToken();
+  const res = await fetch(
+    getFunctionUrl('getCandidateProfileForConfirmation'),
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(
+      error.error || 'Error al obtener el perfil para confirmación',
+    );
   }
   return res.json();
 }
