@@ -190,6 +190,7 @@ export function ManualCandidateForm({
     candidateId: string;
     applicationId: string;
   } | null>(null);
+  const [cvFileRequiresParsing, setCvFileRequiresParsing] = useState(false);
   const [processingDialogOpen, setProcessingDialogOpen] = useState(false);
   const appliedProfileCandidateIdRef = useRef<string | null>(null);
   const [experiences, setExperiences] = useState<ParsedExperience[]>([
@@ -201,14 +202,21 @@ export function ManualCandidateForm({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
-    setFileError(null);
-    appliedProfileCandidateIdRef.current = null;
-    setCvFlow(null);
-    if (file && !file.name.toLowerCase().endsWith('.pdf')) {
-      setFileError('Solo se aceptan archivos PDF.');
-      setCvFile(null);
+
+    if (!file) {
       return;
     }
+
+    setFileError(null);
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      setFileError('Solo se aceptan archivos PDF.');
+      return;
+    }
+
+    const hadParsedCvFlow = Boolean(cvFlow);
+    appliedProfileCandidateIdRef.current = null;
+    setCvFlow(null);
+    setCvFileRequiresParsing(hadParsedCvFlow);
     setCvFile(file);
   };
 
@@ -367,6 +375,7 @@ export function ManualCandidateForm({
         candidateId: result.candidateId,
         applicationId: result.applicationId,
       });
+      setCvFileRequiresParsing(false);
     } catch {
       setProcessingDialogOpen(false);
     }
@@ -451,6 +460,16 @@ export function ManualCandidateForm({
               e.preventDefault();
               if (!cvFile) {
                 setFileError('Se debe adjuntar un currículum en PDF.');
+                cvSectionRef.current?.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'center',
+                });
+                return;
+              }
+              if (cvFileRequiresParsing) {
+                setFileError(
+                  'Procesá el CV con "Autocompletar desde CV" antes de finalizar.',
+                );
                 cvSectionRef.current?.scrollIntoView({
                   behavior: 'smooth',
                   block: 'center',
