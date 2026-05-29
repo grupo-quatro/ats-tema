@@ -2,7 +2,10 @@
 
 import { useMutation, useQuery } from '@tanstack/react-query';
 
-import type { CandidatePostulationPayload } from '@ats/shared-types';
+import type {
+  CandidatePostulationPayload,
+  ConfirmCandidateProfilePayload,
+} from '@ats/shared-types';
 
 import { CandidateFirebaseRepository } from '../../../repositories/firebase/candidate.firebase.repository';
 import { PostulationService } from '../postulation.service';
@@ -46,5 +49,12 @@ export function useCandidateProfileForConfirmation({
       const status = query.state.data?.cvParseStatus;
       return status === 'pending' || status === 'processing' ? 2000 : false;
     },
+  });
+}
+
+export function useConfirmCandidateProfile() {
+  return useMutation({
+    mutationFn: (payload: ConfirmCandidateProfilePayload) =>
+      service.confirmCandidateProfile(payload),
   });
 }

@@ -15,6 +15,7 @@ const mockRepo: ICandidateRepository = {
   registerCandidate: vi.fn(),
   registerCandidateCV: vi.fn(),
   getCandidateProfileForConfirmation: vi.fn(),
+  confirmCandidateProfile: vi.fn(),
   uploadCv: vi.fn(),
 };
 
@@ -139,5 +140,50 @@ describe('PostulationService.getCandidateProfileForConfirmation', () => {
     await expect(
       service.getCandidateProfileForConfirmation('cand-1', 'app-1'),
     ).rejects.toThrow('No se pudo obtener el perfil para confirmación.');
+  });
+});
+
+describe('PostulationService.confirmCandidateProfile', () => {
+  const confirmPayload = {
+    candidateId: 'cand-1',
+    applicationId: 'app-1',
+    profile: {
+      jobId: 'job-123',
+      firstName: 'Ana',
+      lastName: 'García',
+      email: 'ana@example.com',
+      phone: '11223344',
+    },
+  };
+
+  it('confirma el perfil del candidato', async () => {
+    vi.mocked(mockRepo.confirmCandidateProfile).mockResolvedValue({
+      candidateId: 'cand-1',
+      applicationId: 'app-1',
+      profileStatus: 'completed',
+      applicationStatus: 'active',
+      applicationStage: 'applied',
+      cvParseStatus: 'done',
+    });
+
+    const result = await service.confirmCandidateProfile(confirmPayload);
+
+    expect(mockRepo.confirmCandidateProfile).toHaveBeenCalledWith(
+      confirmPayload,
+    );
+    expect(result.profileStatus).toBe('completed');
+  });
+
+  it('lanza PostulationServiceError si falla la confirmación', async () => {
+    vi.mocked(mockRepo.confirmCandidateProfile).mockRejectedValue(
+      new Error('Functions error'),
+    );
+
+    await expect(
+      service.confirmCandidateProfile(confirmPayload),
+    ).rejects.toThrow(PostulationServiceError);
+    await expect(
+      service.confirmCandidateProfile(confirmPayload),
+    ).rejects.toThrow('No se pudo confirmar el perfil del candidato.');
   });
 });

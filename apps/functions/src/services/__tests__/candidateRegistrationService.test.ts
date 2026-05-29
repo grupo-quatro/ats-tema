@@ -464,3 +464,62 @@ describe('CandidateRegistrationService.getCandidateProfileForConfirmation', () =
     ).rejects.toThrow(CandidateProfileForConfirmationApplicationMismatchError);
   });
 });
+
+describe('CandidateRegistrationService.confirmCandidateProfile', () => {
+  let service: CandidateRegistrationService;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCandidatesRepo.findById.mockResolvedValue({
+      id: 'cand-1',
+      firstName: 'Ana',
+      lastName: 'Demo',
+      fullName: 'Ana Demo',
+      email: 'ana@example.com',
+      profileStatus: 'draft',
+      registrationType: 'specific',
+      registrationSource: 'cv_upload',
+      cvParseStatus: 'done',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    mockCandidatesRepo.update.mockResolvedValue(undefined);
+    mockAppRepo.update.mockResolvedValue(undefined);
+
+    service = new CandidateRegistrationService(
+      mockCandidatesRepo as any,
+      mockAppRegistrationService as any,
+      mockAppRepo as any,
+    );
+  });
+
+  it('actualiza fullName con los datos confirmados por el candidato', async () => {
+    await service.confirmCandidateProfile({
+      candidateId: 'cand-1',
+      applicationId: 'app-1',
+      profile: {
+        firstName: 'Ana',
+        lastName: 'Loria',
+        email: 'ana@example.com',
+        phone: '11223344',
+      },
+    });
+
+    expect(mockCandidatesRepo.update).toHaveBeenCalledWith(
+      'cand-1',
+      expect.objectContaining({
+        firstName: 'Ana',
+        lastName: 'Loria',
+        fullName: 'Ana Loria',
+        profileStatus: 'completed',
+      }),
+    );
+    expect(mockAppRepo.update).toHaveBeenCalledWith(
+      'app-1',
+      expect.objectContaining({
+        candidateName: 'Ana Loria',
+        candidateEmail: 'ana@example.com',
+      }),
+    );
+  });
+});

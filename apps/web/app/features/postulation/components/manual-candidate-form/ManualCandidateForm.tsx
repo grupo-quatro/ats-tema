@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 import {
   alpha,
@@ -10,6 +10,10 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   IconButton,
   TextField,
@@ -35,7 +39,12 @@ import type { ParsedEducation, ParsedExperience } from '@ats/shared-types';
 
 import type { MinimalFormFieldComponent } from './ManualProfileFormField';
 import { ManualProfileFormField } from './ManualProfileFormField';
-import { useRegisterManual } from '../../hooks/usePostulation';
+import {
+  useCandidateProfileForConfirmation,
+  useConfirmCandidateProfile,
+  useRegisterCvFlow,
+  useRegisterManual,
+} from '../../hooks/usePostulation';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -111,6 +120,18 @@ function validateYearsOfExperience({
   return undefined;
 }
 
+function scrollToFirstInvalidField() {
+  window.setTimeout(() => {
+    const invalidField = document.querySelector<HTMLElement>(
+      '[aria-invalid="true"]',
+    );
+    if (!invalidField) return;
+
+    invalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    invalidField.focus({ preventScroll: true });
+  }, 0);
+}
+
 const v = {
   firstName: requiredTrim('El nombre es requerido'),
   lastName: requiredTrim('Los apellidos son requeridos'),
@@ -158,10 +179,18 @@ export function ManualCandidateForm({
 }: ManualCandidateFormProps) {
   const router = useRouter();
   const backHref = `/jobs/${jobId}`;
-  const { mutateAsync, isPending, isError, error } = useRegisterManual();
+  const manualRegistration = useRegisterManual();
+  const cvRegistration = useRegisterCvFlow();
+  const profileConfirmation = useConfirmCandidateProfile();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [cvFile, setCvFile] = useState<File | null>(preloadedFile ?? null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [cvFlow, setCvFlow] = useState<{
+    candidateId: string;
+    applicationId: string;
+  } | null>(null);
+  const [processingDialogOpen, setProcessingDialogOpen] = useState(false);
+  const appliedProfileCandidateIdRef = useRef<string | null>(null);
   const [experiences, setExperiences] = useState<ParsedExperience[]>([
     emptyExperience(),
   ]);
@@ -172,6 +201,8 @@ export function ManualCandidateForm({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     setFileError(null);
+    appliedProfileCandidateIdRef.current = null;
+    setCvFlow(null);
     if (file && !file.name.toLowerCase().endsWith('.pdf')) {
       setFileError('Solo se aceptan archivos PDF.');
       return;
@@ -210,42 +241,134 @@ export function ManualCandidateForm({
           (e) => e.degree?.trim() || e.institution?.trim(),
         );
 
-        const result = await mutateAsync({
-          payload: {
-            jobId,
-            firstName: value.firstName.trim(),
-            lastName: value.lastName.trim(),
-            email: value.email.trim(),
-            phone: value.phone.trim(),
-            location: value.location.trim() || undefined,
-            yearsOfExperience: value.yearsOfExperience.trim()
-              ? Number(value.yearsOfExperience.trim())
-              : undefined,
-            education: value.education.trim() || undefined,
-            technicalSkills: value.technicalSkills
-              ? value.technicalSkills
-                  .split(',')
-                  .map((s) => s.trim())
-                  .filter(Boolean)
-              : undefined,
-            professionalSummary: value.professionalSummary.trim() || undefined,
-            parsedExperience: parsedExperience.length
-              ? parsedExperience
-              : undefined,
-            parsedEducation: parsedEducation.length
-              ? parsedEducation
-              : undefined,
-          },
-          file: cvFile ?? undefined,
-        });
+        const profilePayload = {
+          firstName: value.firstName.trim(),
+          lastName: value.lastName.trim(),
+          email: value.email.trim(),
+          phone: value.phone.trim(),
+          location: value.location.trim() || undefined,
+          yearsOfExperience: value.yearsOfExperience.trim()
+            ? Number(value.yearsOfExperience.trim())
+            : undefined,
+          education: value.education.trim() || undefined,
+          technicalSkills: value.technicalSkills
+            ? value.technicalSkills
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : undefined,
+          professionalSummary: value.professionalSummary.trim() || undefined,
+          parsedExperience: parsedExperience.length
+            ? parsedExperience
+            : undefined,
+          parsedEducation: parsedEducation.length ? parsedEducation : undefined,
+        };
+
+        const result = cvFlow
+          ? await profileConfirmation.mutateAsync({
+              candidateId: cvFlow.candidateId,
+              applicationId: cvFlow.applicationId,
+              profile: profilePayload,
+            })
+          : await manualRegistration.mutateAsync({
+              payload: {
+                jobId,
+                ...profilePayload,
+              },
+              file: cvFile ?? undefined,
+            });
         router.push(
           `/postulation/${jobId}/success?status=${result.cvParseStatus}`,
         );
       } catch {
-        // el error queda en isError/error del hook
+        // el error queda en los estados de mutation/query
       }
     },
   });
+
+  const profileQuery = useCandidateProfileForConfirmation({
+    candidateId: cvFlow?.candidateId,
+    applicationId: cvFlow?.applicationId,
+    enabled: Boolean(cvFlow),
+  });
+
+  const cvParseStatus = profileQuery.data?.cvParseStatus;
+  const isParsingCv =
+    cvParseStatus === 'pending' || cvParseStatus === 'processing';
+  const isSubmittingRegistration =
+    manualRegistration.isPending || profileConfirmation.isPending;
+  const isCvActionPending = cvRegistration.isPending || isParsingCv;
+  const submitError =
+    manualRegistration.error ??
+    profileConfirmation.error ??
+    cvRegistration.error ??
+    profileQuery.error;
+
+  useEffect(() => {
+    const data = profileQuery.data;
+    if (
+      !data ||
+      data.cvParseStatus !== 'done' ||
+      appliedProfileCandidateIdRef.current === data.candidateId
+    ) {
+      return;
+    }
+
+    const { profile } = data;
+    form.setFieldValue('firstName', profile.firstName ?? '');
+    form.setFieldValue('lastName', profile.lastName ?? '');
+    form.setFieldValue('email', profile.email ?? '');
+    form.setFieldValue('phone', profile.phone ?? '');
+    form.setFieldValue('location', profile.location ?? '');
+    form.setFieldValue(
+      'yearsOfExperience',
+      profile.yearsOfExperience === undefined
+        ? ''
+        : String(profile.yearsOfExperience),
+    );
+    form.setFieldValue('education', profile.education ?? '');
+    form.setFieldValue(
+      'technicalSkills',
+      profile.technicalSkills?.join(', ') ?? '',
+    );
+    form.setFieldValue(
+      'professionalSummary',
+      profile.professionalSummary ?? '',
+    );
+    setExperiences(
+      profile.parsedExperience?.length
+        ? profile.parsedExperience
+        : [emptyExperience()],
+    );
+    setEducations(
+      profile.parsedEducation?.length
+        ? profile.parsedEducation
+        : [emptyEducation()],
+    );
+    appliedProfileCandidateIdRef.current = data.candidateId;
+    setProcessingDialogOpen(false);
+  }, [form, profileQuery.data]);
+
+  const handleAutocompleteFromCv = async () => {
+    if (!cvFile) {
+      setFileError('Adjuntá un PDF para autocompletar el perfil.');
+      return;
+    }
+
+    setFileError(null);
+    appliedProfileCandidateIdRef.current = null;
+    setProcessingDialogOpen(true);
+
+    try {
+      const result = await cvRegistration.mutateAsync({ jobId, file: cvFile });
+      setCvFlow({
+        candidateId: result.candidateId,
+        applicationId: result.applicationId,
+      });
+    } catch {
+      setProcessingDialogOpen(false);
+    }
+  };
 
   const Field: MinimalFormFieldComponent =
     form.Field as MinimalFormFieldComponent;
@@ -325,6 +448,7 @@ export function ManualCandidateForm({
             onSubmit={(e) => {
               e.preventDefault();
               void form.handleSubmit();
+              scrollToFirstInvalidField();
             }}
             noValidate
           >
@@ -380,15 +504,31 @@ export function ManualCandidateForm({
               )}
               {cvFile && (
                 <Button
+                  type="button"
                   variant="outlined"
                   size="small"
-                  startIcon={<Sparkles size={16} />}
-                  disabled
+                  onClick={handleAutocompleteFromCv}
+                  startIcon={
+                    isCvActionPending ? (
+                      <CircularProgress size={16} color="inherit" />
+                    ) : (
+                      <Sparkles size={16} />
+                    )
+                  }
+                  disabled={isCvActionPending || isSubmittingRegistration}
                   sx={{ mt: 1.5, textTransform: 'none', borderRadius: '10px' }}
                 >
-                  Autocompletar desde CV
+                  {isCvActionPending
+                    ? 'Procesando CV...'
+                    : 'Autocompletar desde CV'}
                 </Button>
               )}
+              {cvFlow &&
+                appliedProfileCandidateIdRef.current === cvFlow.candidateId && (
+                  <Alert severity="success" sx={{ mt: 1.5 }}>
+                    Datos extraídos. Revisá el perfil antes de finalizar.
+                  </Alert>
+                )}
             </Box>
 
             <Divider sx={{ mb: 4 }} />
@@ -690,10 +830,10 @@ export function ManualCandidateForm({
               </Box>
             </Box>
 
-            {isError && (
+            {submitError && (
               <Alert severity="error" sx={{ mb: 2 }}>
-                {error instanceof Error
-                  ? error.message
+                {submitError instanceof Error
+                  ? submitError.message
                   : 'Ocurrió un error al registrar. Intentá de nuevo.'}
               </Alert>
             )}
@@ -713,7 +853,7 @@ export function ManualCandidateForm({
                 component={Link}
                 href={backHref}
                 sx={{ px: 3 }}
-                disabled={isPending}
+                disabled={isSubmittingRegistration || isCvActionPending}
               >
                 Cancelar
               </Button>
@@ -723,14 +863,20 @@ export function ManualCandidateForm({
                   <Button
                     type="submit"
                     variant="contained"
-                    disabled={isSubmitting || isPending}
+                    disabled={
+                      isSubmitting ||
+                      isSubmittingRegistration ||
+                      isCvActionPending
+                    }
                     startIcon={
-                      isPending ? (
+                      isSubmittingRegistration ? (
                         <CircularProgress size={16} color="inherit" />
                       ) : null
                     }
                   >
-                    {isPending ? 'Registrando...' : 'Finalizar registro'}
+                    {isSubmittingRegistration
+                      ? 'Registrando...'
+                      : 'Finalizar registro'}
                   </Button>
                 )}
               </form.Subscribe>
@@ -738,6 +884,56 @@ export function ManualCandidateForm({
           </form>
         </CardContent>
       </Card>
+
+      <Dialog
+        open={processingDialogOpen}
+        onClose={
+          cvParseStatus === 'failed'
+            ? () => setProcessingDialogOpen(false)
+            : undefined
+        }
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>
+          {cvParseStatus === 'failed'
+            ? 'No pudimos procesar tu CV'
+            : 'Estamos analizando tu CV'}
+        </DialogTitle>
+        <DialogContent>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              py: 1,
+            }}
+          >
+            {cvParseStatus === 'failed' ? null : <CircularProgress size={24} />}
+            <Box>
+              <Typography variant="body2">
+                {cvRegistration.isPending
+                  ? 'Subiendo archivo...'
+                  : cvParseStatus === 'failed'
+                    ? 'Podés completar tus datos manualmente para continuar.'
+                    : 'Extrayendo la información principal del perfil.'}
+              </Typography>
+              {profileQuery.data?.cvParseError && (
+                <Typography variant="caption" color="error">
+                  {profileQuery.data.cvParseError}
+                </Typography>
+              )}
+            </Box>
+          </Box>
+        </DialogContent>
+        {cvParseStatus === 'failed' && (
+          <DialogActions>
+            <Button onClick={() => setProcessingDialogOpen(false)}>
+              Completar manualmente
+            </Button>
+          </DialogActions>
+        )}
+      </Dialog>
     </Box>
   );
 }

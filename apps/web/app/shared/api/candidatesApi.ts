@@ -3,6 +3,8 @@ import type {
   CandidatePostulationResponse,
   CandidatePostulationCVPayload,
   CandidatePostulationCVResponse,
+  ConfirmCandidateProfilePayload,
+  ConfirmCandidateProfileResponse,
   GetCandidateProfileForConfirmationPayload,
   GetCandidateProfileForConfirmationResponse,
 } from '@ats/shared-types';
@@ -77,6 +79,25 @@ export async function getCandidateProfileForConfirmation(
     throw new Error(
       error.error || 'Error al obtener el perfil para confirmación',
     );
+  }
+  return res.json();
+}
+
+export async function confirmCandidateProfile(
+  payload: ConfirmCandidateProfilePayload,
+): Promise<ConfirmCandidateProfileResponse> {
+  const token = await getCandidateToken();
+  const res = await fetch(getFunctionUrl('confirmCandidateProfile'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Error al confirmar el perfil');
   }
   return res.json();
 }

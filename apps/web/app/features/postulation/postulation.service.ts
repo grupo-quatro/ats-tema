@@ -2,6 +2,8 @@ import type {
   CandidatePostulationPayload,
   CandidatePostulationResponse,
   CandidatePostulationCVResponse,
+  ConfirmCandidateProfilePayload,
+  ConfirmCandidateProfileResponse,
   GetCandidateProfileForConfirmationResponse,
 } from '@ats/shared-types';
 import type { ICandidateRepository } from '../../repositories/interfaces/candidate.repository';
@@ -63,6 +65,19 @@ export class PostulationService {
     } catch (error) {
       throw new PostulationServiceError(
         'No se pudo obtener el perfil para confirmación.',
+        error,
+      );
+    }
+  }
+
+  async confirmCandidateProfile(
+    payload: ConfirmCandidateProfilePayload,
+  ): Promise<ConfirmCandidateProfileResponse> {
+    try {
+      return await this.repo.confirmCandidateProfile(payload);
+    } catch (error) {
+      throw new PostulationServiceError(
+        'No se pudo confirmar el perfil del candidato.',
         error,
       );
     }

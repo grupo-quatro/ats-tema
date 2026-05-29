@@ -97,11 +97,14 @@ export class CandidatesRepository {
       const candidateRef = this.collection.doc(candidateId);
       const existingSnapshot = await candidateRef.get();
       const now = FieldValue.serverTimestamp();
+      const cleanCandidateData = JSON.parse(
+        JSON.stringify(candidateData),
+      ) as CreateCandidateDTO;
 
       if (!existingSnapshot.exists) {
         await candidateRef.set({
           id: candidateId,
-          ...candidateData,
+          ...cleanCandidateData,
           createdAt: now,
           updatedAt: now,
         });
@@ -111,7 +114,7 @@ export class CandidatesRepository {
 
       await candidateRef.set(
         {
-          ...candidateData,
+          ...cleanCandidateData,
           updatedAt: now,
         },
         { merge: true },

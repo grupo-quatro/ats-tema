@@ -286,6 +286,7 @@ export class CandidateRegistrationService {
     payload: ConfirmCandidateProfilePayload,
   ): Promise<ConfirmCandidateProfileResponse> {
     const { candidateId, applicationId, profile } = payload;
+    const fullName = `${profile.firstName} ${profile.lastName}`.trim();
 
     const currentCandidate =
       await this.candidatesRepository.findById(candidateId);
@@ -298,6 +299,7 @@ export class CandidateRegistrationService {
     await this.candidatesRepository.update(candidateId, {
       firstName: profile.firstName,
       lastName: profile.lastName,
+      fullName,
       email: profile.email,
       phone: profile.phone,
       location: profile.location,
@@ -317,7 +319,7 @@ export class CandidateRegistrationService {
       await this.applicationRepository.update(applicationId, {
         stage: 'applied',
         status: 'active',
-        candidateName: `${profile.firstName} ${profile.lastName}`.trim(),
+        candidateName: fullName,
         candidateEmail: profile.email,
       });
     }
