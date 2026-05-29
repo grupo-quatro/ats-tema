@@ -183,6 +183,7 @@ export function ManualCandidateForm({
   const cvRegistration = useRegisterCvFlow();
   const profileConfirmation = useConfirmCandidateProfile();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cvSectionRef = useRef<HTMLDivElement>(null);
   const [cvFile, setCvFile] = useState<File | null>(preloadedFile ?? null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [cvFlow, setCvFlow] = useState<{
@@ -205,6 +206,7 @@ export function ManualCandidateForm({
     setCvFlow(null);
     if (file && !file.name.toLowerCase().endsWith('.pdf')) {
       setFileError('Solo se aceptan archivos PDF.');
+      setCvFile(null);
       return;
     }
     setCvFile(file);
@@ -447,13 +449,22 @@ export function ManualCandidateForm({
           <form
             onSubmit={(e) => {
               e.preventDefault();
+              if (!cvFile) {
+                setFileError('Se debe adjuntar un currículum en PDF.');
+                cvSectionRef.current?.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'center',
+                });
+                return;
+              }
+              setFileError(null);
               void form.handleSubmit();
               scrollToFirstInvalidField();
             }}
             noValidate
           >
             {/* CV */}
-            <Box sx={{ mb: 4 }}>
+            <Box ref={cvSectionRef} sx={{ mb: 4 }}>
               <SectionHeader icon={<FileText size={16} />} label="CV" />
               <Box
                 sx={{

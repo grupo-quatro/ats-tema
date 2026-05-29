@@ -174,10 +174,8 @@ describe('PostulationService.confirmCandidateProfile', () => {
     expect(result.profileStatus).toBe('completed');
   });
 
-  it('lanza PostulationServiceError si falla la confirmación', async () => {
-    vi.mocked(mockRepo.confirmCandidateProfile).mockRejectedValue(
-      new Error('Functions error'),
-    );
+  it('usa mensaje fallback si falla la confirmación sin mensaje útil', async () => {
+    vi.mocked(mockRepo.confirmCandidateProfile).mockRejectedValue({});
 
     await expect(
       service.confirmCandidateProfile(confirmPayload),
@@ -185,5 +183,17 @@ describe('PostulationService.confirmCandidateProfile', () => {
     await expect(
       service.confirmCandidateProfile(confirmPayload),
     ).rejects.toThrow('No se pudo confirmar el perfil del candidato.');
+  });
+
+  it('preserva el mensaje del backend cuando falla la confirmación', async () => {
+    vi.mocked(mockRepo.confirmCandidateProfile).mockRejectedValue(
+      new Error('Ya existe una postulación activa con el correo ingresado.'),
+    );
+
+    await expect(
+      service.confirmCandidateProfile(confirmPayload),
+    ).rejects.toThrow(
+      'Ya existe una postulación activa con el correo ingresado.',
+    );
   });
 });

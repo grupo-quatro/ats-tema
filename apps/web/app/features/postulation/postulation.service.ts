@@ -18,6 +18,14 @@ export class PostulationServiceError extends Error {
   }
 }
 
+function resolveErrorMessage(error: unknown, fallbackMessage: string): string {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  return fallbackMessage;
+}
+
 export class PostulationService {
   constructor(private readonly repo: ICandidateRepository) {}
 
@@ -77,7 +85,10 @@ export class PostulationService {
       return await this.repo.confirmCandidateProfile(payload);
     } catch (error) {
       throw new PostulationServiceError(
-        'No se pudo confirmar el perfil del candidato.',
+        resolveErrorMessage(
+          error,
+          'No se pudo confirmar el perfil del candidato.',
+        ),
         error,
       );
     }

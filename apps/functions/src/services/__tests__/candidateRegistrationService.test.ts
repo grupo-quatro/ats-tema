@@ -484,6 +484,17 @@ describe('CandidateRegistrationService.confirmCandidateProfile', () => {
       updatedAt: new Date(),
     });
     mockCandidatesRepo.update.mockResolvedValue(undefined);
+    mockCandidatesRepo.findManyByEmail.mockResolvedValue([]);
+    mockAppRepo.findById.mockResolvedValue({
+      id: 'app-1',
+      candidateId: 'cand-1',
+      jobId: 'job-1',
+      stage: 'profile_pending',
+      status: 'draft',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      stageUpdatedAt: new Date(),
+    });
     mockAppRepo.update.mockResolvedValue(undefined);
 
     service = new CandidateRegistrationService(
@@ -520,6 +531,68 @@ describe('CandidateRegistrationService.confirmCandidateProfile', () => {
         candidateName: 'Ana Loria',
         candidateEmail: 'ana@example.com',
       }),
+    );
+  });
+
+  it('bloquea la confirmación si el email ya tiene postulación para el mismo job', async () => {
+    mockCandidatesRepo.findManyByEmail.mockResolvedValue([
+      {
+        id: 'existing-cand',
+        email: 'ana@example.com',
+      },
+    ]);
+    mockAppRepo.findByCandidateAndJob.mockResolvedValue({
+      id: 'existing-cand_job-1',
+      candidateId: 'existing-cand',
+      jobId: 'job-1',
+    });
+
+    await expect(
+      service.confirmCandidateProfile({
+        candidateId: 'cand-1',
+        applicationId: 'app-1',
+        profile: {
+          firstName: 'Ana',
+          lastName: 'Loria',
+          email: 'ana@example.com',
+          phone: '11223344',
+        },
+      }),
+    ).rejects.toThrow(CandidateRegistrationConflictError);
+
+    expect(mockCandidatesRepo.update).not.toHaveBeenCalled();
+    expect(mockAppRepo.update).not.toHaveBeenCalled();
+  });
+
+  it('permite confirmar si el mismo email existe pero para otro job', async () => {
+    mockCandidatesRepo.findManyByEmail.mockResolvedValue([
+      {
+        id: 'existing-cand',
+        email: 'ana@example.com',
+      },
+    ]);
+    mockAppRepo.findByCandidateAndJob.mockResolvedValue(null);
+
+    await expect(
+      service.confirmCandidateProfile({
+        candidateId: 'cand-1',
+        applicationId: 'app-1',
+        profile: {
+          firstName: 'Ana',
+          lastName: 'Loria',
+          email: 'ana@example.com',
+          phone: '11223344',
+        },
+      }),
+    ).resolves.toMatchObject({
+      candidateId: 'cand-1',
+      applicationId: 'app-1',
+      profileStatus: 'completed',
+    });
+
+    expect(mockAppRepo.findByCandidateAndJob).toHaveBeenCalledWith(
+      'existing-cand',
+      'job-1',
     );
   });
 });

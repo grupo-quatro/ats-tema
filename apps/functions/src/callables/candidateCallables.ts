@@ -240,10 +240,41 @@ export const confirmCandidateProfile = onRequest(async (request, response) => {
       payload: request.body,
     });
 
+    if (error instanceof CandidateRegistrationConflictError) {
+      sendError(
+        response,
+        new HttpsError('already-exists', error.message),
+        'Ocurrió un error interno en el servidor al procesar la confirmación.',
+      );
+      return;
+    }
+
     if (error.message?.includes('CANDIDATE_NOT_FOUND')) {
       sendError(
         response,
         new HttpsError('not-found', error.message),
+        'Ocurrió un error interno en el servidor al procesar la confirmación.',
+      );
+      return;
+    }
+
+    if (
+      error instanceof CandidateProfileForConfirmationApplicationNotFoundError
+    ) {
+      sendError(
+        response,
+        new HttpsError('not-found', error.message),
+        'Ocurrió un error interno en el servidor al procesar la confirmación.',
+      );
+      return;
+    }
+
+    if (
+      error instanceof CandidateProfileForConfirmationApplicationMismatchError
+    ) {
+      sendError(
+        response,
+        new HttpsError('permission-denied', error.message),
         'Ocurrió un error interno en el servidor al procesar la confirmación.',
       );
       return;

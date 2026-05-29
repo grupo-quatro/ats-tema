@@ -153,7 +153,7 @@ export class CandidateRegistrationService {
 
         if (existingApplication) {
           throw new CandidateRegistrationConflictError(
-            'Ya existe una postulación para ese email y puesto.',
+            'Ya existe una postulación activa con el correo ingresado.',
           );
         }
       }
@@ -294,6 +294,45 @@ export class CandidateRegistrationService {
       throw new Error(
         `CANDIDATE_NOT_FOUND: El candidato con ID ${candidateId} no existe.`,
       );
+    }
+
+    const currentApplication = applicationId
+      ? await this.applicationRepository.findById(applicationId)
+      : null;
+
+    if (applicationId && !currentApplication) {
+      throw new CandidateProfileForConfirmationApplicationNotFoundError(
+        `La postulación con ID ${applicationId} no existe.`,
+      );
+    }
+
+    if (currentApplication && currentApplication.candidateId !== candidateId) {
+      throw new CandidateProfileForConfirmationApplicationMismatchError(
+        'La postulación no corresponde al candidato informado.',
+      );
+    }
+
+    if (currentApplication) {
+      const existingCandidates =
+        await this.candidatesRepository.findManyByEmail(profile.email.trim());
+
+      for (const existingCandidate of existingCandidates) {
+        if (existingCandidate.id === candidateId) {
+          continue;
+        }
+
+        const existingApplication =
+          await this.applicationRepository.findByCandidateAndJob(
+            existingCandidate.id,
+            currentApplication.jobId,
+          );
+
+        if (existingApplication) {
+          throw new CandidateRegistrationConflictError(
+            'Ya existe una postulación activa con el correo ingresado.',
+          );
+        }
+      }
     }
 
     await this.candidatesRepository.update(candidateId, {
