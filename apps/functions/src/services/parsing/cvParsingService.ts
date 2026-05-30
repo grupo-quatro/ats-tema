@@ -27,7 +27,9 @@ Reglas estrictas:
 - Usa comillas dobles para todos los nombres de propiedades y strings.
 - No dejes comas colgantes.
 - Devuelve un objeto plano con campos de Candidate, no reconstruyas todo el CV.
-- No devuelvas experiencia laboral detallada, cursos, idiomas ni soft skills.
+- Devuelve experiencia laboral solo en parsedExperience, como lista resumida de company, role, startDate y endDate.
+- Devuelve educacion solo en parsedEducation, como lista resumida de institution, degree, startDate y endDate.
+- No devuelvas cursos, idiomas ni soft skills.
 - Devuelve nombres canonicos de skills, por ejemplo "React", "Node.js" y "PostgreSQL".
 - technicalSkills debe ser una lista corta de skills tecnicas relevantes.
 - Si un campo no aparece en el CV, omitelo. No inventes datos.
@@ -39,13 +41,42 @@ const MOCK_PARSED_PROFILE: ParsedCandidateProfileData = {
   firstName: 'Sofia',
   lastName: 'Demo',
   fullName: 'Sofia Demo',
-  email: 'sofia.demo@example.com',
+  email: 'candidata.demo@example.com',
   phone: '+54 11 5555-1234',
   location: 'Buenos Aires, Argentina',
   professionalSummary:
-    'Desarrolladora full stack con experiencia en React, Node.js y Firebase.',
-  technicalSkills: ['TypeScript', 'React', 'Next.js', 'Node.js', 'Firebase'],
-  education: 'Analista en Sistemas, ORT Argentina',
+    'Desarrolladora de software con experiencia en aplicaciones web, APIs y automatizacion de procesos.',
+  technicalSkills: [
+    'TypeScript',
+    'React',
+    'Node.js',
+    'Firebase',
+    'PostgreSQL',
+    'Git',
+  ],
+  education: 'Tecnicatura Superior en Analisis de Sistemas, ORT Argentina',
+  parsedExperience: [
+    {
+      company: 'Acme Software',
+      role: 'Full Stack Developer',
+      startDate: 'Mar 2024',
+      endDate: 'Presente',
+    },
+    {
+      company: 'Nexo Digital',
+      role: 'Frontend Developer',
+      startDate: 'Ene 2022',
+      endDate: 'Feb 2024',
+    },
+  ],
+  parsedEducation: [
+    {
+      institution: 'ORT Argentina',
+      degree: 'Tecnicatura Superior en Analisis de Sistemas',
+      startDate: '2023',
+      endDate: '2026',
+    },
+  ],
   parserVersion: PARSER_VERSION,
 };
 
@@ -155,15 +186,34 @@ export class CvParsingService {
       );
     }
 
+    const fallbackProfile = this.extractFallbackProfile(extractedText);
+    const normalizedName = this.normalizeNameFields(parsed, fallbackProfile);
     const technicalSkills =
       parsed.technicalSkills ?? parsed.hardSkills ?? parsed.skills ?? [];
-    const inferredFullName = [parsed.firstName, parsed.lastName]
+    const parsedExperience = parsed.parsedExperience?.length
+      ? parsed.parsedExperience
+      : fallbackProfile.parsedExperience;
+    const parsedEducation = parsed.parsedEducation?.length
+      ? parsed.parsedEducation
+      : fallbackProfile.parsedEducation;
+    const inferredFullName = [normalizedName.firstName, normalizedName.lastName]
       .filter(Boolean)
       .join(' ');
 
     return {
       ...parsed,
-      fullName: parsed.fullName ?? (inferredFullName || undefined),
+      ...normalizedName,
+      fullName:
+        parsed.fullName ??
+        fallbackProfile.fullName ??
+        inferredFullName ??
+        undefined,
+      education:
+        parsed.education ??
+        this.inferEducation({ ...parsed, parsedEducation }) ??
+        fallbackProfile.education,
+      parsedExperience,
+      parsedEducation,
       technicalSkills,
       skills: parsed.skills ?? technicalSkills,
       parserVersion: PARSER_VERSION,
@@ -317,11 +367,223 @@ export class CvParsingService {
   }
 
   private normalizeExtractedText(text: string): string {
-    return text.replace(/\s+/g, ' ').trim();
+    return text
+      .split(/\r?\n/)
+      .map((line) => line.replace(/[ \t]+/g, ' ').trim())
+      .filter(Boolean)
+      .join('\n')
+      .trim();
   }
 
   private truncateForPrompt(text: string): string {
     return text.slice(0, MAX_TEXT_INPUT_CHARS);
+  }
+
+  private normalizeNameFields(
+    parsed: ParsedCandidateProfileData,
+    fallbackProfile: Partial<ParsedCandidateProfileData> = {},
+  ): Pick<ParsedCandidateProfileData, 'firstName' | 'lastName'> {
+    const nameParts = parsed.fullName?.trim().split(/\s+/) ?? [];
+    const inferredFirstName =
+      parsed.firstName ?? (nameParts.length > 1 ? nameParts[0] : undefined);
+    const inferredLastName =
+      parsed.lastName ??
+      (nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined);
+
+    if (inferredFirstName || inferredLastName) {
+      return {
+        firstName: inferredFirstName ?? fallbackProfile.firstName,
+        lastName: inferredLastName ?? fallbackProfile.lastName,
+      };
+    }
+
+    return {
+      firstName: fallbackProfile.firstName,
+      lastName: fallbackProfile.lastName,
+    };
+  }
+
+  private inferEducation(
+    parsed: ParsedCandidateProfileData,
+  ): string | undefined {
+    const primaryEducation = parsed.parsedEducation?.[0];
+    if (!primaryEducation) {
+      return undefined;
+    }
+
+    return [primaryEducation.degree, primaryEducation.institution]
+      .filter(Boolean)
+      .join(', ');
+  }
+
+  private extractFallbackProfile(
+    extractedText: string,
+  ): Partial<ParsedCandidateProfileData> {
+    const lines = extractedText
+      .split(/\n+/)
+      .map((line) => line.trim())
+      .filter((line) => line && !/^-- \d+ of \d+ --$/i.test(line));
+
+    return {
+      ...this.extractFallbackName(lines),
+      ...this.extractFallbackEducation(lines),
+      parsedExperience: this.extractFallbackExperience(lines),
+    };
+  }
+
+  private extractFallbackName(
+    lines: string[],
+  ): Pick<ParsedCandidateProfileData, 'firstName' | 'lastName' | 'fullName'> {
+    const [firstLine, secondLine] = lines;
+
+    if (
+      !firstLine ||
+      !secondLine ||
+      this.looksLikeSection(firstLine) ||
+      this.looksLikeSection(secondLine) ||
+      firstLine.includes('|') ||
+      secondLine.includes('|')
+    ) {
+      return {};
+    }
+
+    return {
+      firstName: firstLine,
+      lastName: secondLine,
+      fullName: `${firstLine} ${secondLine}`,
+    };
+  }
+
+  private extractFallbackExperience(
+    lines: string[],
+  ): NonNullable<ParsedCandidateProfileData['parsedExperience']> {
+    const startIndex = this.findLineIndex(lines, 'experiencia');
+    if (startIndex === -1) {
+      return [];
+    }
+
+    const endIndex = this.findNextLineIndex(lines, startIndex, [
+      'skills tecnicas',
+      'skills técnicas',
+      'educacion',
+      'educación',
+    ]);
+    const sectionLines = lines.slice(
+      startIndex + 1,
+      endIndex === -1 ? lines.length : endIndex,
+    );
+    const experience = [];
+
+    for (let index = 0; index < sectionLines.length; index += 1) {
+      const line = sectionLines[index];
+      const dateLine = sectionLines[index + 1];
+
+      if (
+        !line?.includes('|') ||
+        !dateLine ||
+        !this.looksLikeDateRange(dateLine)
+      ) {
+        continue;
+      }
+
+      const [role, company] = line.split('|').map((part) => part.trim());
+      const [startDate, endDate] = this.splitDateRange(dateLine);
+
+      experience.push({
+        role,
+        company,
+        startDate,
+        endDate,
+      });
+    }
+
+    return experience;
+  }
+
+  private extractFallbackEducation(
+    lines: string[],
+  ): Pick<ParsedCandidateProfileData, 'education' | 'parsedEducation'> {
+    const startIndex = this.findLineIndex(lines, 'educacion', 'educación');
+    if (startIndex === -1) {
+      return {};
+    }
+
+    const degreeLine = lines[startIndex + 1];
+    const dateLine = lines[startIndex + 2];
+    if (!degreeLine) {
+      return {};
+    }
+
+    const knownInstitution = 'ORT Argentina';
+    const hasKnownInstitution = degreeLine.includes(knownInstitution);
+    const degree = hasKnownInstitution
+      ? degreeLine.replace(knownInstitution, '').trim()
+      : degreeLine;
+    const institution = hasKnownInstitution ? knownInstitution : undefined;
+    const [startDate, endDate] =
+      dateLine && this.looksLikeDateRange(dateLine)
+        ? this.splitDateRange(dateLine)
+        : [undefined, undefined];
+
+    return {
+      education: [degree, institution].filter(Boolean).join(', '),
+      parsedEducation: [
+        {
+          degree,
+          institution,
+          startDate,
+          endDate,
+        },
+      ],
+    };
+  }
+
+  private findLineIndex(lines: string[], ...targets: string[]): number {
+    return lines.findIndex((line) =>
+      targets.some((target) => this.normalizeForMatch(line) === target),
+    );
+  }
+
+  private findNextLineIndex(
+    lines: string[],
+    startIndex: number,
+    targets: string[],
+  ): number {
+    return lines.findIndex(
+      (line, index) =>
+        index > startIndex &&
+        targets.some((target) => this.normalizeForMatch(line) === target),
+    );
+  }
+
+  private looksLikeSection(line: string): boolean {
+    return ['sobre mi', 'experiencia', 'skills tecnicas', 'educacion'].includes(
+      this.normalizeForMatch(line),
+    );
+  }
+
+  private looksLikeDateRange(line: string): boolean {
+    return /\b(?:ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic|\d{4})\b/i.test(
+      line,
+    );
+  }
+
+  private splitDateRange(
+    line: string,
+  ): [string | undefined, string | undefined] {
+    const [startDate, endDate] = line
+      .split(/\s+[–-]\s+/)
+      .map((part) => part.trim());
+
+    return [startDate || undefined, endDate || undefined];
+  }
+
+  private normalizeForMatch(line: string): string {
+    return line
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
   }
 
   private isValidParsedProfile(

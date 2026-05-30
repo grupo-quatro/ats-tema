@@ -16,6 +16,7 @@ const mockRepo: ICandidateRepository = {
   registerCandidateCV: vi.fn(),
   getCandidateProfileForConfirmation: vi.fn(),
   confirmCandidateProfile: vi.fn(),
+  discardCandidateDraft: vi.fn(),
   uploadCv: vi.fn(),
 };
 
@@ -195,5 +196,39 @@ describe('PostulationService.confirmCandidateProfile', () => {
     ).rejects.toThrow(
       'Ya existe una postulación activa con el correo ingresado.',
     );
+  });
+});
+
+describe('PostulationService.discardCandidateDraft', () => {
+  it('descarta una postulación CV en progreso', async () => {
+    vi.mocked(mockRepo.discardCandidateDraft).mockResolvedValue({
+      candidateId: 'cand-1',
+      applicationId: 'app-1',
+      discarded: true,
+    });
+
+    const result = await service.discardCandidateDraft({
+      candidateId: 'cand-1',
+      applicationId: 'app-1',
+    });
+
+    expect(mockRepo.discardCandidateDraft).toHaveBeenCalledWith({
+      candidateId: 'cand-1',
+      applicationId: 'app-1',
+    });
+    expect(result.discarded).toBe(true);
+  });
+
+  it('preserva el mensaje del backend cuando falla el descarte', async () => {
+    vi.mocked(mockRepo.discardCandidateDraft).mockRejectedValue(
+      new Error('Solo se pueden descartar postulaciones por CV.'),
+    );
+
+    await expect(
+      service.discardCandidateDraft({
+        candidateId: 'cand-1',
+        applicationId: 'app-1',
+      }),
+    ).rejects.toThrow('Solo se pueden descartar postulaciones por CV.');
   });
 });

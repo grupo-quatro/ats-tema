@@ -5,6 +5,8 @@ import type {
   CandidatePostulationCVResponse,
   ConfirmCandidateProfilePayload,
   ConfirmCandidateProfileResponse,
+  DiscardCandidateDraftPayload,
+  DiscardCandidateDraftResponse,
   GetCandidateProfileForConfirmationPayload,
   GetCandidateProfileForConfirmationResponse,
 } from '@ats/shared-types';
@@ -22,5 +24,8 @@ export interface ICandidateRepository {
   confirmCandidateProfile(
     payload: ConfirmCandidateProfilePayload,
   ): Promise<ConfirmCandidateProfileResponse>;
+  discardCandidateDraft(
+    payload: DiscardCandidateDraftPayload,
+  ): Promise<DiscardCandidateDraftResponse>;
   uploadCv(candidateId: string, file: File): Promise<void>;
 }

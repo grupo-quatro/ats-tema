@@ -4,6 +4,7 @@ import {
   CandidatePostulationCVPayload,
   CandidatePostulationPayload,
   ConfirmCandidateProfilePayload,
+  DiscardCandidateDraftPayload,
   GetCandidateProfileForConfirmationPayload,
 } from '@ats/shared-types';
 
@@ -12,10 +13,12 @@ import {
   CandidateProfileForConfirmationApplicationMismatchError,
   CandidateProfileForConfirmationApplicationNotFoundError,
   CandidateProfileForConfirmationNotFoundError,
+  CandidateDraftDiscardNotAllowedError,
   CandidateRegistrationConflictError,
   CandidateRegistrationService,
 } from '../services/candidateService';
 import {
+  validateDiscardCandidateDraftPayload,
   validateGetCandidateProfileForConfirmationPayload,
   validateRegisterCandidatePayload,
   validateStartApplicationWithCVPayload,
@@ -285,5 +288,57 @@ export const confirmCandidateProfile = onRequest(async (request, response) => {
       error,
       'Ocurrió un error interno en el servidor al procesar la confirmación.',
     );
+  }
+});
+
+export const discardCandidateDraft = onRequest(async (request, response) => {
+  if (!assertPostMethod(request, response)) {
+    return;
+  }
+
+  try {
+    await requireAuthenticatedUser(request);
+    const payload = getPayload<DiscardCandidateDraftPayload>(request.body);
+    validateDiscardCandidateDraftPayload(payload);
+
+    const result =
+      await candidateRegistrationService.discardCandidateDraft(payload);
+
+    response.status(200).json(result);
+  } catch (error) {
+    if (
+      error instanceof CandidateProfileForConfirmationNotFoundError ||
+      error instanceof CandidateProfileForConfirmationApplicationNotFoundError
+    ) {
+      sendError(
+        response,
+        new HttpsError('not-found', error.message),
+        'No se pudo descartar la postulación.',
+      );
+      return;
+    }
+
+    if (
+      error instanceof CandidateProfileForConfirmationApplicationMismatchError
+    ) {
+      sendError(
+        response,
+        new HttpsError('permission-denied', error.message),
+        'No se pudo descartar la postulación.',
+      );
+      return;
+    }
+
+    if (error instanceof CandidateDraftDiscardNotAllowedError) {
+      sendError(
+        response,
+        new HttpsError('failed-precondition', error.message),
+        'No se pudo descartar la postulación.',
+      );
+      return;
+    }
+
+    logger.error('Error inesperado descartando postulación por CV', error);
+    sendError(response, error, 'No se pudo descartar la postulación.');
   }
 });

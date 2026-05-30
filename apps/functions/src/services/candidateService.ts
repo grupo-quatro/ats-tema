@@ -19,6 +19,8 @@ import type {
   RegistrationType,
   ConfirmCandidateProfilePayload,
   ConfirmCandidateProfileResponse,
+  DiscardCandidateDraftPayload,
+  DiscardCandidateDraftResponse,
   GetCandidateProfileForConfirmationPayload,
   GetCandidateProfileForConfirmationResponse,
 } from '@ats/shared-types';
@@ -26,6 +28,7 @@ import type {
 import { CandidatesRepository } from '../repositories/candidateRepository';
 import { ApplicationRegistrationService } from './applicationRegistrationService';
 import { ApplicationsRepository } from '../repositories/applicationRepository';
+import { storage } from '../core/firebaseAdmin';
 
 export class CandidateRegistrationCVServiceError extends Error {
   constructor(
@@ -124,6 +127,13 @@ export class CandidateProfileForConfirmationApplicationMismatchError extends Err
   constructor(message: string) {
     super(message);
     this.name = 'CandidateProfileForConfirmationApplicationMismatchError';
+  }
+}
+
+export class CandidateDraftDiscardNotAllowedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CandidateDraftDiscardNotAllowedError';
   }
 }
 
@@ -346,6 +356,10 @@ export class CandidateRegistrationService {
       education: profile.education,
       technicalSkills: profile.technicalSkills,
       professionalSummary: profile.professionalSummary,
+      parsedCv: {
+        experience: profile.parsedExperience ?? [],
+        education: profile.parsedEducation ?? [],
+      },
 
       profileStatus: 'completed',
       cvParseStatus:
@@ -370,6 +384,59 @@ export class CandidateRegistrationService {
       applicationStatus: applicationId ? 'active' : undefined,
       applicationStage: applicationId ? 'applied' : undefined,
       cvParseStatus: (currentCandidate as any).cvParseStatus || 'not_required',
+    };
+  }
+
+  async discardCandidateDraft(
+    payload: DiscardCandidateDraftPayload,
+  ): Promise<DiscardCandidateDraftResponse> {
+    const candidateId = payload.candidateId.trim();
+    const applicationId = payload.applicationId.trim();
+
+    const candidate = await this.candidatesRepository.findById(candidateId);
+    if (!candidate) {
+      throw new CandidateProfileForConfirmationNotFoundError(
+        `El candidato con ID ${candidateId} no existe.`,
+      );
+    }
+
+    const application =
+      await this.applicationRepository.findById(applicationId);
+    if (!application) {
+      throw new CandidateProfileForConfirmationApplicationNotFoundError(
+        `La postulación con ID ${applicationId} no existe.`,
+      );
+    }
+
+    if (application.candidateId !== candidateId) {
+      throw new CandidateProfileForConfirmationApplicationMismatchError(
+        'La postulación no corresponde al candidato informado.',
+      );
+    }
+
+    if (
+      candidate.registrationSource !== 'cv_upload' ||
+      candidate.profileStatus !== 'draft' ||
+      application.status !== 'draft'
+    ) {
+      throw new CandidateDraftDiscardNotAllowedError(
+        'Solo se pueden descartar postulaciones por CV que todavía no fueron confirmadas.',
+      );
+    }
+
+    if (candidate.cvStoragePath) {
+      await storage.bucket().file(candidate.cvStoragePath).delete({
+        ignoreNotFound: true,
+      });
+    }
+
+    await this.applicationRepository.delete(applicationId);
+    await this.candidatesRepository.delete(candidateId);
+
+    return {
+      candidateId,
+      applicationId,
+      discarded: true,
     };
   }
 }

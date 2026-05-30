@@ -5,6 +5,8 @@ import type {
   CandidatePostulationCVResponse,
   ConfirmCandidateProfilePayload,
   ConfirmCandidateProfileResponse,
+  DiscardCandidateDraftPayload,
+  DiscardCandidateDraftResponse,
   GetCandidateProfileForConfirmationPayload,
   GetCandidateProfileForConfirmationResponse,
 } from '@ats/shared-types';
@@ -98,6 +100,25 @@ export async function confirmCandidateProfile(
   if (!res.ok) {
     const error = await res.json();
     throw new Error(error.error || 'Error al confirmar el perfil');
+  }
+  return res.json();
+}
+
+export async function discardCandidateDraft(
+  payload: DiscardCandidateDraftPayload,
+): Promise<DiscardCandidateDraftResponse> {
+  const token = await getCandidateToken();
+  const res = await fetch(getFunctionUrl('discardCandidateDraft'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Error al descartar la postulación');
   }
   return res.json();
 }

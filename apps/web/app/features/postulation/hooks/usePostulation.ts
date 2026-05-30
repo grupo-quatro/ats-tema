@@ -58,3 +58,15 @@ export function useConfirmCandidateProfile() {
       service.confirmCandidateProfile(payload),
   });
 }
+
+export function useDiscardCandidateDraft() {
+  return useMutation({
+    mutationFn: ({
+      candidateId,
+      applicationId,
+    }: {
+      candidateId: string;
+      applicationId: string;
+    }) => service.discardCandidateDraft({ candidateId, applicationId }),
+  });
+}
