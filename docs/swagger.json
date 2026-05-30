@@ -1147,26 +1147,25 @@
       }
     },
     "/getCandidateProfileForConfirmation": {
-      "post": {
+      "get": {
         "tags": ["Candidates"],
         "operationId": "getCandidateProfileForConfirmation",
         "summary": "Get CV parsing status and preliminary candidate profile",
         "description": "Returns the current parsing status and canonical candidate profile fields for the CV confirmation screen. The frontend should poll this endpoint after uploading the CV until `cvParseStatus` becomes `done` or `failed`, then let the candidate review or complete the profile before calling `confirmCandidateProfile`.",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["candidateId", "applicationId"],
-                "properties": {
-                  "candidateId": { "type": "string" },
-                  "applicationId": { "type": "string" }
-                }
-              }
-            }
+        "parameters": [
+          {
+            "name": "candidateId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "applicationId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
           }
-        },
+        ],
         "responses": {
           "200": {
             "description": "Candidate profile status returned",
@@ -1248,7 +1247,7 @@
       }
     },
     "/confirmCandidateProfile": {
-      "post": {
+      "patch": {
         "tags": ["Candidates"],
         "operationId": "confirmCandidateProfile",
         "summary": "Confirm and complete a candidate's profile",

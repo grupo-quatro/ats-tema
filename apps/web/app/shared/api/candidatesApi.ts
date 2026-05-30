@@ -63,15 +63,16 @@ export async function getCandidateProfileForConfirmation(
   payload: GetCandidateProfileForConfirmationPayload,
 ): Promise<GetCandidateProfileForConfirmationResponse> {
   const token = await getCandidateToken();
+  const params = new URLSearchParams({
+    candidateId: payload.candidateId,
+    applicationId: payload.applicationId,
+  });
   const res = await fetch(
-    getFunctionUrl('getCandidateProfileForConfirmation'),
+    `${getFunctionUrl('getCandidateProfileForConfirmation')}?${params}`,
     {
-      method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(payload),
     },
   );
   if (!res.ok) {
@@ -88,7 +89,7 @@ export async function confirmCandidateProfile(
 ): Promise<ConfirmCandidateProfileResponse> {
   const token = await getCandidateToken();
   const res = await fetch(getFunctionUrl('confirmCandidateProfile'), {
-    method: 'POST',
+    method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,

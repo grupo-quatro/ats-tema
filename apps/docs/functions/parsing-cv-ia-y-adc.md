@@ -984,14 +984,13 @@ Despues de subir el PDF, el front no debe asumir que el parsing termino. Debe co
 Endpoint emulator:
 
 ```txt
-http://127.0.0.1:5001/ats-tema-ort/us-central1/getCandidateProfileForConfirmation
+GET http://127.0.0.1:5001/ats-tema-ort/us-central1/getCandidateProfileForConfirmation?candidateId=CANDIDATE_ID&applicationId=APPLICATION_ID
 ```
 
 Headers:
 
 ```txt
 Authorization: Bearer <firebase_id_token>
-Content-Type: application/json
 ```
 
 En emulator se puede usar:
@@ -1000,14 +999,7 @@ En emulator se puede usar:
 Authorization: Bearer dev-candidate
 ```
 
-Body:
-
-```json
-{
-  "candidateId": "CANDIDATE_ID",
-  "applicationId": "APPLICATION_ID"
-}
-```
+Los parametros `candidateId` y `applicationId` se envian por query string.
 
 Respuesta esperada:
 
@@ -1058,7 +1050,7 @@ el front debe mostrar los datos editables y luego llamar a `confirmCandidateProf
 Endpoint emulator:
 
 ```txt
-http://127.0.0.1:5001/ats-tema-ort/us-central1/confirmCandidateProfile
+PATCH http://127.0.0.1:5001/ats-tema-ort/us-central1/confirmCandidateProfile
 ```
 
 Headers:
@@ -1087,8 +1079,6 @@ Body ejemplo:
   }
 }
 ```
-
-Igual que `registerCandidateCV`, tambien acepta temporalmente `{ "data": { ... } }` para no romper pruebas existentes de Postman durante la migracion desde `onCall`.
 
 Resultado esperado:
 

@@ -353,7 +353,7 @@ campos canónicos de Candidate populated
 5. Confirmar perfil:
 
 ```txt
-POST http://127.0.0.1:5001/ats-tema-ort/us-central1/confirmCandidateProfile
+PATCH http://127.0.0.1:5001/ats-tema-ort/us-central1/confirmCandidateProfile
 Authorization: Bearer <firebase_id_token>
 Content-Type: application/json
 ```

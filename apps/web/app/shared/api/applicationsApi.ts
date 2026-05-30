@@ -5,7 +5,6 @@ import type {
   GetApplicationsByCandidateResponse,
   GetApplicationsByJobPayload,
   GetApplicationsByJobResponse,
-  GetCvSignedUrlPayload,
   GetCvSignedUrlResponse,
   GetStageHistoryResponse,
   UpdateApplicationStagePayload,
@@ -79,12 +78,18 @@ export async function getApplicationsByCandidate(
 }
 
 export async function getCvDownloadUrl(applicationId: string): Promise<string> {
-  const fn = httpsCallable<GetCvSignedUrlPayload, GetCvSignedUrlResponse>(
-    functions,
-    'getCvSignedUrl',
-  );
-  const result = await fn({ applicationId });
-  return getDownloadURL(ref(storage, result.data.cvStoragePath));
+  const token = await getToken();
+  const params = new URLSearchParams({ applicationId });
+  const res = await fetch(`${getFunctionUrl('getCvSignedUrl')}?${params}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Error al obtener el CV');
+  }
+
+  const result = (await res.json()) as GetCvSignedUrlResponse;
+  return getDownloadURL(ref(storage, result.cvStoragePath));
 }
 export async function getStageHistory(
   applicationId: string,

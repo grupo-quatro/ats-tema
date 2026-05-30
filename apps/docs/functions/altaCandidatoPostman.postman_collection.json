@@ -531,7 +531,7 @@
             }
           ]
         },
-        "method": "POST",
+        "method": "PATCH",
         "header": [
           {
             "key": "",
@@ -570,7 +570,7 @@
         {
           "name": "confirmarPostulacion",
           "originalRequest": {
-            "method": "POST",
+            "method": "PATCH",
             "header": [
               {
                 "key": "",
@@ -648,7 +648,7 @@
         {
           "name": "confirmarPostulacion",
           "originalRequest": {
-            "method": "POST",
+            "method": "PATCH",
             "header": [
               {
                 "key": "",
@@ -726,7 +726,7 @@
         {
           "name": "parsing finalizado",
           "originalRequest": {
-            "method": "POST",
+            "method": "PATCH",
             "header": [
               {
                 "key": "",
@@ -779,7 +779,7 @@
             },
             {
               "key": "access-control-allow-methods",
-              "value": "POST, OPTIONS"
+              "value": "GET, PATCH, POST, OPTIONS"
             },
             {
               "key": "access-control-allow-headers",
@@ -828,19 +828,10 @@
             }
           ]
         },
-        "method": "POST",
+        "method": "GET",
         "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"candidateId\": \"au2DxwH8dt3MMUDbQO6C\",\n    \"applicationId\": \"au2DxwH8dt3MMUDbQO6C_frontend-ssr-developer\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
         "url": {
-          "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/getCandidateProfileForConfirmation",
+          "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/getCandidateProfileForConfirmation?candidateId=au2DxwH8dt3MMUDbQO6C&applicationId=au2DxwH8dt3MMUDbQO6C_frontend-ssr-developer",
           "protocol": "http",
           "host": [
             "127",
@@ -853,6 +844,16 @@
             "ats-tema-ort",
             "us-central1",
             "getCandidateProfileForConfirmation"
+          ],
+          "query": [
+            {
+              "key": "candidateId",
+              "value": "au2DxwH8dt3MMUDbQO6C"
+            },
+            {
+              "key": "applicationId",
+              "value": "au2DxwH8dt3MMUDbQO6C_frontend-ssr-developer"
+            }
           ]
         }
       },
@@ -860,19 +861,10 @@
         {
           "name": "OK - Pending",
           "originalRequest": {
-            "method": "POST",
+            "method": "GET",
             "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"candidateId\": \"au2DxwH8dt3MMUDbQO6C\",\n    \"applicationId\": \"au2DxwH8dt3MMUDbQO6C_frontend-ssr-developer\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
-              "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/getCandidateProfileForConfirmation",
+              "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/getCandidateProfileForConfirmation?candidateId=au2DxwH8dt3MMUDbQO6C&applicationId=au2DxwH8dt3MMUDbQO6C_frontend-ssr-developer",
               "protocol": "http",
               "host": [
                 "127",
@@ -885,6 +877,16 @@
                 "ats-tema-ort",
                 "us-central1",
                 "getCandidateProfileForConfirmation"
+              ],
+              "query": [
+                {
+                  "key": "candidateId",
+                  "value": "au2DxwH8dt3MMUDbQO6C"
+                },
+                {
+                  "key": "applicationId",
+                  "value": "au2DxwH8dt3MMUDbQO6C_frontend-ssr-developer"
+                }
               ]
             }
           },
@@ -906,7 +908,7 @@
             },
             {
               "key": "access-control-allow-methods",
-              "value": "POST, OPTIONS"
+              "value": "GET, PATCH, POST, OPTIONS"
             },
             {
               "key": "access-control-allow-headers",
@@ -943,19 +945,10 @@
         {
           "name": "OK - Recibido",
           "originalRequest": {
-            "method": "POST",
+            "method": "GET",
             "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"candidateId\": \"au2DxwH8dt3MMUDbQO6C\",\n    \"applicationId\": \"au2DxwH8dt3MMUDbQO6C_frontend-ssr-developer\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
-              "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/getCandidateProfileForConfirmation",
+              "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/getCandidateProfileForConfirmation?candidateId=au2DxwH8dt3MMUDbQO6C&applicationId=au2DxwH8dt3MMUDbQO6C_frontend-ssr-developer",
               "protocol": "http",
               "host": [
                 "127",
@@ -968,6 +961,16 @@
                 "ats-tema-ort",
                 "us-central1",
                 "getCandidateProfileForConfirmation"
+              ],
+              "query": [
+                {
+                  "key": "candidateId",
+                  "value": "au2DxwH8dt3MMUDbQO6C"
+                },
+                {
+                  "key": "applicationId",
+                  "value": "au2DxwH8dt3MMUDbQO6C_frontend-ssr-developer"
+                }
               ]
             }
           },
@@ -989,7 +992,7 @@
             },
             {
               "key": "access-control-allow-methods",
-              "value": "POST, OPTIONS"
+              "value": "GET, PATCH, POST, OPTIONS"
             },
             {
               "key": "access-control-allow-headers",
@@ -1026,19 +1029,10 @@
         {
           "name": "OK - FINALIZADO",
           "originalRequest": {
-            "method": "POST",
+            "method": "GET",
             "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"candidateId\": \"au2DxwH8dt3MMUDbQO6C\",\n    \"applicationId\": \"au2DxwH8dt3MMUDbQO6C_frontend-ssr-developer\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
-              "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/getCandidateProfileForConfirmation",
+              "raw": "http://127.0.0.1:5001/ats-tema-ort/us-central1/getCandidateProfileForConfirmation?candidateId=au2DxwH8dt3MMUDbQO6C&applicationId=au2DxwH8dt3MMUDbQO6C_frontend-ssr-developer",
               "protocol": "http",
               "host": [
                 "127",
@@ -1051,6 +1045,16 @@
                 "ats-tema-ort",
                 "us-central1",
                 "getCandidateProfileForConfirmation"
+              ],
+              "query": [
+                {
+                  "key": "candidateId",
+                  "value": "au2DxwH8dt3MMUDbQO6C"
+                },
+                {
+                  "key": "applicationId",
+                  "value": "au2DxwH8dt3MMUDbQO6C_frontend-ssr-developer"
+                }
               ]
             }
           },
@@ -1072,7 +1076,7 @@
             },
             {
               "key": "access-control-allow-methods",
-              "value": "POST, OPTIONS"
+              "value": "GET, PATCH, POST, OPTIONS"
             },
             {
               "key": "access-control-allow-headers",
