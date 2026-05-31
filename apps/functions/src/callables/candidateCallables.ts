@@ -297,7 +297,7 @@ export const confirmCandidateProfile = onRequest(async (request, response) => {
 });
 
 export const discardCandidateDraft = onRequest(async (request, response) => {
-  if (!assertPostMethod(request, response)) {
+  if (!assertMethod(request, response, 'POST')) {
     return;
   }
 
