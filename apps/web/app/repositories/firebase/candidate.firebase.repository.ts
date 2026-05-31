@@ -8,6 +8,8 @@ import type {
   CandidatePostulationCVResponse,
   ConfirmCandidateProfilePayload,
   ConfirmCandidateProfileResponse,
+  DiscardCandidateDraftPayload,
+  DiscardCandidateDraftResponse,
   GetCandidateProfileForConfirmationPayload,
   GetCandidateProfileForConfirmationResponse,
 } from '@ats/shared-types';
@@ -47,6 +49,13 @@ export class CandidateFirebaseRepository implements ICandidateRepository {
   ): Promise<ConfirmCandidateProfileResponse> {
     await this.ensureAuth();
     return candidatesApi.confirmCandidateProfile(payload);
+  }
+
+  async discardCandidateDraft(
+    payload: DiscardCandidateDraftPayload,
+  ): Promise<DiscardCandidateDraftResponse> {
+    await this.ensureAuth();
+    return candidatesApi.discardCandidateDraft(payload);
   }
 
   uploadCv(candidateId: string, file: File): Promise<void> {

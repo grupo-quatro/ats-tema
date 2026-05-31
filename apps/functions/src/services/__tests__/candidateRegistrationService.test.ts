@@ -1,6 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { CandidatePostulationPayload } from '@ats/shared-types';
+
+const firebaseAdminMocks = vi.hoisted(() => ({
+  deleteFile: vi.fn(),
+  getUser: vi.fn(),
+}));
+
+vi.mock('../../core/firebaseAdmin', () => ({
+  auth: {
+    getUser: firebaseAdminMocks.getUser,
+  },
+  storage: {
+    bucket: vi.fn(() => ({
+      file: vi.fn(() => ({
+        delete: firebaseAdminMocks.deleteFile,
+      })),
+    })),
+  },
+}));
+
 import {
+  CandidateDraftDiscardNotAllowedError,
   CandidateProfileForConfirmationApplicationMismatchError,
   CandidateProfileForConfirmationApplicationNotFoundError,
   CandidateProfileForConfirmationNotFoundError,
@@ -27,6 +47,7 @@ const mockCandidatesRepo = {
   findManyByEmail: vi.fn(),
   createOrUpdateCandidate: vi.fn(),
   update: vi.fn(),
+  delete: vi.fn(),
 };
 
 const mockAppRegistrationService = {
@@ -37,6 +58,7 @@ const mockAppRepo = {
   findById: vi.fn(),
   findByCandidateAndJob: vi.fn(),
   update: vi.fn(),
+  delete: vi.fn(),
 };
 
 describe('CandidateRegistrationService.registerCandidate', () => {
@@ -594,5 +616,93 @@ describe('CandidateRegistrationService.confirmCandidateProfile', () => {
       'existing-cand',
       'job-1',
     );
+  });
+});
+
+describe('CandidateRegistrationService.discardCandidateDraft', () => {
+  let service: CandidateRegistrationService;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    firebaseAdminMocks.deleteFile.mockResolvedValue(undefined);
+    mockCandidatesRepo.findById.mockResolvedValue({
+      id: 'cand-1',
+      profileStatus: 'draft',
+      registrationType: 'specific',
+      registrationSource: 'cv_upload',
+      cvParseStatus: 'done',
+      cvStoragePath: 'cvs/cand-1/cv.pdf',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    mockAppRepo.findById.mockResolvedValue({
+      id: 'app-1',
+      candidateId: 'cand-1',
+      jobId: 'job-1',
+      stage: 'profile_pending',
+      status: 'draft',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      stageUpdatedAt: new Date(),
+    });
+    mockAppRepo.delete.mockResolvedValue(undefined);
+    mockCandidatesRepo.delete.mockResolvedValue(undefined);
+
+    service = new CandidateRegistrationService(
+      mockCandidatesRepo as any,
+      mockAppRegistrationService as any,
+      mockAppRepo as any,
+    );
+  });
+
+  it('elimina storage, application y candidate cuando el draft CV no fue confirmado', async () => {
+    const result = await service.discardCandidateDraft({
+      candidateId: 'cand-1',
+      applicationId: 'app-1',
+    });
+
+    expect(firebaseAdminMocks.deleteFile).toHaveBeenCalledWith({
+      ignoreNotFound: true,
+    });
+    expect(mockAppRepo.delete).toHaveBeenCalledWith('app-1');
+    expect(mockCandidatesRepo.delete).toHaveBeenCalledWith('cand-1');
+    expect(result).toEqual({
+      candidateId: 'cand-1',
+      applicationId: 'app-1',
+      discarded: true,
+    });
+  });
+
+  it('rechaza descartar una postulacion ya confirmada', async () => {
+    mockCandidatesRepo.findById.mockResolvedValue({
+      id: 'cand-1',
+      profileStatus: 'completed',
+      registrationType: 'specific',
+      registrationSource: 'cv_upload',
+      cvParseStatus: 'done',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    mockAppRepo.findById.mockResolvedValue({
+      id: 'app-1',
+      candidateId: 'cand-1',
+      jobId: 'job-1',
+      stage: 'applied',
+      status: 'active',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      stageUpdatedAt: new Date(),
+    });
+
+    await expect(
+      service.discardCandidateDraft({
+        candidateId: 'cand-1',
+        applicationId: 'app-1',
+      }),
+    ).rejects.toThrow(CandidateDraftDiscardNotAllowedError);
+
+    expect(firebaseAdminMocks.deleteFile).not.toHaveBeenCalled();
+    expect(mockAppRepo.delete).not.toHaveBeenCalled();
+    expect(mockCandidatesRepo.delete).not.toHaveBeenCalled();
   });
 });

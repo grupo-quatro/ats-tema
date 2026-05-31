@@ -17,6 +17,7 @@ export {
   registerCandidateCV,
   getCandidateProfileForConfirmation,
   confirmCandidateProfile,
+  discardCandidateDraft,
 } from './callables/candidateCallables';
 export { getApplicationsByJob } from './callables/getApplicationsByJob';
 export { getApplicationsByCandidate } from './callables/getApplicationsByCandidate';

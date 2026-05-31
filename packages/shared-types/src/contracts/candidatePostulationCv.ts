@@ -11,3 +11,14 @@ export interface CandidatePostulationCVResponse {
   cvParseStatus: CvParseStatus;
   applicationStatus: ApplicationStatus;
 }
+
+export interface DiscardCandidateDraftPayload {
+  candidateId: string;
+  applicationId: string;
+}
+
+export interface DiscardCandidateDraftResponse {
+  candidateId: string;
+  applicationId: string;
+  discarded: true;
+}

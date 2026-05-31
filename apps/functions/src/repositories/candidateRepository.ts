@@ -176,35 +176,49 @@ export class CandidatesRepository {
     candidateId: string,
     parsedData: ParsedCandidateProfileData,
   ): Promise<void> {
+    const sanitizedParsedData = removeUndefinedValues(parsedData);
     const technicalSkills =
-      parsedData.technicalSkills ??
-      parsedData.hardSkills ??
-      parsedData.skills ??
+      sanitizedParsedData.technicalSkills ??
+      sanitizedParsedData.hardSkills ??
+      sanitizedParsedData.skills ??
       [];
     const fullName =
-      parsedData.fullName ??
-      [parsedData.firstName, parsedData.lastName].filter(Boolean).join(' ');
+      sanitizedParsedData.fullName ??
+      [sanitizedParsedData.firstName, sanitizedParsedData.lastName]
+        .filter(Boolean)
+        .join(' ');
+    const parsedExperience = sanitizedParsedData.parsedExperience ?? [];
+    const parsedEducation = sanitizedParsedData.parsedEducation ?? [];
 
     try {
       await this.collection.doc(candidateId).set(
         {
-          firstName: parsedData.firstName ?? null,
-          lastName: parsedData.lastName ?? null,
+          firstName: sanitizedParsedData.firstName ?? null,
+          lastName: sanitizedParsedData.lastName ?? null,
           fullName: fullName || null,
-          email: parsedData.email ?? null,
-          phone: parsedData.phone ?? null,
-          location: parsedData.location ?? null,
-          yearsOfExperience: parsedData.yearsOfExperience ?? null,
-          education: parsedData.education ?? null,
+          email: sanitizedParsedData.email ?? null,
+          phone: sanitizedParsedData.phone ?? null,
+          location: sanitizedParsedData.location ?? null,
+          yearsOfExperience: sanitizedParsedData.yearsOfExperience ?? null,
+          education: sanitizedParsedData.education ?? null,
           professionalSummary:
-            parsedData.professionalSummary ?? parsedData.summary ?? null,
+            sanitizedParsedData.professionalSummary ??
+            sanitizedParsedData.summary ??
+            null,
           technicalSkills,
           hardSkills: FieldValue.delete(),
           softSkills: FieldValue.delete(),
           languages: FieldValue.delete(),
           cvParseStatus: 'done' as CvParseStatus,
           cvParseError: null,
-          parsedData,
+          parsedCv:
+            parsedExperience.length || parsedEducation.length
+              ? {
+                  experience: parsedExperience,
+                  education: parsedEducation,
+                }
+              : FieldValue.delete(),
+          parsedData: sanitizedParsedData,
           updatedAt: FieldValue.serverTimestamp(),
         },
         { merge: true },
@@ -253,6 +267,17 @@ export class CandidatesRepository {
       });
   }
 
+  async delete(candidateId: string): Promise<void> {
+    try {
+      await this.collection.doc(candidateId).delete();
+    } catch (error) {
+      throw new CandidatesRepositoryError(
+        `No se pudo eliminar el candidato ${candidateId}.`,
+        error,
+      );
+    }
+  }
+
   private mapToCandidate(candidate: FirestoreCandidate): Candidate {
     return {
       ...candidate,
@@ -271,4 +296,25 @@ export class CandidatesRepository {
   async updateCvParseFailure(candidateId: string): Promise<void> {
     await this.markParsingFailed(candidateId, 'Error interno al procesar CV');
   }
+}
+
+function removeUndefinedValues<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => removeUndefinedValues(item))
+      .filter((item) => item !== undefined) as T;
+  }
+
+  if (typeof value !== 'object' || value === null) {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([, entryValue]) => entryValue !== undefined)
+      .map(([entryKey, entryValue]) => [
+        entryKey,
+        removeUndefinedValues(entryValue),
+      ]),
+  ) as T;
 }

@@ -4,6 +4,8 @@ import type {
   CandidatePostulationCVResponse,
   ConfirmCandidateProfilePayload,
   ConfirmCandidateProfileResponse,
+  DiscardCandidateDraftPayload,
+  DiscardCandidateDraftResponse,
   GetCandidateProfileForConfirmationResponse,
 } from '@ats/shared-types';
 import type { ICandidateRepository } from '../../repositories/interfaces/candidate.repository';
@@ -88,6 +90,22 @@ export class PostulationService {
         resolveErrorMessage(
           error,
           'No se pudo confirmar el perfil del candidato.',
+        ),
+        error,
+      );
+    }
+  }
+
+  async discardCandidateDraft(
+    payload: DiscardCandidateDraftPayload,
+  ): Promise<DiscardCandidateDraftResponse> {
+    try {
+      return await this.repo.discardCandidateDraft(payload);
+    } catch (error) {
+      throw new PostulationServiceError(
+        resolveErrorMessage(
+          error,
+          'No se pudo descartar la postulación en progreso.',
         ),
         error,
       );

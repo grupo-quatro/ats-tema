@@ -196,6 +196,28 @@ export class ApplicationsRepository {
     }
   }
 
+  async delete(id: string): Promise<void> {
+    try {
+      const applicationRef = this.collection.doc(id);
+      const stageHistorySnapshot = await applicationRef
+        .collection('stageHistory')
+        .get();
+      const batch = db.batch();
+
+      stageHistorySnapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      batch.delete(applicationRef);
+
+      await batch.commit();
+    } catch (error) {
+      throw new ApplicationsRepositoryError(
+        `No se pudo eliminar la postulación ${id}.`,
+        error,
+      );
+    }
+  }
+
   async addStageHistoryEntry(
     applicationId: string,
     entry: CreateStageHistoryEntryDTO,
