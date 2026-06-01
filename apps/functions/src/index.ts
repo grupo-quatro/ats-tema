@@ -31,3 +31,7 @@ export { submitApplication } from './callables/submitApplication';
 export { getCvSignedUrl } from './callables/getCvSignedUrl';
 export { setUserRole } from './callables/setUserRole';
 export { ensureEmployee } from './callables/ensureEmployee';
+export {
+  getInterviewForms,
+  saveInterviewForm,
+} from './callables/interviewFormsCallables';

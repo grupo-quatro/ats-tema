@@ -16,6 +16,7 @@ import HrInterviewForm from './HrInterviewForm';
 interface InterviewModalProps {
   open: boolean;
   onClose: () => void;
+  applicationId: string;
   candidateName: string;
   type?: 'tech' | 'hr';
   skills?: Skill[];
@@ -25,6 +26,7 @@ interface InterviewModalProps {
 export function InterviewModal({
   open,
   onClose,
+  applicationId,
   candidateName,
   type = 'tech',
   skills = [],
@@ -68,6 +70,7 @@ export function InterviewModal({
       <DialogContent sx={{ p: 4, minHeight: 200 }}>
         {type === 'tech' ? (
           <TechnicalInterviewForm
+            applicationId={applicationId}
             skills={skills}
             candidateName={candidateName}
             onClose={onClose}
@@ -75,6 +78,7 @@ export function InterviewModal({
           />
         ) : (
           <HrInterviewForm
+            applicationId={applicationId}
             candidateName={candidateName}
             onClose={onClose}
             onSave={onSave}

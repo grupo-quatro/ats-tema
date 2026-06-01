@@ -676,6 +676,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
       <InterviewModal
         open={profile.interviewModalOpen}
         onClose={() => profile.setInterviewModalOpen(false)}
+        applicationId={candidate.applicationId}
         candidateName={candidate.fullName}
         type={profile.interviewType}
         skills={candidate.jobSkills}

@@ -5,3 +5,4 @@ export * from './skillMatch';
 export * from './employee';
 export * from './emailTemplate';
 export * from './parsing';
+export * from './interviewForm';

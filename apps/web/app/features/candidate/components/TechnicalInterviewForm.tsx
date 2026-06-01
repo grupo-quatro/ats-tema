@@ -12,8 +12,10 @@ import {
 } from '@mui/material';
 import type { Skill } from '@ats/shared-types';
 import type { CandidateInterviewNote } from '../mock/candidateMock';
+import { saveInterviewForm } from '../../../shared/api/interviewFormsApi';
 
 interface Props {
+  applicationId: string;
   skills: Skill[];
   candidateName: string;
   onClose: () => void;
@@ -21,6 +23,7 @@ interface Props {
 }
 
 export function TechnicalInterviewForm({
+  applicationId,
   skills,
   // candidateName,
   onClose,
@@ -49,7 +52,39 @@ export function TechnicalInterviewForm({
     setIsSaving(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 700));
+      const skillQuestions = skills.map((skill) => ({
+        question: skill.name,
+        answer: 'Evaluación registrada en entrevista.',
+        rating: ratings[skill.name] || undefined,
+      }));
+
+      await saveInterviewForm({
+        applicationId,
+        type: 'tech',
+        title: 'Evaluación técnica – Entrevista',
+        overallRating: overall,
+        decision: decision.trim(),
+        questions: [
+          ...skillQuestions,
+          {
+            question: 'Nivel técnico general',
+            answer: 'Evaluación registrada en entrevista.',
+            rating: overall,
+          },
+          {
+            question: 'Decisión recomendada',
+            answer: decision.trim(),
+          },
+          ...(comments.trim()
+            ? [
+                {
+                  question: 'Comentarios y observaciones',
+                  answer: comments.trim(),
+                },
+              ]
+            : []),
+        ],
+      });
 
       const note: CandidateInterviewNote = {
         authorName: 'Evaluación técnica',

@@ -9,15 +9,18 @@ import {
   Typography,
 } from '@mui/material';
 import type { CandidateInterviewNote } from '../mock/candidateMock';
+import { saveInterviewForm } from '../../../shared/api/interviewFormsApi';
 
 interface Props {
+  applicationId: string;
   candidateName: string;
   onClose: () => void;
   onSave?: (note: CandidateInterviewNote) => void | Promise<void>;
 }
 
 export function HrInterviewForm({
-  /* candidateName, */ onClose,
+  /* candidateName, */ applicationId,
+  onClose,
   onSave,
 }: Props) {
   const [communication, setCommunication] = useState<number>(0);
@@ -40,12 +43,48 @@ export function HrInterviewForm({
     setIsSaving(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 700));
+      const overallRating = Math.round((communication + teamwork) / 2);
+
+      await saveInterviewForm({
+        applicationId,
+        type: 'hr',
+        title: 'Evaluación RRHH – Entrevista',
+        overallRating,
+        decision: decision.trim(),
+        questions: [
+          {
+            question: 'Comunicación y claridad al expresarse',
+            answer: 'Evaluación registrada en entrevista.',
+            rating: communication,
+          },
+          {
+            question: 'Trabajo en equipo y adaptabilidad',
+            answer: 'Evaluación registrada en entrevista.',
+            rating: teamwork,
+          },
+          {
+            question: 'Expectativa salarial',
+            answer: salaryExpectation.trim() || 'No indicada',
+          },
+          {
+            question: 'Decisión recomendada',
+            answer: decision.trim(),
+          },
+          ...(comments.trim()
+            ? [
+                {
+                  question: 'Comentarios y observaciones',
+                  answer: comments.trim(),
+                },
+              ]
+            : []),
+        ],
+      });
 
       const note: CandidateInterviewNote = {
         authorName: 'Evaluación RRHH',
         date: new Date().toLocaleDateString('es-ES'),
-        rating: Math.round((communication + teamwork) / 2),
+        rating: overallRating,
         note: [
           `Comunicación: ${communication}/5.`,
           `Trabajo en equipo: ${teamwork}/5.`,
