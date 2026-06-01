@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   Alert,
   Box,
@@ -31,6 +32,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronUp,
+  ClipboardList,
   Clock,
   Info,
   MessageSquare,
@@ -44,6 +46,7 @@ import { useCandidateProfile } from '../hooks/useCandidateProfile';
 import { CandidateInfoCard } from './CandidateInfoCard';
 import { CvViewerModal } from './CvViewerModal';
 import { InterviewModal } from './InterviewModal';
+import { InterviewFormsModal } from './InterviewFormsModal';
 import { useAuth } from '../../../shared/lib/authContext';
 
 interface CandidateProfileViewProps {
@@ -53,6 +56,7 @@ interface CandidateProfileViewProps {
 export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
   const profile = useCandidateProfile(candidate);
   const { role } = useAuth();
+  const [formsModalOpen, setFormsModalOpen] = useState(false);
 
   const canDoHrInterview = role === 'hr' || role === 'admin';
   const canDoTechInterview =
@@ -163,6 +167,15 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                 Entrevista RRHH
               </Button>
             )}
+
+            <Button
+              variant="outlined"
+              onClick={() => setFormsModalOpen(true)}
+              startIcon={<ClipboardList size={16} />}
+              sx={{ textTransform: 'none' }}
+            >
+              Ver formularios
+            </Button>
 
             <IconButton
               onClick={(e) => profile.setMenuAnchor(e.currentTarget)}
@@ -667,6 +680,14 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
         type={profile.interviewType}
         skills={candidate.jobSkills}
         onSave={profile.handleInterviewSave}
+      />
+
+      <InterviewFormsModal
+        open={formsModalOpen}
+        onClose={() => setFormsModalOpen(false)}
+        applicationId={candidate.applicationId}
+        candidateName={candidate.fullName}
+        role={role}
       />
 
       <Dialog
