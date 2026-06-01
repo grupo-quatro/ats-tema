@@ -17,6 +17,7 @@ import type {
 } from '@ats/shared-types';
 
 import { toSlug } from '../core/slug';
+import { ApplicationsRepository } from '../repositories/applicationRepository';
 import { JobsRepository } from '../repositories/jobsRepository';
 
 export class CreateJobServiceError extends Error {
@@ -109,6 +110,10 @@ export class JobService {
 
   constructor(
     private readonly jobsRepository: JobsRepository = new JobsRepository(),
+    private readonly applicationsRepository: Pick<
+      ApplicationsRepository,
+      'countByJobIds'
+    > = new ApplicationsRepository(),
   ) {}
 
   async createJob(
@@ -121,13 +126,14 @@ export class JobService {
         recruiterId ?? JobService.DEFAULT_HIRING_MANAGER_ID;
       const normalizedTitle = payload.title.trim();
 
-      const jobData: CreateJobDTO = {
+      const jobData = removeUndefinedFields({
         title: normalizedTitle,
         slug: toSlug(normalizedTitle),
         department: payload.department.trim(),
         seniority: payload.seniority.trim(),
         location: payload.location,
         city: payload.city?.trim(),
+        type: payload.type?.trim(),
         description: payload.description.trim(),
         skills: payload.skills.map((skill) => ({
           name: skill.name.trim(),
@@ -135,15 +141,17 @@ export class JobService {
           weight: skill.weight,
           type: skill.type,
         })),
+        requirements: payload.requirements?.map((item) => item.trim()),
         observations: payload.observations?.trim(),
         additionalCriteria: payload.additionalCriteria?.map((item) =>
           item.trim(),
         ),
         status,
+        publishedAt: status === 'open' ? new Date() : undefined,
         responsabilities: payload.responsabilities.map((item) => item.trim()),
         benefits: payload.benefits.map((item) => item.trim()),
         hiringManagerId,
-      };
+      }) as CreateJobDTO;
 
       const id = await this.jobsRepository.create(jobData);
 
@@ -182,7 +190,7 @@ export class JobService {
         );
       }
 
-      return job;
+      return await this.withCandidateCount(job);
     } catch (error) {
       if (
         error instanceof JobDetailValidationError ||
@@ -218,7 +226,7 @@ export class JobService {
         );
       }
 
-      return job;
+      return await this.withCandidateCount(job);
     } catch (error) {
       if (
         error instanceof InternalJobDetailValidationError ||
@@ -306,7 +314,12 @@ export class JobService {
   async listPositions(
     filters: ListPositionsFilters,
   ): Promise<ListPositionsResponse> {
-    return this.jobsRepository.findWithFilters(filters);
+    const response = await this.jobsRepository.findWithFilters(filters);
+
+    return {
+      ...response,
+      jobs: await this.withCandidateCounts(response.jobs),
+    };
   }
 
   async listDepartments(): Promise<ListDepartmentsResponse> {
@@ -321,7 +334,9 @@ export class JobService {
       seniority: payload.seniority?.trim(),
       location: payload.location,
       city: payload.city?.trim(),
+      type: payload.type?.trim(),
       description: payload.description?.trim(),
+      requirements: payload.requirements?.map((item) => item.trim()),
       observations: payload.observations?.trim(),
       additionalCriteria: payload.additionalCriteria?.map((item) =>
         item.trim(),
@@ -340,4 +355,28 @@ export class JobService {
       Object.entries(updateData).filter(([, value]) => value !== undefined),
     ) as UpdateJobDTO;
   }
+
+  private async withCandidateCount(job: Job): Promise<Job> {
+    const counts = await this.applicationsRepository.countByJobIds([job.id]);
+    return { ...job, candidates: counts[job.id] ?? 0 };
+  }
+
+  private async withCandidateCounts(jobs: Job[]): Promise<Job[]> {
+    const counts = await this.applicationsRepository.countByJobIds(
+      jobs.map((job) => job.id),
+    );
+
+    return jobs.map((job) => ({
+      ...job,
+      candidates: counts[job.id] ?? 0,
+    }));
+  }
+}
+
+function removeUndefinedFields<T extends Record<string, unknown>>(
+  value: T,
+): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(value).filter(([, fieldValue]) => fieldValue !== undefined),
+  ) as Partial<T>;
 }

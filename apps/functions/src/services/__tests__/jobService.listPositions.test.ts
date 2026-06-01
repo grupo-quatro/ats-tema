@@ -33,12 +33,17 @@ const mockRepo = {
   createOrUpdateJob: vi.fn(),
 };
 
+const mockApplicationsRepo = {
+  countByJobIds: vi.fn(),
+};
+
 describe('JobService.listPositions', () => {
   let service: JobService;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new JobService(mockRepo as any);
+    mockApplicationsRepo.countByJobIds.mockResolvedValue({});
+    service = new JobService(mockRepo as any, mockApplicationsRepo as any);
   });
 
   it('retorna los resultados del repositorio', async () => {
@@ -49,6 +54,7 @@ describe('JobService.listPositions', () => {
       totalPages: 1,
     };
     mockRepo.findWithFilters.mockResolvedValue(response);
+    mockApplicationsRepo.countByJobIds.mockResolvedValue({ 'job-1': 3 });
 
     const result = await service.listPositions({ page: 1, limit: 10 });
 
@@ -56,7 +62,11 @@ describe('JobService.listPositions', () => {
       page: 1,
       limit: 10,
     });
-    expect(result).toEqual(response);
+    expect(mockApplicationsRepo.countByJobIds).toHaveBeenCalledWith(['job-1']);
+    expect(result).toEqual({
+      ...response,
+      jobs: [{ ...response.jobs[0], candidates: 3 }],
+    });
   });
 
   it('pasa todos los filtros al repositorio', async () => {
@@ -94,7 +104,7 @@ describe('JobService.listDepartments', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new JobService(mockRepo as any);
+    service = new JobService(mockRepo as any, mockApplicationsRepo as any);
   });
 
   it('retorna la lista de departamentos del repositorio', async () => {

@@ -31,7 +31,7 @@ const PAGE_SIZE = 10;
 export default function PositionsPage() {
   const [filters, setFilters] = useState<PositionFilters>(DEFAULT_FILTERS);
   const [page, setPage] = useState(1);
-  const [orderBy, setOrderBy] = useState<ListPositionsOrderBy>('publishedAt');
+  const [orderBy, setOrderBy] = useState<ListPositionsOrderBy>('createdAt');
   const [orderDir, setOrderDir] = useState<ListPositionsOrderDir>('desc');
 
   const { data, isLoading, isError } = usePositions({

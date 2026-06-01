@@ -8,6 +8,8 @@
 
 import type {
   ApplicationStatus,
+  Candidate,
+  CandidateProfileForConfirmation,
   CreateCandidateDTO,
   CvParseStatus,
   CandidatePostulationCVPayload,
@@ -17,11 +19,16 @@ import type {
   RegistrationType,
   ConfirmCandidateProfilePayload,
   ConfirmCandidateProfileResponse,
+  DiscardCandidateDraftPayload,
+  DiscardCandidateDraftResponse,
+  GetCandidateProfileForConfirmationPayload,
+  GetCandidateProfileForConfirmationResponse,
 } from '@ats/shared-types';
 
 import { CandidatesRepository } from '../repositories/candidateRepository';
 import { ApplicationRegistrationService } from './applicationRegistrationService';
 import { ApplicationsRepository } from '../repositories/applicationRepository';
+import { storage } from '../core/firebaseAdmin';
 
 export class CandidateRegistrationCVServiceError extends Error {
   constructor(
@@ -40,9 +47,11 @@ export class CandidateRegistrationCVService {
   ) {}
 
   async registerCandidateCV(
-    candidateId: string,
+    _authenticatedUid: string,
     payload: CandidatePostulationCVPayload,
   ): Promise<CandidatePostulationCVResponse> {
+    const candidateId = this.candidatesRepository.createId();
+
     try {
       const cvParseStatus: CvParseStatus = 'pending';
 
@@ -100,6 +109,34 @@ export class CandidateRegistrationServiceError extends Error {
   }
 }
 
+export class CandidateProfileForConfirmationNotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CandidateProfileForConfirmationNotFoundError';
+  }
+}
+
+export class CandidateProfileForConfirmationApplicationNotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CandidateProfileForConfirmationApplicationNotFoundError';
+  }
+}
+
+export class CandidateProfileForConfirmationApplicationMismatchError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CandidateProfileForConfirmationApplicationMismatchError';
+  }
+}
+
+export class CandidateDraftDiscardNotAllowedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CandidateDraftDiscardNotAllowedError';
+  }
+}
+
 export class CandidateRegistrationService {
   constructor(
     private readonly candidatesRepository: CandidatesRepository = new CandidatesRepository(),
@@ -108,18 +145,27 @@ export class CandidateRegistrationService {
   ) {}
 
   async registerCandidate(
-    candidateId: string,
+    _authenticatedUid: string,
     payload: CandidatePostulationPayload,
   ): Promise<CandidatePostulationResponse> {
-    try {
-      const existingCandidate = await this.candidatesRepository.findByEmail(
-        payload.email,
-      );
+    const candidateId = this.candidatesRepository.createId();
 
-      if (existingCandidate && existingCandidate.id !== candidateId) {
-        throw new CandidateRegistrationConflictError(
-          'Ya existe un candidato con ese email asociado a otro identificador.',
-        );
+    try {
+      const existingCandidates =
+        await this.candidatesRepository.findManyByEmail(payload.email.trim());
+
+      for (const existingCandidate of existingCandidates) {
+        const existingApplication =
+          await this.applicationRepository.findByCandidateAndJob(
+            existingCandidate.id,
+            payload.jobId,
+          );
+
+        if (existingApplication) {
+          throw new CandidateRegistrationConflictError(
+            'Ya existe una postulación activa con el correo ingresado.',
+          );
+        }
       }
 
       const registrationType = this.resolveRegistrationType(payload.jobId);
@@ -191,10 +237,66 @@ export class CandidateRegistrationService {
     return jobId ? 'specific' : 'general';
   }
 
+  async getCandidateProfileForConfirmation(
+    payload: GetCandidateProfileForConfirmationPayload,
+  ): Promise<GetCandidateProfileForConfirmationResponse> {
+    const candidateId = payload.candidateId.trim();
+    const applicationId = payload.applicationId.trim();
+
+    const candidate = await this.candidatesRepository.findById(candidateId);
+    if (!candidate) {
+      throw new CandidateProfileForConfirmationNotFoundError(
+        `El candidato con ID ${candidateId} no existe.`,
+      );
+    }
+
+    const application =
+      await this.applicationRepository.findById(applicationId);
+    if (!application) {
+      throw new CandidateProfileForConfirmationApplicationNotFoundError(
+        `La postulación con ID ${applicationId} no existe.`,
+      );
+    }
+
+    if (application.candidateId !== candidate.id) {
+      throw new CandidateProfileForConfirmationApplicationMismatchError(
+        'La postulación no corresponde al candidato informado.',
+      );
+    }
+
+    return {
+      candidateId: candidate.id,
+      applicationId: application.id,
+      cvParseStatus: candidate.cvParseStatus,
+      cvParseError: candidate.cvParseError ?? null,
+      profileStatus: candidate.profileStatus,
+      profile: this.mapCandidateToProfileForConfirmation(candidate),
+    };
+  }
+
+  private mapCandidateToProfileForConfirmation(
+    candidate: Candidate,
+  ): CandidateProfileForConfirmation {
+    return {
+      firstName: candidate.firstName,
+      lastName: candidate.lastName,
+      email: candidate.email,
+      phone: candidate.phone,
+      location: candidate.location,
+      yearsOfExperience: candidate.yearsOfExperience,
+      education: candidate.education,
+      technicalSkills: candidate.technicalSkills,
+      professionalSummary: candidate.professionalSummary,
+      parsedExperience: candidate.parsedCv?.experience,
+      parsedEducation: candidate.parsedCv?.education,
+    };
+  }
+
   async confirmCandidateProfile(
     payload: ConfirmCandidateProfilePayload,
   ): Promise<ConfirmCandidateProfileResponse> {
     const { candidateId, applicationId, profile } = payload;
+    const fullName = `${profile.firstName} ${profile.lastName}`.trim();
 
     const currentCandidate =
       await this.candidatesRepository.findById(candidateId);
@@ -204,9 +306,49 @@ export class CandidateRegistrationService {
       );
     }
 
+    const currentApplication = applicationId
+      ? await this.applicationRepository.findById(applicationId)
+      : null;
+
+    if (applicationId && !currentApplication) {
+      throw new CandidateProfileForConfirmationApplicationNotFoundError(
+        `La postulación con ID ${applicationId} no existe.`,
+      );
+    }
+
+    if (currentApplication && currentApplication.candidateId !== candidateId) {
+      throw new CandidateProfileForConfirmationApplicationMismatchError(
+        'La postulación no corresponde al candidato informado.',
+      );
+    }
+
+    if (currentApplication) {
+      const existingCandidates =
+        await this.candidatesRepository.findManyByEmail(profile.email.trim());
+
+      for (const existingCandidate of existingCandidates) {
+        if (existingCandidate.id === candidateId) {
+          continue;
+        }
+
+        const existingApplication =
+          await this.applicationRepository.findByCandidateAndJob(
+            existingCandidate.id,
+            currentApplication.jobId,
+          );
+
+        if (existingApplication) {
+          throw new CandidateRegistrationConflictError(
+            'Ya existe una postulación activa con el correo ingresado.',
+          );
+        }
+      }
+    }
+
     await this.candidatesRepository.update(candidateId, {
       firstName: profile.firstName,
       lastName: profile.lastName,
+      fullName,
       email: profile.email,
       phone: profile.phone,
       location: profile.location,
@@ -214,6 +356,10 @@ export class CandidateRegistrationService {
       education: profile.education,
       technicalSkills: profile.technicalSkills,
       professionalSummary: profile.professionalSummary,
+      parsedCv: {
+        experience: profile.parsedExperience ?? [],
+        education: profile.parsedEducation ?? [],
+      },
 
       profileStatus: 'completed',
       cvParseStatus:
@@ -226,7 +372,7 @@ export class CandidateRegistrationService {
       await this.applicationRepository.update(applicationId, {
         stage: 'applied',
         status: 'active',
-        candidateName: `${profile.firstName} ${profile.lastName}`.trim(),
+        candidateName: fullName,
         candidateEmail: profile.email,
       });
     }
@@ -238,6 +384,59 @@ export class CandidateRegistrationService {
       applicationStatus: applicationId ? 'active' : undefined,
       applicationStage: applicationId ? 'applied' : undefined,
       cvParseStatus: (currentCandidate as any).cvParseStatus || 'not_required',
+    };
+  }
+
+  async discardCandidateDraft(
+    payload: DiscardCandidateDraftPayload,
+  ): Promise<DiscardCandidateDraftResponse> {
+    const candidateId = payload.candidateId.trim();
+    const applicationId = payload.applicationId.trim();
+
+    const candidate = await this.candidatesRepository.findById(candidateId);
+    if (!candidate) {
+      throw new CandidateProfileForConfirmationNotFoundError(
+        `El candidato con ID ${candidateId} no existe.`,
+      );
+    }
+
+    const application =
+      await this.applicationRepository.findById(applicationId);
+    if (!application) {
+      throw new CandidateProfileForConfirmationApplicationNotFoundError(
+        `La postulación con ID ${applicationId} no existe.`,
+      );
+    }
+
+    if (application.candidateId !== candidateId) {
+      throw new CandidateProfileForConfirmationApplicationMismatchError(
+        'La postulación no corresponde al candidato informado.',
+      );
+    }
+
+    if (
+      candidate.registrationSource !== 'cv_upload' ||
+      candidate.profileStatus !== 'draft' ||
+      application.status !== 'draft'
+    ) {
+      throw new CandidateDraftDiscardNotAllowedError(
+        'Solo se pueden descartar postulaciones por CV que todavía no fueron confirmadas.',
+      );
+    }
+
+    if (candidate.cvStoragePath) {
+      await storage.bucket().file(candidate.cvStoragePath).delete({
+        ignoreNotFound: true,
+      });
+    }
+
+    await this.applicationRepository.delete(applicationId);
+    await this.candidatesRepository.delete(candidateId);
+
+    return {
+      candidateId,
+      applicationId,
+      discarded: true,
     };
   }
 }

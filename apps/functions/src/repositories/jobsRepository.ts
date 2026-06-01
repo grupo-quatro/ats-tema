@@ -181,24 +181,21 @@ export class JobsRepository implements JobsRepositoryContract {
         query = query.where('status', '==', filters.status);
       }
 
-      const hasSearch = Boolean(filters.search);
-      const orderBy = filters.orderBy ?? 'publishedAt';
+      const search = filters.search?.trim().toLowerCase();
+      const hasSearch = Boolean(search);
+      const orderBy = filters.orderBy ?? 'createdAt';
       const orderDir = filters.orderDir ?? 'desc';
 
-      if (hasSearch) {
-        const search = filters.search;
-        query = query
-          .where('title', '>=', search)
-          .where('title', '<=', search + '')
-          .orderBy('title');
-      } else {
-        query = query.orderBy(orderBy, orderDir);
-      }
+      query = query.orderBy(orderBy, orderDir);
 
       const snapshot = await query.get();
       let jobs = snapshot.docs.map((doc) =>
         this.mapToJob(doc.data() as FirestoreJob),
       );
+
+      if (hasSearch && search) {
+        jobs = jobs.filter((job) => job.title.toLowerCase().includes(search));
+      }
 
       if (filters.location) {
         jobs = jobs.filter((j) => j.location === filters.location);

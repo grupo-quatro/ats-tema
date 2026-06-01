@@ -3,6 +3,12 @@ import type {
   CandidatePostulationResponse,
   CandidatePostulationCVPayload,
   CandidatePostulationCVResponse,
+  ConfirmCandidateProfilePayload,
+  ConfirmCandidateProfileResponse,
+  DiscardCandidateDraftPayload,
+  DiscardCandidateDraftResponse,
+  GetCandidateProfileForConfirmationPayload,
+  GetCandidateProfileForConfirmationResponse,
 } from '@ats/shared-types';
 
 import { getFunctionUrl } from '../lib/firebase';
@@ -51,6 +57,69 @@ export async function registerCandidateCV(
   if (!res.ok) {
     const error = await res.json();
     throw new Error(error.error || 'Error al iniciar la postulación por CV');
+  }
+  return res.json();
+}
+
+export async function getCandidateProfileForConfirmation(
+  payload: GetCandidateProfileForConfirmationPayload,
+): Promise<GetCandidateProfileForConfirmationResponse> {
+  const token = await getCandidateToken();
+  const params = new URLSearchParams({
+    candidateId: payload.candidateId,
+    applicationId: payload.applicationId,
+  });
+  const res = await fetch(
+    `${getFunctionUrl('getCandidateProfileForConfirmation')}?${params}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  );
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(
+      error.error || 'Error al obtener el perfil para confirmación',
+    );
+  }
+  return res.json();
+}
+
+export async function confirmCandidateProfile(
+  payload: ConfirmCandidateProfilePayload,
+): Promise<ConfirmCandidateProfileResponse> {
+  const token = await getCandidateToken();
+  const res = await fetch(getFunctionUrl('confirmCandidateProfile'), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Error al confirmar el perfil');
+  }
+  return res.json();
+}
+
+export async function discardCandidateDraft(
+  payload: DiscardCandidateDraftPayload,
+): Promise<DiscardCandidateDraftResponse> {
+  const token = await getCandidateToken();
+  const res = await fetch(getFunctionUrl('discardCandidateDraft'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Error al descartar la postulación');
   }
   return res.json();
 }

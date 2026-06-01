@@ -1,6 +1,8 @@
 'use client';
 
 import { Button } from '@mui/material';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import type { JobStatus } from '@ats/shared-types';
 import { useUpdatePositionStatus } from '../hooks/useUpdatePositionStatus';
 
@@ -14,14 +16,25 @@ export default function TogglePositionStatusButton({
   currentStatus,
 }: Props) {
   const { mutate: updateStatus, isPending } = useUpdatePositionStatus();
-  const isOpen = currentStatus === 'open';
+  const router = useRouter();
+  const [status, setStatus] = useState(currentStatus);
+  const isOpen = status === 'open';
+  const nextStatus: JobStatus = isOpen ? 'closed' : 'open';
 
   return (
     <Button
       variant="contained"
       disabled={isPending}
       onClick={() =>
-        updateStatus({ id: jobId, status: isOpen ? 'closed' : 'open' })
+        updateStatus(
+          { id: jobId, status: nextStatus },
+          {
+            onSuccess: () => {
+              setStatus(nextStatus);
+              router.refresh();
+            },
+          },
+        )
       }
       sx={{
         textTransform: 'none',

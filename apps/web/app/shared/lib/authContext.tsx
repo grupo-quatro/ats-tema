@@ -58,11 +58,14 @@ function getDevRoleFromToken(token: string | null): EmployeeRole | null {
   return null;
 }
 
-async function setSessionCookie(idToken: string): Promise<void> {
+async function setSessionCookie(
+  idToken: string,
+  role?: EmployeeRole | null,
+): Promise<void> {
   await fetch('/api/auth/session', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ idToken }),
+    body: JSON.stringify({ idToken, role }),
   });
 }
 
@@ -106,6 +109,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(firebaseUser);
         setRole(claimedRole);
         setIsPendingApproval(!claimedRole);
+        if (claimedRole) {
+          await setSessionCookie(await firebaseUser.getIdToken(), claimedRole);
+        }
       } else {
         setUser(null);
         setRole(null);
@@ -127,11 +133,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           DEV_PASSWORD,
         );
         localStorage.setItem('ats-dev-token', token);
+        const role = getDevRoleFromToken(token);
         setUser(credential.user);
-        setRole(getDevRoleFromToken(token));
+        setRole(role);
         setIsPendingApproval(false);
         const idToken = await credential.user.getIdToken();
-        await setSessionCookie(idToken);
+        await setSessionCookie(idToken, role);
         return;
       }
 
@@ -143,11 +150,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new DomainNotAllowedError(firebaseUser.email ?? '');
       }
 
-      const idToken = await firebaseUser.getIdToken();
-      await setSessionCookie(idToken);
-
-      // Registrar en Firestore si es el primer login (sin rol aún)
       const tokenResult = await firebaseUser.getIdTokenResult();
+      const idToken = await firebaseUser.getIdToken();
+      const role =
+        (tokenResult.claims['role'] as EmployeeRole | undefined) ?? null;
+      await setSessionCookie(idToken, role);
+
+      // Registrar en Firestore si es el primer login (sin rol aun)
       if (!tokenResult.claims['role']) {
         await callEnsureEmployee(firebaseUser, idToken);
       }

@@ -6,6 +6,12 @@ import type {
   CandidatePostulationResponse,
   CandidatePostulationCVPayload,
   CandidatePostulationCVResponse,
+  ConfirmCandidateProfilePayload,
+  ConfirmCandidateProfileResponse,
+  DiscardCandidateDraftPayload,
+  DiscardCandidateDraftResponse,
+  GetCandidateProfileForConfirmationPayload,
+  GetCandidateProfileForConfirmationResponse,
 } from '@ats/shared-types';
 
 import { auth, storage } from '../../shared/lib/firebase';
@@ -29,6 +35,27 @@ export class CandidateFirebaseRepository implements ICandidateRepository {
   ): Promise<CandidatePostulationCVResponse> {
     await this.ensureAuth();
     return candidatesApi.registerCandidateCV(payload);
+  }
+
+  async getCandidateProfileForConfirmation(
+    payload: GetCandidateProfileForConfirmationPayload,
+  ): Promise<GetCandidateProfileForConfirmationResponse> {
+    await this.ensureAuth();
+    return candidatesApi.getCandidateProfileForConfirmation(payload);
+  }
+
+  async confirmCandidateProfile(
+    payload: ConfirmCandidateProfilePayload,
+  ): Promise<ConfirmCandidateProfileResponse> {
+    await this.ensureAuth();
+    return candidatesApi.confirmCandidateProfile(payload);
+  }
+
+  async discardCandidateDraft(
+    payload: DiscardCandidateDraftPayload,
+  ): Promise<DiscardCandidateDraftResponse> {
+    await this.ensureAuth();
+    return candidatesApi.discardCandidateDraft(payload);
   }
 
   uploadCv(candidateId: string, file: File): Promise<void> {

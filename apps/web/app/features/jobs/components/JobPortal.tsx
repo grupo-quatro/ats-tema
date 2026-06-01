@@ -12,13 +12,25 @@ import {
   Alert,
 } from '@mui/material';
 import { Search } from 'lucide-react';
-import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import JobCard from './JobCard';
 import { useJobs } from '../hooks/useJobs';
+import { useAuth } from '@/shared/lib/authContext';
+import { isInternalRole } from '@/shared/lib/internalRoles';
 
 export default function JobPortal() {
   const { data: jobs, isLoading, isError } = useJobs();
+  const { role, loading } = useAuth();
+  const router = useRouter();
   const [search, setSearch] = useState('');
+  const isInternal = isInternalRole(role);
+
+  useEffect(() => {
+    if (!loading && isInternal) {
+      router.replace('/dashboard/positions');
+    }
+  }, [isInternal, loading, router]);
 
   const filtered = (jobs ?? []).filter(
     (job) =>
@@ -75,7 +87,9 @@ export default function JobPortal() {
                 No se encontraron posiciones.
               </Typography>
             ) : (
-              filtered.map((job) => <JobCard key={job.id} job={job} />)
+              filtered.map((job) => (
+                <JobCard key={job.id} job={job} disabled={isInternal} />
+              ))
             )}
           </Stack>
         )}

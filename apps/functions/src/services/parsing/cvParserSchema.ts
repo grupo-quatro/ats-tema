@@ -36,6 +36,61 @@ export const CV_PARSER_JSON_SCHEMA = {
       description:
         'Resumen corto de la formacion principal, por ejemplo titulo e institucion.',
     },
+    parsedExperience: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          company: {
+            type: 'STRING',
+            description: 'Empresa u organizacion donde trabajo.',
+          },
+          role: {
+            type: 'STRING',
+            description: 'Cargo o rol desempenado.',
+          },
+          startDate: {
+            type: 'STRING',
+            description: 'Fecha de inicio tal como aparece o normalizada.',
+          },
+          endDate: {
+            type: 'STRING',
+            description:
+              'Fecha de fin tal como aparece, o Presente/Actualidad si sigue vigente.',
+          },
+        },
+        required: [],
+      },
+      description:
+        'Experiencia laboral relevante en orden cronologico inverso. Omitir descripciones largas.',
+    },
+    parsedEducation: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          institution: {
+            type: 'STRING',
+            description: 'Institucion educativa.',
+          },
+          degree: {
+            type: 'STRING',
+            description: 'Titulo, carrera o formacion.',
+          },
+          startDate: {
+            type: 'STRING',
+            description: 'Fecha de inicio si esta disponible.',
+          },
+          endDate: {
+            type: 'STRING',
+            description:
+              'Fecha de fin, actualidad o estado de cursada si esta disponible.',
+          },
+        },
+        required: [],
+      },
+      description: 'Formaciones educativas detectadas en el CV.',
+    },
     technicalSkills: {
       type: 'ARRAY',
       items: { type: 'STRING' },

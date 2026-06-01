@@ -4,33 +4,39 @@ import {
   CandidatePostulationCVPayload,
   CandidatePostulationPayload,
   ConfirmCandidateProfilePayload,
+  DiscardCandidateDraftPayload,
+  GetCandidateProfileForConfirmationPayload,
 } from '@ats/shared-types';
 
 import { CandidateRegistrationCVService } from '../services/candidateService';
 import {
+  CandidateProfileForConfirmationApplicationMismatchError,
+  CandidateProfileForConfirmationApplicationNotFoundError,
+  CandidateProfileForConfirmationNotFoundError,
+  CandidateDraftDiscardNotAllowedError,
   CandidateRegistrationConflictError,
   CandidateRegistrationService,
 } from '../services/candidateService';
 import {
+  validateDiscardCandidateDraftPayload,
+  validateGetCandidateProfileForConfirmationPayload,
   validateRegisterCandidatePayload,
   validateStartApplicationWithCVPayload,
 } from '../validators/candidateValidator';
-import { auth } from '../core/firebaseAdmin';
-
-type AuthContext = {
-  uid?: string;
-  token?: {
-    uid?: string;
-    user_id?: string;
-    sub?: string;
-  };
-};
+import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
 
 function sendError(
   response: Parameters<Parameters<typeof onRequest>[0]>[1],
   error: unknown,
   fallbackMessage: string,
 ): void {
+  if (error instanceof HttpAuthError) {
+    response
+      .status(401)
+      .json({ error: error.message, code: 'unauthenticated' });
+    return;
+  }
+
   if (error instanceof HttpsError) {
     const statusByCode: Partial<Record<typeof error.code, number>> = {
       'invalid-argument': 400,
@@ -54,13 +60,14 @@ function setCorsHeaders(
   response: Parameters<Parameters<typeof onRequest>[0]>[1],
 ): void {
   response.set('Access-Control-Allow-Origin', '*');
-  response.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  response.set('Access-Control-Allow-Methods', 'GET, PATCH, POST, OPTIONS');
   response.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
 }
 
-function assertPostMethod(
+function assertMethod(
   request: Parameters<Parameters<typeof onRequest>[0]>[0],
   response: Parameters<Parameters<typeof onRequest>[0]>[1],
+  expectedMethod: 'GET' | 'PATCH' | 'POST',
 ): boolean {
   setCorsHeaders(response);
 
@@ -69,9 +76,9 @@ function assertPostMethod(
     return false;
   }
 
-  if (request.method !== 'POST') {
+  if (request.method !== expectedMethod) {
     response.status(405).json({
-      error: 'Method not allowed. Use POST.',
+      error: `Method not allowed. Use ${expectedMethod}.`,
       code: 'method-not-allowed',
     });
     return false;
@@ -92,65 +99,19 @@ function getPayload<T>(requestBody: unknown): Partial<T> {
   return requestBody as Partial<T>;
 }
 
-async function getAuthContext(
-  request: Parameters<Parameters<typeof onRequest>[0]>[0],
-): Promise<AuthContext> {
-  const authorization = request.header('authorization') ?? '';
-  const match = authorization.match(/^Bearer (.+)$/i);
-
-  if (!match) {
-    throw new HttpsError(
-      'unauthenticated',
-      'El usuario debe estar autenticado.',
-    );
-  }
-
-  const decodedToken = await auth.verifyIdToken(match[1]);
-
-  return {
-    uid: decodedToken.uid,
-    token: {
-      uid: decodedToken.uid,
-      user_id: decodedToken.user_id as string | undefined,
-      sub: decodedToken.sub,
-    },
-  };
-}
-
-function resolveCandidateId(authContext: AuthContext): string {
-  const candidateId =
-    authContext.uid ||
-    authContext.token?.uid ||
-    authContext.token?.user_id ||
-    authContext.token?.sub;
-
-  if (!candidateId) {
-    logger.error('No se pudo resolver candidateId desde authContext', {
-      auth: authContext,
-    });
-
-    throw new HttpsError(
-      'unauthenticated',
-      'No se pudo identificar al usuario autenticado.',
-    );
-  }
-  return candidateId;
-}
-
 const candidateRegistrationCVService = new CandidateRegistrationCVService();
 export const registerCandidateCV = onRequest(async (request, response) => {
-  if (!assertPostMethod(request, response)) {
+  if (!assertMethod(request, response, 'POST')) {
     return;
   }
 
   try {
-    const authContext = await getAuthContext(request);
-    const candidateId = resolveCandidateId(authContext);
+    const { uid: authenticatedUid } = await requireAuthenticatedUser(request);
     const payload = getPayload<CandidatePostulationCVPayload>(request.body);
     validateStartApplicationWithCVPayload(payload);
 
     const result = await candidateRegistrationCVService.registerCandidateCV(
-      candidateId,
+      authenticatedUid,
       payload,
     );
 
@@ -164,18 +125,17 @@ export const registerCandidateCV = onRequest(async (request, response) => {
 const candidateRegistrationService = new CandidateRegistrationService();
 
 export const registerCandidate = onRequest(async (request, response) => {
-  if (!assertPostMethod(request, response)) {
+  if (!assertMethod(request, response, 'POST')) {
     return;
   }
 
   try {
-    const authContext = await getAuthContext(request);
-    const candidateId = resolveCandidateId(authContext);
+    const { uid: authenticatedUid } = await requireAuthenticatedUser(request);
     const payload = getPayload<CandidatePostulationPayload>(request.body);
     validateRegisterCandidatePayload(payload);
 
     const result = await candidateRegistrationService.registerCandidate(
-      candidateId,
+      authenticatedUid,
       payload,
     );
 
@@ -195,16 +155,72 @@ export const registerCandidate = onRequest(async (request, response) => {
   }
 });
 
+export const getCandidateProfileForConfirmation = onRequest(
+  async (request, response) => {
+    if (!assertMethod(request, response, 'GET')) {
+      return;
+    }
+
+    try {
+      await requireAuthenticatedUser(request);
+      const { candidateId, applicationId } = request.query;
+      const payload: Partial<GetCandidateProfileForConfirmationPayload> = {
+        candidateId:
+          typeof candidateId === 'string' ? candidateId.trim() : undefined,
+        applicationId:
+          typeof applicationId === 'string' ? applicationId.trim() : undefined,
+      };
+      validateGetCandidateProfileForConfirmationPayload(payload);
+
+      const result =
+        await candidateRegistrationService.getCandidateProfileForConfirmation(
+          payload,
+        );
+
+      response.status(200).json(result);
+    } catch (error) {
+      if (
+        error instanceof CandidateProfileForConfirmationNotFoundError ||
+        error instanceof CandidateProfileForConfirmationApplicationNotFoundError
+      ) {
+        sendError(
+          response,
+          new HttpsError('not-found', error.message),
+          'No se pudo obtener el perfil del candidato.',
+        );
+        return;
+      }
+
+      if (
+        error instanceof CandidateProfileForConfirmationApplicationMismatchError
+      ) {
+        sendError(
+          response,
+          new HttpsError('permission-denied', error.message),
+          'No se pudo obtener el perfil del candidato.',
+        );
+        return;
+      }
+
+      logger.error(
+        'Error inesperado obteniendo perfil de candidato para confirmación',
+        error,
+      );
+      sendError(response, error, 'No se pudo obtener el perfil del candidato.');
+    }
+  },
+);
+
 export const confirmCandidateProfile = onRequest(async (request, response) => {
-  if (!assertPostMethod(request, response)) {
+  if (!assertMethod(request, response, 'PATCH')) {
     return;
   }
 
   try {
-    const authContext = await getAuthContext(request);
+    const { uid: authenticatedUid } = await requireAuthenticatedUser(request);
     const payload = getPayload<ConfirmCandidateProfilePayload>(request.body);
     logger.info('Iniciando confirmación de perfil de candidato', {
-      uid: authContext.uid,
+      uid: authenticatedUid,
       candidateId: payload.candidateId,
       applicationId: payload.applicationId,
     });
@@ -232,10 +248,41 @@ export const confirmCandidateProfile = onRequest(async (request, response) => {
       payload: request.body,
     });
 
+    if (error instanceof CandidateRegistrationConflictError) {
+      sendError(
+        response,
+        new HttpsError('already-exists', error.message),
+        'Ocurrió un error interno en el servidor al procesar la confirmación.',
+      );
+      return;
+    }
+
     if (error.message?.includes('CANDIDATE_NOT_FOUND')) {
       sendError(
         response,
         new HttpsError('not-found', error.message),
+        'Ocurrió un error interno en el servidor al procesar la confirmación.',
+      );
+      return;
+    }
+
+    if (
+      error instanceof CandidateProfileForConfirmationApplicationNotFoundError
+    ) {
+      sendError(
+        response,
+        new HttpsError('not-found', error.message),
+        'Ocurrió un error interno en el servidor al procesar la confirmación.',
+      );
+      return;
+    }
+
+    if (
+      error instanceof CandidateProfileForConfirmationApplicationMismatchError
+    ) {
+      sendError(
+        response,
+        new HttpsError('permission-denied', error.message),
         'Ocurrió un error interno en el servidor al procesar la confirmación.',
       );
       return;
@@ -246,5 +293,57 @@ export const confirmCandidateProfile = onRequest(async (request, response) => {
       error,
       'Ocurrió un error interno en el servidor al procesar la confirmación.',
     );
+  }
+});
+
+export const discardCandidateDraft = onRequest(async (request, response) => {
+  if (!assertMethod(request, response, 'POST')) {
+    return;
+  }
+
+  try {
+    await requireAuthenticatedUser(request);
+    const payload = getPayload<DiscardCandidateDraftPayload>(request.body);
+    validateDiscardCandidateDraftPayload(payload);
+
+    const result =
+      await candidateRegistrationService.discardCandidateDraft(payload);
+
+    response.status(200).json(result);
+  } catch (error) {
+    if (
+      error instanceof CandidateProfileForConfirmationNotFoundError ||
+      error instanceof CandidateProfileForConfirmationApplicationNotFoundError
+    ) {
+      sendError(
+        response,
+        new HttpsError('not-found', error.message),
+        'No se pudo descartar la postulación.',
+      );
+      return;
+    }
+
+    if (
+      error instanceof CandidateProfileForConfirmationApplicationMismatchError
+    ) {
+      sendError(
+        response,
+        new HttpsError('permission-denied', error.message),
+        'No se pudo descartar la postulación.',
+      );
+      return;
+    }
+
+    if (error instanceof CandidateDraftDiscardNotAllowedError) {
+      sendError(
+        response,
+        new HttpsError('failed-precondition', error.message),
+        'No se pudo descartar la postulación.',
+      );
+      return;
+    }
+
+    logger.error('Error inesperado descartando postulación por CV', error);
+    sendError(response, error, 'No se pudo descartar la postulación.');
   }
 });

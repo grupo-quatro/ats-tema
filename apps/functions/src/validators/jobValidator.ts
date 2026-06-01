@@ -79,8 +79,19 @@ export function validateCreateJobPayload(
     );
   }
 
+  if (payload.requirements !== undefined) {
+    validateStringArray(
+      payload.requirements,
+      'Los requisitos deben ser una lista de textos no vacios.',
+    );
+  }
+
   if (payload.city !== undefined && typeof payload.city !== 'string') {
     throw new HttpsError('invalid-argument', 'La ciudad debe ser texto.');
+  }
+
+  if (payload.type !== undefined && typeof payload.type !== 'string') {
+    throw new HttpsError('invalid-argument', 'El tipo debe ser texto.');
   }
 
   if (
@@ -149,6 +160,10 @@ export function validateUpdatePositionPayload(
     throw new HttpsError('invalid-argument', 'La ciudad debe ser texto.');
   }
 
+  if (payload.type !== undefined && typeof payload.type !== 'string') {
+    throw new HttpsError('invalid-argument', 'El tipo debe ser texto.');
+  }
+
   if (
     payload.observations !== undefined &&
     typeof payload.observations !== 'string'
@@ -163,6 +178,13 @@ export function validateUpdatePositionPayload(
     validateStringArray(
       payload.additionalCriteria,
       'Los criterios adicionales deben ser una lista de textos no vacíos.',
+    );
+  }
+
+  if (payload.requirements !== undefined) {
+    validateStringArray(
+      payload.requirements,
+      'Los requisitos deben ser una lista de textos no vacios.',
     );
   }
 

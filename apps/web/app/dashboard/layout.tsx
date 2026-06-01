@@ -10,9 +10,21 @@ import { useAuth } from '../shared/lib/authContext';
 
 function DashboardSkeleton() {
   return (
-    <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flex: 1,
+        minHeight: { xs: 'calc(100dvh - 56px)', sm: 'calc(100dvh - 64px)' },
+      }}
+    >
       <Box
-        sx={{ width: 240, flexShrink: 0, bgcolor: 'background.paper', p: 2 }}
+        sx={{
+          width: 240,
+          flexShrink: 0,
+          bgcolor: 'background.paper',
+          p: 2,
+          alignSelf: 'stretch',
+        }}
       >
         <Stack spacing={1}>
           {Array.from({ length: 6 }).map((_, i) => (
@@ -46,7 +58,13 @@ export default function DashboardLayout({
   if (!user) return null;
 
   return (
-    <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flex: 1,
+        minHeight: { xs: 'calc(100dvh - 56px)', sm: 'calc(100dvh - 64px)' },
+      }}
+    >
       <Sidebar />
       <Box
         component="main"

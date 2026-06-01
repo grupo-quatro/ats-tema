@@ -15,7 +15,9 @@ export { seedCandidates } from './callables/seedCandidates';
 export {
   registerCandidate,
   registerCandidateCV,
+  getCandidateProfileForConfirmation,
   confirmCandidateProfile,
+  discardCandidateDraft,
 } from './callables/candidateCallables';
 export { getApplicationsByJob } from './callables/getApplicationsByJob';
 export { getApplicationsByCandidate } from './callables/getApplicationsByCandidate';

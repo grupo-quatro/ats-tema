@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import TogglePositionStatusButton from '../../../features/dashboard/positions/components/TogglePositionStatusButton';
 import { getFunctionUrl } from '@/shared/lib/functionsUrl';
+import { getJobStatusStyle } from '@/shared/lib/jobStatus';
 import type { Job } from '@ats/shared-types';
 
 async function fetchPosition(id: string): Promise<Job | null> {
@@ -36,14 +37,6 @@ export const dynamic = 'force-dynamic';
 interface JobDetailPageProps {
   params: Promise<{ id: string }>;
 }
-
-const statusLabels: Record<
-  string,
-  { label: string; color: 'primary' | 'success' | 'error' }
-> = {
-  open: { label: 'Abierta', color: 'success' },
-  closed: { label: 'Cerrada', color: 'error' },
-};
 
 function InfoCard({
   title,
@@ -119,10 +112,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
     );
   }
 
-  const status = statusLabels[job.status] || {
-    label: 'En proceso',
-    color: 'primary',
-  };
+  const status = getJobStatusStyle(job.status);
 
   // Formateo de fecha
   const formattedDate = job.publishedAt
@@ -217,8 +207,9 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
                     label={status.label}
                     size="small"
                     sx={{
-                      bgcolor: '#bbf7d0',
-                      color: '#166534',
+                      bgcolor: status.backgroundColor,
+                      border: `1px solid ${status.borderColor}`,
+                      color: status.color,
                       fontWeight: 700,
                       fontSize: '0.75rem',
                       px: 1,

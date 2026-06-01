@@ -23,31 +23,48 @@ import { Plus, Sparkles, Star, FileText, CircleAlert, X } from 'lucide-react';
 
 import { useState } from 'react';
 
-import type { CreateJobDTO, Skill, JobLocation } from '@ats/shared-types';
+import type {
+  CreateJobPayload,
+  Skill,
+  JobLocation,
+  JobStatus,
+} from '@ats/shared-types';
 
 interface PositionFormProps {
-  onSubmit: (data: CreateJobDTO) => Promise<void>;
+  onSubmit: (data: CreateJobPayload) => Promise<void>;
   isLoading?: boolean;
   onCancel?: () => void;
+  submitError?: string;
+}
+
+function parseLines(value: string): string[] {
+  return value
+    .split('\n')
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 export default function PositionForm({
   onSubmit,
   isLoading = false,
   onCancel,
+  submitError = '',
 }: PositionFormProps) {
   const [mandatorySkills, setMandatorySkills] = useState<Skill[]>([]);
   const [desirableSkills, setDesirableSkills] = useState<Skill[]>([]);
   const [validationTrigger, setValidationTrigger] = useState(0);
+  const [formError, setFormError] = useState('');
 
   const [mandatorySkillForm, setMandatorySkillForm] = useState({
     name: '',
-    weight: '5',
+    years: '0',
+    weight: '',
   });
 
   const [desirableSkillForm, setDesirableSkillForm] = useState({
     name: '',
-    weight: '5',
+    years: '0',
+    weight: '',
   });
 
   const form = useForm({
@@ -57,38 +74,54 @@ export default function PositionForm({
       seniority: '',
       location: 'remote',
       city: '',
+      type: '',
       description: '',
-      requirements: [],
+      requirements: '',
       observations: '',
-      additionalCriteria: [],
-      slug: '',
+      additionalCriteria: '',
       status: 'draft',
-      responsabilities: [],
-      benefits: [],
-      hiringManagerId: '',
+      responsabilities: '',
+      benefits: '',
     },
 
     onSubmit: async ({ value }) => {
       const validationError = validateForm();
       if (validationError) {
-        alert(validationError);
+        setFormError(validationError);
         return;
       }
 
-      const payload: CreateJobDTO = {
-        ...value,
+      const payload: CreateJobPayload = {
+        title: value.title.trim(),
+        department: value.department.trim(),
+        seniority: value.seniority.trim(),
         location: value.location as JobLocation,
+        city: value.city.trim() || undefined,
+        type: value.type.trim() || undefined,
+        description: value.description.trim(),
         skills: [...mandatorySkills, ...desirableSkills],
-        slug: value.title?.toLowerCase().replace(/\s+/g, '-') || '',
-        status: 'draft',
+        responsabilities: parseLines(value.responsabilities),
+        benefits: parseLines(value.benefits),
+        ...(value.observations.trim() && {
+          observations: value.observations.trim(),
+        }),
+        ...(parseLines(value.additionalCriteria).length > 0 && {
+          additionalCriteria: parseLines(value.additionalCriteria),
+        }),
+        ...(parseLines(value.requirements).length > 0 && {
+          requirements: parseLines(value.requirements),
+        }),
+        status: value.status as JobStatus,
       };
 
+      setFormError('');
       await onSubmit(payload);
     },
   });
 
   const addMandatorySkill = () => {
     if (!mandatorySkillForm.name.trim()) return;
+    if (!mandatorySkillForm.weight) return;
 
     setMandatorySkills([
       ...mandatorySkills,
@@ -96,13 +129,14 @@ export default function PositionForm({
         name: mandatorySkillForm.name,
         weight: parseInt(mandatorySkillForm.weight),
         type: 'mandatory',
-        yearsOfExperience: 0,
+        yearsOfExperience: Math.max(0, Number(mandatorySkillForm.years) || 0),
       },
     ]);
 
     setMandatorySkillForm({
       name: '',
-      weight: '5',
+      years: '0',
+      weight: '',
     });
 
     setValidationTrigger((prev) => prev + 1);
@@ -110,6 +144,7 @@ export default function PositionForm({
 
   const addDesirableSkill = () => {
     if (!desirableSkillForm.name.trim()) return;
+    if (!desirableSkillForm.weight) return;
 
     setDesirableSkills([
       ...desirableSkills,
@@ -117,13 +152,14 @@ export default function PositionForm({
         name: desirableSkillForm.name,
         weight: parseInt(desirableSkillForm.weight),
         type: 'desirable',
-        yearsOfExperience: 0,
+        yearsOfExperience: Math.max(0, Number(desirableSkillForm.years) || 0),
       },
     ]);
 
     setDesirableSkillForm({
       name: '',
-      weight: '5',
+      years: '0',
+      weight: '',
     });
 
     setValidationTrigger((prev) => prev + 1);
@@ -144,11 +180,16 @@ export default function PositionForm({
     const department = form.state.values.department || '';
     const seniority = form.state.values.seniority || '';
     const description = form.state.values.description || '';
+    const responsabilities = parseLines(form.state.values.responsabilities);
+    const benefits = parseLines(form.state.values.benefits);
 
     if (!title.trim()) return 'El título de la posición es obligatorio';
     if (!department.trim()) return 'El área es obligatoria';
     if (!seniority.trim()) return 'El nivel de seniority es obligatorio';
     if (!description.trim()) return 'La descripción general es obligatoria';
+    if (responsabilities.length === 0)
+      return 'Debe agregar al menos una responsabilidad';
+    if (benefits.length === 0) return 'Debe agregar al menos un beneficio';
     if (mandatorySkills.length === 0)
       return 'Debe agregar al menos una skill obligatoria';
 
@@ -160,12 +201,16 @@ export default function PositionForm({
     const department = (form.state.values.department || '').trim();
     const seniority = (form.state.values.seniority || '').trim();
     const description = (form.state.values.description || '').trim();
+    const responsabilities = parseLines(form.state.values.responsabilities);
+    const benefits = parseLines(form.state.values.benefits);
 
     return (
       title.length > 0 &&
       department.length > 0 &&
       seniority.length > 0 &&
       description.length > 0 &&
+      responsabilities.length > 0 &&
+      benefits.length > 0 &&
       mandatorySkills.length > 0
     );
   };
@@ -179,6 +224,8 @@ export default function PositionForm({
       }}
     >
       <Stack spacing={3}>
+        {formError ? <Alert severity="error">{formError}</Alert> : null}
+
         {/* ALERTA IA */}
         <Alert
           icon={<Sparkles size={16} />}
@@ -259,7 +306,7 @@ export default function PositionForm({
               </form.Field>
 
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 5 }}>
                   <form.Field name="department">
                     {(field) => (
                       <FormControl fullWidth>
@@ -293,7 +340,7 @@ export default function PositionForm({
                   </form.Field>
                 </Grid>
 
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 5 }}>
                   <form.Field name="seniority">
                     {(field) => (
                       <FormControl fullWidth>
@@ -328,6 +375,143 @@ export default function PositionForm({
                 </Grid>
               </Grid>
 
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <form.Field name="location">
+                    {(field) => (
+                      <FormControl fullWidth>
+                        <FormLabel
+                          sx={{
+                            mb: 1,
+                            color: '#374151',
+                            fontWeight: 500,
+                            fontSize: '0.85rem',
+                          }}
+                        >
+                          Ubicacion *
+                        </FormLabel>
+                        <Select
+                          size="small"
+                          fullWidth
+                          value={field.state.value}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value);
+                            setValidationTrigger((prev) => prev + 1);
+                          }}
+                          sx={{
+                            borderRadius: '8px',
+                            bgcolor: '#f8fafc',
+                          }}
+                        >
+                          <MenuItem value="remote">Remoto</MenuItem>
+                          <MenuItem value="hybrid">Hibrido</MenuItem>
+                          <MenuItem value="on-site">Presencial</MenuItem>
+                        </Select>
+                      </FormControl>
+                    )}
+                  </form.Field>
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <form.Field name="city">
+                    {(field) => (
+                      <FormControl fullWidth>
+                        <FormLabel
+                          sx={{
+                            mb: 1,
+                            color: '#374151',
+                            fontWeight: 500,
+                            fontSize: '0.85rem',
+                          }}
+                        >
+                          Ciudad
+                        </FormLabel>
+                        <TextField
+                          size="small"
+                          fullWidth
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: '8px',
+                              bgcolor: '#f8fafc',
+                            },
+                          }}
+                        />
+                      </FormControl>
+                    )}
+                  </form.Field>
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <form.Field name="type">
+                    {(field) => (
+                      <FormControl fullWidth>
+                        <FormLabel
+                          sx={{
+                            mb: 1,
+                            color: '#374151',
+                            fontWeight: 500,
+                            fontSize: '0.85rem',
+                          }}
+                        >
+                          Tipo de Contratacion
+                        </FormLabel>
+                        <TextField
+                          size="small"
+                          fullWidth
+                          placeholder="Ej: Full-time, Part-time, Contractor"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          sx={{
+                            '& .MuiOutlinedInput-root': {
+                              borderRadius: '8px',
+                              bgcolor: '#f8fafc',
+                            },
+                          }}
+                        />
+                      </FormControl>
+                    )}
+                  </form.Field>
+                </Grid>
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <form.Field name="status">
+                    {(field) => (
+                      <FormControl fullWidth>
+                        <FormLabel
+                          sx={{
+                            mb: 1,
+                            color: '#374151',
+                            fontWeight: 500,
+                            fontSize: '0.85rem',
+                          }}
+                        >
+                          Estado Inicial
+                        </FormLabel>
+                        <Select
+                          size="small"
+                          fullWidth
+                          value={field.state.value}
+                          onChange={(e) => {
+                            field.handleChange(e.target.value);
+                            setValidationTrigger((prev) => prev + 1);
+                          }}
+                          sx={{
+                            borderRadius: '8px',
+                            bgcolor: '#f8fafc',
+                          }}
+                        >
+                          <MenuItem value="draft">Borrador</MenuItem>
+                          <MenuItem value="open">Abierta</MenuItem>
+                          <MenuItem value="paused">Pausada</MenuItem>
+                        </Select>
+                      </FormControl>
+                    )}
+                  </form.Field>
+                </Grid>
+              </Grid>
+
               <form.Field name="description">
                 {(field) => (
                   <FormControl fullWidth>
@@ -350,6 +534,112 @@ export default function PositionForm({
                         field.handleChange(e.target.value);
                         setValidationTrigger((prev) => prev + 1);
                       }}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '8px',
+                          bgcolor: '#f8fafc',
+                        },
+                      }}
+                    />
+                  </FormControl>
+                )}
+              </form.Field>
+
+              <form.Field name="requirements">
+                {(field) => (
+                  <FormControl fullWidth>
+                    <FormLabel
+                      sx={{
+                        mb: 1,
+                        color: '#374151',
+                        fontWeight: 500,
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      Requisitos
+                    </FormLabel>
+                    <TextField
+                      multiline
+                      rows={3}
+                      placeholder="Escribi un requisito por linea"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '8px',
+                          bgcolor: '#f8fafc',
+                        },
+                      }}
+                    />
+                  </FormControl>
+                )}
+              </form.Field>
+
+              <form.Field name="responsabilities">
+                {(field) => (
+                  <FormControl fullWidth>
+                    <FormLabel
+                      sx={{
+                        mb: 1,
+                        color: '#374151',
+                        fontWeight: 500,
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      Responsabilidades *
+                    </FormLabel>
+                    <TextField
+                      multiline
+                      rows={4}
+                      placeholder="Escribi una responsabilidad por linea"
+                      value={field.state.value}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value);
+                        setValidationTrigger((prev) => prev + 1);
+                      }}
+                      error={
+                        !!formError &&
+                        parseLines(field.state.value).length === 0
+                      }
+                      helperText="Este campo es requerido para crear la posicion."
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '8px',
+                          bgcolor: '#f8fafc',
+                        },
+                      }}
+                    />
+                  </FormControl>
+                )}
+              </form.Field>
+
+              <form.Field name="benefits">
+                {(field) => (
+                  <FormControl fullWidth>
+                    <FormLabel
+                      sx={{
+                        mb: 1,
+                        color: '#374151',
+                        fontWeight: 500,
+                        fontSize: '0.85rem',
+                      }}
+                    >
+                      Beneficios *
+                    </FormLabel>
+                    <TextField
+                      multiline
+                      rows={3}
+                      placeholder="Escribi un beneficio por linea"
+                      value={field.state.value}
+                      onChange={(e) => {
+                        field.handleChange(e.target.value);
+                        setValidationTrigger((prev) => prev + 1);
+                      }}
+                      error={
+                        !!formError &&
+                        parseLines(field.state.value).length === 0
+                      }
+                      helperText="Este campo es requerido para crear la posicion."
                       sx={{
                         '& .MuiOutlinedInput-root': {
                           borderRadius: '8px',
@@ -437,7 +727,25 @@ export default function PositionForm({
                     }
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 3 }}>
+                <Grid size={{ xs: 6, md: 2 }}>
+                  <Typography sx={{ fontSize: '0.72rem', mb: 0.8 }}>
+                    Años Exp.
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type="number"
+                    slotProps={{ htmlInput: { min: 0 } }}
+                    value={mandatorySkillForm.years}
+                    onChange={(e) =>
+                      setMandatorySkillForm({
+                        ...mandatorySkillForm,
+                        years: e.target.value,
+                      })
+                    }
+                  />
+                </Grid>
+                <Grid size={{ xs: 6, md: 2 }}>
                   <Typography sx={{ fontSize: '0.72rem', mb: 0.8 }}>
                     Peso (1-10)
                   </Typography>
@@ -452,6 +760,9 @@ export default function PositionForm({
                       })
                     }
                   >
+                    <MenuItem value="" disabled>
+                      Seleccionar
+                    </MenuItem>
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
                       <MenuItem key={value} value={value}>
                         {value}
@@ -538,7 +849,7 @@ export default function PositionForm({
                               mt: 0.5,
                             }}
                           >
-                            Peso: {skill.weight}/10
+                            {skill.yearsOfExperience} años de experiencia
                           </Typography>
                         </Box>
                         <Button
@@ -640,7 +951,25 @@ export default function PositionForm({
                     }
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 3 }}>
+                <Grid size={{ xs: 6, md: 2 }}>
+                  <Typography sx={{ fontSize: '0.72rem', mb: 0.8 }}>
+                    Años Exp.
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type="number"
+                    slotProps={{ htmlInput: { min: 0 } }}
+                    value={desirableSkillForm.years}
+                    onChange={(e) =>
+                      setDesirableSkillForm({
+                        ...desirableSkillForm,
+                        years: e.target.value,
+                      })
+                    }
+                  />
+                </Grid>
+                <Grid size={{ xs: 6, md: 2 }}>
                   <Typography sx={{ fontSize: '0.72rem', mb: 0.8 }}>
                     Peso (1-10)
                   </Typography>
@@ -655,6 +984,9 @@ export default function PositionForm({
                       })
                     }
                   >
+                    <MenuItem value="" disabled>
+                      Seleccionar
+                    </MenuItem>
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
                       <MenuItem key={value} value={value}>
                         {value}
@@ -740,7 +1072,7 @@ export default function PositionForm({
                               mt: 0.5,
                             }}
                           >
-                            Peso: {skill.weight}/10
+                            {skill.yearsOfExperience} años de experiencia
                           </Typography>
                         </Box>
                         <Button
@@ -807,18 +1139,47 @@ export default function PositionForm({
               experiencia en startups&quot;, &quot;Disponibilidad para viajar
               ocasionalmente&quot;
             </Alert>
-            <TextField
-              multiline
-              rows={4}
-              fullWidth
-              placeholder="Agrega criterios especiales de selección, excepciones o consideraciones importantes para la evaluación..."
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '10px',
-                  bgcolor: '#f8fafc',
-                },
-              }}
-            />
+            <Stack spacing={2}>
+              <form.Field name="observations">
+                {(field) => (
+                  <TextField
+                    multiline
+                    rows={3}
+                    fullWidth
+                    label="Observaciones"
+                    placeholder="Agrega consideraciones importantes para la evaluacion..."
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '10px',
+                        bgcolor: '#f8fafc',
+                      },
+                    }}
+                  />
+                )}
+              </form.Field>
+
+              <form.Field name="additionalCriteria">
+                {(field) => (
+                  <TextField
+                    multiline
+                    rows={3}
+                    fullWidth
+                    label="Criterios adicionales"
+                    placeholder="Escribi un criterio por linea"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: '10px',
+                        bgcolor: '#f8fafc',
+                      },
+                    }}
+                  />
+                )}
+              </form.Field>
+            </Stack>
           </Box>
         </Paper>
 
@@ -844,21 +1205,18 @@ export default function PositionForm({
           <Button
             type="submit"
             variant="contained"
-            disabled={
-              isLoading || !isFormValid() || mandatorySkills.length === 0
-            }
+            disabled={isLoading || !isFormValid()}
             sx={{
               textTransform: 'none',
               borderRadius: '10px',
               bgcolor: '#2563eb',
-              px: 4,
-              py: 1.2,
+              minWidth: { xs: '100%', sm: 220 },
+              px: 5,
+              py: 1.5,
+              fontWeight: 700,
               boxShadow: '0 10px 18px rgba(37,99,235,0.25)',
               '&:hover': {
-                bgcolor:
-                  isLoading || !isFormValid() || mandatorySkills.length === 0
-                    ? '#2563eb'
-                    : '#1d4ed8',
+                bgcolor: '#1d4ed8',
               },
               '&:disabled': {
                 bgcolor: '#cbd5e1',
@@ -869,15 +1227,30 @@ export default function PositionForm({
             title={
               !isFormValid()
                 ? validateForm() || 'Completa todos los campos requeridos'
-                : mandatorySkills.length === 0
-                  ? 'Debe agregar al menos una skill obligatoria'
-                  : ''
+                : ''
             }
             key={`submit-btn-${validationTrigger}`}
           >
             Publicar Nueva Posicion
           </Button>
         </Stack>
+
+        {submitError ? (
+          <Alert
+            severity="error"
+            sx={{
+              borderRadius: '12px',
+              border: '1px solid #fecaca',
+              bgcolor: '#fef2f2',
+              color: '#991b1b',
+              fontSize: '0.95rem',
+              fontWeight: 600,
+              '& .MuiAlert-icon': { color: '#dc2626' },
+            }}
+          >
+            {submitError}
+          </Alert>
+        ) : null}
       </Stack>
     </form>
   );

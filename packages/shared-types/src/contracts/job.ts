@@ -9,8 +9,15 @@ import type {
 
 export interface CreateJobPayload extends Omit<
   CreateJobDTO,
-  'hiringManagerId' | 'status' | 'salaryMin' | 'salaryMax' | 'currency'
+  | 'hiringManagerId'
+  | 'status'
+  | 'salaryMin'
+  | 'salaryMax'
+  | 'currency'
+  | 'slug'
+  | 'responsabilities'
 > {
+  responsabilities: string[];
   status?: JobStatus;
 }
 
@@ -54,6 +61,7 @@ export interface GetPositionPayload {
 export type GetPositionResponse = Job;
 
 export type ListPositionsOrderBy =
+  | 'createdAt'
   | 'publishedAt'
   | 'title'
   | 'department'

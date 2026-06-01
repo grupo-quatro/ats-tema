@@ -28,6 +28,7 @@ import type {
   ListPositionsOrderDir,
 } from '../hooks/usePositions';
 import { useUpdatePositionStatus } from '../hooks/useUpdatePositionStatus';
+import { getJobStatusStyle } from '@/shared/lib/jobStatus';
 
 type Props = {
   jobs: Job[];
@@ -80,114 +81,115 @@ export default function PositionsTable({
               Candidatos
             </TableCell>
             {headerCell('status', 'Estado')}
-            {headerCell('publishedAt', 'Publicada')}
+            {headerCell('createdAt', 'Creada')}
             <TableCell sx={{ color: 'white', fontWeight: 700 }} align="right">
               Acciones
             </TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {jobs.map((job) => (
-            <TableRow
-              key={job.id}
-              hover
-              sx={{ '&:last-child td': { borderBottom: 0 } }}
-            >
-              <TableCell sx={{ py: 2.5 }}>
-                <Box sx={{ fontWeight: 700 }}>{job.title}</Box>
-              </TableCell>
-              <TableCell>
-                <Chip
-                  label={job.department}
-                  variant="outlined"
-                  size="small"
-                  sx={{ borderRadius: 2 }}
-                />
-              </TableCell>
-              <TableCell>{job.city ? `${job.city}` : job.location}</TableCell>
-              <TableCell>{job.type ?? '—'}</TableCell>
-              <TableCell>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    color: 'primary.main',
-                  }}
-                >
-                  <Users size={14} />{' '}
-                  <Box component="span">{job.candidates ?? 0}</Box>
-                </Box>
-              </TableCell>
-              <TableCell>
-                <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
+          {jobs.map((job) => {
+            const statusStyle = getJobStatusStyle(job.status);
+
+            return (
+              <TableRow
+                key={job.id}
+                hover
+                sx={{ '&:last-child td': { borderBottom: 0 } }}
+              >
+                <TableCell sx={{ py: 2.5 }}>
+                  <Box sx={{ fontWeight: 700 }}>{job.title}</Box>
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    label={job.department}
+                    variant="outlined"
+                    size="small"
+                    sx={{ borderRadius: 2 }}
+                  />
+                </TableCell>
+                <TableCell>{job.city ? `${job.city}` : job.location}</TableCell>
+                <TableCell>{job.type ?? '—'}</TableCell>
+                <TableCell>
                   <Box
                     sx={{
-                      bgcolor: '#d1fae5',
-                      color: '#065f46',
-                      px: 1.2,
-                      py: 0.4,
-                      borderRadius: '999px',
-                      fontWeight: 700,
-                      fontSize: 12,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      color: 'primary.main',
                     }}
                   >
-                    {job.status === 'open'
-                      ? 'Abierta'
-                      : job.status === 'paused'
-                        ? 'Pausada'
-                        : job.status === 'closed'
-                          ? 'Cerrada'
-                          : 'Borrador'}
+                    <Users size={14} />{' '}
+                    <Box component="span">{job.candidates ?? 0}</Box>
                   </Box>
-                </Box>
-              </TableCell>
-              <TableCell>
-                {job.publishedAt
-                  ? new Date(job.publishedAt).toLocaleDateString('es-AR')
-                  : '-'}
-              </TableCell>
-              <TableCell align="right">
-                <Link
-                  href={`/dashboard/positions/${job.id}`}
-                  style={{ display: 'inline-flex' }}
-                >
-                  <IconButton size="small">
-                    <Eye size={16} />
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                    <Box
+                      sx={{
+                        bgcolor: statusStyle.backgroundColor,
+                        border: `1px solid ${statusStyle.borderColor}`,
+                        color: statusStyle.color,
+                        px: 1.2,
+                        py: 0.4,
+                        borderRadius: '999px',
+                        fontWeight: 700,
+                        fontSize: 12,
+                      }}
+                    >
+                      {statusStyle.label}
+                    </Box>
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  {job.createdAt
+                    ? new Date(job.createdAt).toLocaleDateString('es-AR')
+                    : '-'}
+                </TableCell>
+                <TableCell align="right">
+                  <Link
+                    href={`/dashboard/positions/${job.id}`}
+                    style={{ display: 'inline-flex' }}
+                  >
+                    <IconButton size="small">
+                      <Eye size={16} />
+                    </IconButton>
+                  </Link>
+                  <Link
+                    href={`/dashboard/positions/${job.id}/edit`}
+                    style={{ display: 'inline-flex' }}
+                  >
+                    <IconButton size="small">
+                      <Edit2 size={16} />
+                    </IconButton>
+                  </Link>
+                  <IconButton
+                    size="small"
+                    title={
+                      job.status === 'open'
+                        ? 'Cerrar posición'
+                        : 'Abrir posición'
+                    }
+                    onClick={() =>
+                      updateStatus({
+                        id: job.id,
+                        status: job.status === 'open' ? 'closed' : 'open',
+                      })
+                    }
+                  >
+                    {job.status === 'open' ? (
+                      <ToggleRight size={16} color={statusStyle.color} />
+                    ) : (
+                      <ToggleLeft size={16} color={statusStyle.color} />
+                    )}
                   </IconButton>
-                </Link>
-                <Link
-                  href={`/dashboard/positions/${job.id}/edit`}
-                  style={{ display: 'inline-flex' }}
-                >
                   <IconButton size="small">
-                    <Edit2 size={16} />
+                    <Trash2 size={16} />
                   </IconButton>
-                </Link>
-                <IconButton
-                  size="small"
-                  title={
-                    job.status === 'open' ? 'Cerrar posición' : 'Abrir posición'
-                  }
-                  onClick={() =>
-                    updateStatus({
-                      id: job.id,
-                      status: job.status === 'open' ? 'closed' : 'open',
-                    })
-                  }
-                >
-                  {job.status === 'open' ? (
-                    <ToggleRight size={16} color="#16a34a" />
-                  ) : (
-                    <ToggleLeft size={16} color="#94a3b8" />
-                  )}
-                </IconButton>
-                <IconButton size="small">
-                  <Trash2 size={16} />
-                </IconButton>
-              </TableCell>
-            </TableRow>
-          ))}
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </TableContainer>

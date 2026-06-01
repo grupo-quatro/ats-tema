@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from '@tanstack/react-form';
 import {
@@ -12,6 +12,8 @@ import {
   FormControl,
   FormLabel,
   Paper,
+  Select,
+  MenuItem,
   Snackbar,
   Stack,
   TextField,
@@ -25,6 +27,7 @@ import {
   ChevronLeft,
   FileText,
   GraduationCap,
+  Pencil,
   Plus,
   Save,
   Sparkles,
@@ -32,7 +35,19 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import type { Job, Skill, UpdateJobDTO } from '@ats/shared-types';
+import type {
+  Job,
+  JobLocation,
+  JobStatus,
+  Skill,
+  UpdateJobDTO,
+  UpdatePositionPayload,
+} from '@ats/shared-types';
+import {
+  updatePosition,
+  updatePositionStatus,
+} from '@/shared/api/positionsApi';
+import { getJobStatusStyle } from '@/shared/lib/jobStatus';
 
 type EditableSkill = Skill & {
   years: number;
@@ -69,11 +84,15 @@ function formatDate(date?: Date | string) {
   });
 }
 
-function statusLabel(status: Job['status']) {
-  if (status === 'open') return 'Activa';
-  if (status === 'paused') return 'Pausada';
-  if (status === 'closed') return 'Cerrada';
-  return 'Borrador';
+function formatLines(value?: string[]): string {
+  return value?.join('\n') ?? '';
+}
+
+function parseLines(value: string): string[] {
+  return value
+    .split('\n')
+    .map((item) => item.trim())
+    .filter(Boolean);
 }
 
 function InfoMetric({
@@ -239,6 +258,7 @@ function SkillEditor({
   draft,
   setDraft,
   addSkill,
+  updateSkill,
   removeSkill,
   noteTone = 'blue',
 }: {
@@ -247,9 +267,36 @@ function SkillEditor({
   draft: SkillDraft;
   setDraft: (draft: SkillDraft) => void;
   addSkill: () => void;
+  updateSkill: (index: number, draft: SkillDraft) => void;
   removeSkill: (index: number) => void;
   noteTone?: 'blue' | 'slate';
 }) {
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+  function handleSaveSkill() {
+    if (editingIndex === null) {
+      addSkill();
+      return;
+    }
+
+    updateSkill(editingIndex, draft);
+    setEditingIndex(null);
+  }
+
+  function startEditingSkill(skill: EditableSkill, index: number) {
+    setDraft({
+      name: skill.name,
+      years: String(skill.years),
+      weight: String(skill.weight),
+    });
+    setEditingIndex(index);
+  }
+
+  function cancelEditingSkill() {
+    setDraft({ name: '', years: '0', weight: '' });
+    setEditingIndex(null);
+  }
+
   return (
     <Stack spacing={2.2}>
       <Alert
@@ -298,9 +345,6 @@ function SkillEditor({
               }
               sx={inputSx}
             />
-            <Typography sx={{ color: '#94a3b8', fontSize: '0.68rem', mt: 1 }}>
-              Importancia media - Relevante
-            </Typography>
           </Grid>
           <Grid size={{ xs: 6, md: 2 }}>
             <Typography
@@ -353,11 +397,21 @@ function SkillEditor({
               fullWidth
               variant="contained"
               startIcon={<Plus size={16} />}
-              onClick={addSkill}
+              onClick={handleSaveSkill}
               sx={{ height: 44, px: { xs: 2, md: 1.2 } }}
             >
-              Agregar
+              {editingIndex === null ? 'Agregar' : 'Actualizar'}
             </Button>
+            {editingIndex !== null ? (
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={cancelEditingSkill}
+                sx={{ mt: 1, height: 36, px: { xs: 2, md: 1.2 } }}
+              >
+                Cancelar
+              </Button>
+            ) : null}
           </Grid>
         </Grid>
       </Paper>
@@ -414,31 +468,38 @@ function SkillEditor({
                     fontWeight: 700,
                   }}
                 />
-                <Chip
-                  label={`Peso: ${skill.weight}/10`}
-                  size="small"
-                  sx={{
-                    bgcolor: '#dbeafe',
-                    color: '#2563eb',
-                    height: 24,
-                    fontSize: '0.7rem',
-                    fontWeight: 700,
-                  }}
-                />
               </Stack>
-              <Button
-                aria-label={`Quitar ${skill.name}`}
-                onClick={() => removeSkill(index)}
-                sx={{
-                  minWidth: 34,
-                  color: '#ef4444',
-                  p: 0.5,
-                  flexShrink: 0,
-                  '&:hover': { bgcolor: '#fee2e2' },
-                }}
-              >
-                <X size={16} />
-              </Button>
+              <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
+                <Button
+                  aria-label={`Editar ${skill.name}`}
+                  onClick={() => startEditingSkill(skill, index)}
+                  sx={{
+                    minWidth: 34,
+                    color: '#2563eb',
+                    p: 0.5,
+                    '&:hover': { bgcolor: '#dbeafe' },
+                  }}
+                >
+                  <Pencil size={16} />
+                </Button>
+                <Button
+                  aria-label={`Quitar ${skill.name}`}
+                  onClick={() => {
+                    removeSkill(index);
+                    if (editingIndex === index) {
+                      cancelEditingSkill();
+                    }
+                  }}
+                  sx={{
+                    minWidth: 34,
+                    color: '#ef4444',
+                    p: 0.5,
+                    '&:hover': { bgcolor: '#fee2e2' },
+                  }}
+                >
+                  <X size={16} />
+                </Button>
+              </Stack>
             </Box>
           ))}
         </Stack>
@@ -450,6 +511,7 @@ function SkillEditor({
 export default function PositionEditView({ job, onSave }: Props) {
   const router = useRouter();
   const [message, setMessage] = useState('');
+  const statusStyle = getJobStatusStyle(job.status);
   const [mandatorySkills, setMandatorySkills] = useState<EditableSkill[]>(() =>
     job.skills
       .filter((skill) => skill.type === 'mandatory')
@@ -469,37 +531,46 @@ export default function PositionEditView({ job, onSave }: Props) {
   const [mandatoryDraft, setMandatoryDraft] = useState<SkillDraft>({
     name: '',
     years: '0',
-    weight: '5',
+    weight: '',
   });
   const [desirableDraft, setDesirableDraft] = useState<SkillDraft>({
     name: '',
     years: '0',
-    weight: '5',
+    weight: '',
   });
-
-  const initialCriteria = useMemo(
-    () =>
-      [job.observations, ...(job.additionalCriteria ?? [])]
-        .filter(Boolean)
-        .join('\n'),
-    [job.additionalCriteria, job.observations],
-  );
 
   const form = useForm({
     defaultValues: {
       title: job.title,
       department: job.department,
       seniority: job.seniority,
+      location: job.location,
+      city: job.city ?? '',
+      type: job.type ?? '',
+      status: job.status,
       description: job.description,
-      criteria: initialCriteria,
+      requirements: formatLines(job.requirements),
+      responsabilities: formatLines(job.responsabilities),
+      benefits: formatLines(job.benefits),
+      observations: job.observations ?? '',
+      additionalCriteria: formatLines(job.additionalCriteria),
     },
     onSubmit: async ({ value }) => {
+      const requirements = parseLines(value.requirements);
+      const additionalCriteria = parseLines(value.additionalCriteria);
       const payload: UpdateJobDTO = {
         title: value.title,
         department: value.department,
         seniority: value.seniority,
+        location: value.location as JobLocation,
+        city: value.city.trim() || undefined,
+        type: value.type.trim() || undefined,
         description: value.description,
-        observations: value.criteria,
+        responsabilities: parseLines(value.responsabilities),
+        benefits: parseLines(value.benefits),
+        observations: value.observations.trim() || undefined,
+        ...(requirements.length > 0 && { requirements }),
+        ...(additionalCriteria.length > 0 && { additionalCriteria }),
         skills: [...mandatorySkills, ...desirableSkills].map(
           ({ name, years, weight, type }) => ({
             name,
@@ -512,6 +583,18 @@ export default function PositionEditView({ job, onSave }: Props) {
 
       if (onSave) {
         await onSave(job.id, payload);
+      } else {
+        await updatePosition({
+          id: job.id,
+          ...payload,
+        } as UpdatePositionPayload);
+      }
+
+      if (value.status !== job.status) {
+        await updatePositionStatus({
+          id: job.id,
+          status: value.status as JobStatus,
+        });
       }
 
       setMessage('Cambios guardados correctamente');
@@ -525,6 +608,7 @@ export default function PositionEditView({ job, onSave }: Props) {
     reset: (draft: SkillDraft) => void,
   ) => {
     if (!draft.name.trim()) return;
+    if (!draft.weight.trim()) return;
     update((current) => [
       ...current,
       {
@@ -535,7 +619,33 @@ export default function PositionEditView({ job, onSave }: Props) {
         type,
       },
     ]);
-    reset({ name: '', years: '0', weight: '5' });
+    reset({ name: '', years: '0', weight: '' });
+  };
+
+  const updateSkillFromDraft = (
+    index: number,
+    draft: SkillDraft,
+    type: Skill['type'],
+    update: React.Dispatch<React.SetStateAction<EditableSkill[]>>,
+    reset: (draft: SkillDraft) => void,
+  ) => {
+    if (!draft.name.trim()) return;
+    if (!draft.weight.trim()) return;
+
+    const updatedSkill: EditableSkill = {
+      name: draft.name.trim(),
+      years: Number(draft.years) || 0,
+      yearsOfExperience: Number(draft.years) || 0,
+      weight: Math.min(10, Math.max(1, Number(draft.weight) || 1)),
+      type,
+    };
+
+    update((current) =>
+      current.map((skill, itemIndex) =>
+        itemIndex === index ? updatedSkill : skill,
+      ),
+    );
+    reset({ name: '', years: '0', weight: '' });
   };
 
   return (
@@ -575,10 +685,11 @@ export default function PositionEditView({ job, onSave }: Props) {
             Volver al Listado
           </Button>
           <Chip
-            label={statusLabel(job.status)}
+            label={statusStyle.label}
             sx={{
-              bgcolor: '#dbfce7',
-              color: '#16a34a',
+              bgcolor: statusStyle.backgroundColor,
+              border: `1px solid ${statusStyle.borderColor}`,
+              color: statusStyle.color,
               fontWeight: 700,
               height: 34,
               px: 0.8,
@@ -760,6 +871,104 @@ export default function PositionEditView({ job, onSave }: Props) {
                   </Grid>
                 </Grid>
 
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <form.Field name="location">
+                      {(field) => (
+                        <FormControl fullWidth>
+                          <FieldLabel required>Ubicacion</FieldLabel>
+                          <Select
+                            fullWidth
+                            size="small"
+                            value={field.state.value}
+                            onChange={(event) =>
+                              field.handleChange(event.target.value)
+                            }
+                            sx={{
+                              borderRadius: '8px',
+                              bgcolor: '#f8fafc',
+                              minHeight: 44,
+                            }}
+                          >
+                            <MenuItem value="remote">Remoto</MenuItem>
+                            <MenuItem value="hybrid">Hibrido</MenuItem>
+                            <MenuItem value="on-site">Presencial</MenuItem>
+                          </Select>
+                        </FormControl>
+                      )}
+                    </form.Field>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <form.Field name="city">
+                      {(field) => (
+                        <FormControl fullWidth>
+                          <FieldLabel>Ciudad</FieldLabel>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(event) =>
+                              field.handleChange(event.target.value)
+                            }
+                            sx={inputSx}
+                          />
+                        </FormControl>
+                      )}
+                    </form.Field>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <form.Field name="type">
+                      {(field) => (
+                        <FormControl fullWidth>
+                          <FieldLabel>Tipo de Contratacion</FieldLabel>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            placeholder="Ej: Full-time, Part-time, Contractor"
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(event) =>
+                              field.handleChange(event.target.value)
+                            }
+                            sx={inputSx}
+                          />
+                        </FormControl>
+                      )}
+                    </form.Field>
+                  </Grid>
+
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <form.Field name="status">
+                      {(field) => (
+                        <FormControl fullWidth>
+                          <FieldLabel>Estado</FieldLabel>
+                          <Select
+                            fullWidth
+                            size="small"
+                            value={field.state.value}
+                            onChange={(event) =>
+                              field.handleChange(event.target.value)
+                            }
+                            sx={{
+                              borderRadius: '8px',
+                              bgcolor: '#f8fafc',
+                              minHeight: 44,
+                            }}
+                          >
+                            <MenuItem value="draft">Borrador</MenuItem>
+                            <MenuItem value="open">Abierta</MenuItem>
+                            <MenuItem value="paused">Pausada</MenuItem>
+                            <MenuItem value="closed">Cerrada</MenuItem>
+                          </Select>
+                        </FormControl>
+                      )}
+                    </form.Field>
+                  </Grid>
+                </Grid>
+
                 <form.Field name="description">
                   {(field) => (
                     <FormControl fullWidth>
@@ -771,6 +980,66 @@ export default function PositionEditView({ job, onSave }: Props) {
                         multiline
                         minRows={5}
                         placeholder="Describe el rol, responsabilidades principales y contexto del equipo..."
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(event) =>
+                          field.handleChange(event.target.value)
+                        }
+                        sx={inputSx}
+                      />
+                    </FormControl>
+                  )}
+                </form.Field>
+
+                <form.Field name="requirements">
+                  {(field) => (
+                    <FormControl fullWidth>
+                      <FieldLabel>Requisitos</FieldLabel>
+                      <TextField
+                        fullWidth
+                        multiline
+                        minRows={3}
+                        placeholder="Escribi un requisito por linea"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(event) =>
+                          field.handleChange(event.target.value)
+                        }
+                        sx={inputSx}
+                      />
+                    </FormControl>
+                  )}
+                </form.Field>
+
+                <form.Field name="responsabilities">
+                  {(field) => (
+                    <FormControl fullWidth>
+                      <FieldLabel required>Responsabilidades</FieldLabel>
+                      <TextField
+                        fullWidth
+                        multiline
+                        minRows={4}
+                        placeholder="Escribi una responsabilidad por linea"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(event) =>
+                          field.handleChange(event.target.value)
+                        }
+                        sx={inputSx}
+                      />
+                    </FormControl>
+                  )}
+                </form.Field>
+
+                <form.Field name="benefits">
+                  {(field) => (
+                    <FormControl fullWidth>
+                      <FieldLabel required>Beneficios</FieldLabel>
+                      <TextField
+                        fullWidth
+                        multiline
+                        minRows={3}
+                        placeholder="Escribi un beneficio por linea"
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChange={(event) =>
@@ -803,6 +1072,15 @@ export default function PositionEditView({ job, onSave }: Props) {
                 addSkill={() =>
                   addSkillFromDraft(
                     mandatoryDraft,
+                    'mandatory',
+                    setMandatorySkills,
+                    setMandatoryDraft,
+                  )
+                }
+                updateSkill={(index, draft) =>
+                  updateSkillFromDraft(
+                    index,
+                    draft,
                     'mandatory',
                     setMandatorySkills,
                     setMandatoryDraft,
@@ -841,6 +1119,15 @@ export default function PositionEditView({ job, onSave }: Props) {
                     setDesirableDraft,
                   )
                 }
+                updateSkill={(index, draft) =>
+                  updateSkillFromDraft(
+                    index,
+                    draft,
+                    'desirable',
+                    setDesirableSkills,
+                    setDesirableDraft,
+                  )
+                }
                 removeSkill={(index) =>
                   setDesirableSkills((current) =>
                     current.filter((_, itemIndex) => itemIndex !== index),
@@ -871,13 +1158,32 @@ export default function PositionEditView({ job, onSave }: Props) {
                   &quot;Preferible experiencia en startups&quot;,
                   &quot;Disponibilidad para viajar ocasionalmente&quot;
                 </Alert>
-                <form.Field name="criteria">
+                <form.Field name="observations">
                   {(field) => (
                     <TextField
                       fullWidth
                       multiline
-                      minRows={6}
-                      placeholder="Agrega criterios especiales de selección, excepciones o consideraciones importantes para la evaluación..."
+                      minRows={3}
+                      label="Observaciones"
+                      placeholder="Agrega consideraciones importantes para la evaluacion..."
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(event) =>
+                        field.handleChange(event.target.value)
+                      }
+                      sx={inputSx}
+                    />
+                  )}
+                </form.Field>
+
+                <form.Field name="additionalCriteria">
+                  {(field) => (
+                    <TextField
+                      fullWidth
+                      multiline
+                      minRows={3}
+                      label="Criterios adicionales"
+                      placeholder="Escribi un criterio por linea"
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(event) =>

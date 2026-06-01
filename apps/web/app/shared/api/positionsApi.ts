@@ -1,12 +1,13 @@
 import type {
-  CreateJobDTO,
+  CreateJobPayload,
   ListPositionsFilters,
   ListPositionsResponse,
+  UpdatePositionPayload,
   UpdatePositionStatusPayload,
 } from '@ats/shared-types';
 
-import { getFunctionUrl } from '../lib/firebase';
 import { getToken } from '../lib/auth';
+import { getFunctionUrl } from '../lib/firebase';
 
 export async function listPositions(
   filters: ListPositionsFilters,
@@ -29,7 +30,18 @@ export async function listPositions(
   return res.json();
 }
 
-export async function createPosition(jobData: CreateJobDTO): Promise<unknown> {
+async function readApiError(res: Response, fallback: string): Promise<string> {
+  try {
+    const error = await res.json();
+    return error.error || error.message || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export async function createPosition(
+  jobData: CreateJobPayload,
+): Promise<unknown> {
   const token = await getToken();
   const res = await fetch(getFunctionUrl('createJob'), {
     method: 'POST',
@@ -40,8 +52,7 @@ export async function createPosition(jobData: CreateJobDTO): Promise<unknown> {
     body: JSON.stringify(jobData),
   });
   if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || 'Error al crear la posición');
+    throw new Error(await readApiError(res, 'Error al crear la posicion'));
   }
   return res.json();
 }
@@ -59,8 +70,24 @@ export async function updatePositionStatus(
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.message || 'Error al actualizar el estado');
+    throw new Error(await readApiError(res, 'Error al actualizar el estado'));
+  }
+}
+
+export async function updatePosition(
+  payload: UpdatePositionPayload,
+): Promise<void> {
+  const token = await getToken();
+  const res = await fetch(getFunctionUrl('updatePosition'), {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res, 'Error al actualizar la posicion'));
   }
 }
 

@@ -13,31 +13,29 @@ import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import PositionForm from '@/features/dashboard/positions/components/PositionForm';
 import { useCreatePosition } from '@/features/dashboard/positions/hooks/useCreatePosition';
-import { CreateJobDTO } from '@ats/shared-types';
+import type { CreateJobPayload } from '@ats/shared-types';
 
 export default function CreateJobPage() {
   const router = useRouter();
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const { mutate: createJob, isPending } = useCreatePosition();
+  const { mutateAsync: createJob, isPending } = useCreatePosition();
 
-  const handleCreateJob = async (jobData: CreateJobDTO) => {
-    createJob(jobData, {
-      onSuccess: () => {
-        setSuccessMessage('Posición creada exitosamente');
+  const handleCreateJob = async (jobData: CreateJobPayload) => {
+    setErrorMessage('');
 
-        setTimeout(() => {
-          router.push('/dashboard/positions');
-        }, 2000);
-      },
-      onError: (error) => {
-        setErrorMessage(
-          error instanceof Error ? error.message : 'Error al crear la posición',
-        );
+    try {
+      await createJob(jobData);
+      setSuccessMessage('Posicion creada exitosamente');
 
-        setTimeout(() => setErrorMessage(''), 3000);
-      },
-    });
+      setTimeout(() => {
+        router.push('/dashboard/positions');
+      }, 2000);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Error al crear la posicion',
+      );
+    }
   };
 
   return (
@@ -104,6 +102,7 @@ export default function CreateJobPage() {
           onSubmit={handleCreateJob}
           isLoading={isPending}
           onCancel={() => router.push('/dashboard/positions')}
+          submitError={errorMessage}
         />
       </Container>
 
@@ -114,15 +113,6 @@ export default function CreateJobPage() {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         <Alert severity="success">{successMessage}</Alert>
-      </Snackbar>
-
-      <Snackbar
-        open={!!errorMessage}
-        autoHideDuration={3000}
-        onClose={() => setErrorMessage('')}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert severity="error">{errorMessage}</Alert>
       </Snackbar>
     </Box>
   );

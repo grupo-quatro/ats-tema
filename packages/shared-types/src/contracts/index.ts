@@ -4,6 +4,7 @@ export * from './candidatePostulationBase';
 export * from './getApplicationsByJob';
 export * from './getApplicationDetail';
 export * from './getApplicationsByCandidate';
+export * from './getCandidateProfileForConfirmation';
 export * from './submitApplication';
 export * from './job';
 export * from './confirmCandidate';

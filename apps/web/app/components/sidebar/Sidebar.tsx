@@ -71,7 +71,7 @@ export default function Sidebar() {
       sx={{
         width,
         minWidth: width,
-        height: '100%',
+        alignSelf: 'stretch',
         bgcolor: '#ffffff',
         borderRight: '1px solid #e2e8f0',
         display: 'flex',

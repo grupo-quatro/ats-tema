@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 import {
   alpha,
@@ -10,12 +10,15 @@ import {
   Card,
   CardContent,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   IconButton,
   TextField,
   Typography,
 } from '@mui/material';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Briefcase,
@@ -35,7 +38,13 @@ import type { ParsedEducation, ParsedExperience } from '@ats/shared-types';
 
 import type { MinimalFormFieldComponent } from './ManualProfileFormField';
 import { ManualProfileFormField } from './ManualProfileFormField';
-import { useRegisterManual } from '../../hooks/usePostulation';
+import {
+  useCandidateProfileForConfirmation,
+  useConfirmCandidateProfile,
+  useDiscardCandidateDraft,
+  useRegisterCvFlow,
+  useRegisterManual,
+} from '../../hooks/usePostulation';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -111,6 +120,18 @@ function validateYearsOfExperience({
   return undefined;
 }
 
+function scrollToFirstInvalidField() {
+  window.setTimeout(() => {
+    const invalidField = document.querySelector<HTMLElement>(
+      '[aria-invalid="true"]',
+    );
+    if (!invalidField) return;
+
+    invalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    invalidField.focus({ preventScroll: true });
+  }, 0);
+}
+
 const v = {
   firstName: requiredTrim('El nombre es requerido'),
   lastName: requiredTrim('Los apellidos son requeridos'),
@@ -158,10 +179,23 @@ export function ManualCandidateForm({
 }: ManualCandidateFormProps) {
   const router = useRouter();
   const backHref = `/jobs/${jobId}`;
-  const { mutateAsync, isPending, isError, error } = useRegisterManual();
+  const manualRegistration = useRegisterManual();
+  const cvRegistration = useRegisterCvFlow();
+  const profileConfirmation = useConfirmCandidateProfile();
+  const discardDraft = useDiscardCandidateDraft();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cvSectionRef = useRef<HTMLDivElement>(null);
   const [cvFile, setCvFile] = useState<File | null>(preloadedFile ?? null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [cvFlow, setCvFlow] = useState<{
+    candidateId: string;
+    applicationId: string;
+  } | null>(null);
+  const [processingDialogOpen, setProcessingDialogOpen] = useState(false);
+  const [discardAction, setDiscardAction] = useState<'exit' | 'remove' | null>(
+    null,
+  );
+  const appliedProfileCandidateIdRef = useRef<string | null>(null);
   const [experiences, setExperiences] = useState<ParsedExperience[]>([
     emptyExperience(),
   ]);
@@ -171,12 +205,99 @@ export function ManualCandidateForm({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
+
+    if (!file) {
+      return;
+    }
+
     setFileError(null);
-    if (file && !file.name.toLowerCase().endsWith('.pdf')) {
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
       setFileError('Solo se aceptan archivos PDF.');
       return;
     }
+
+    if (cvFlow) {
+      setDiscardAction('remove');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    appliedProfileCandidateIdRef.current = null;
+    setCvFlow(null);
     setCvFile(file);
+  };
+
+  const resetProfileFields = () => {
+    form.setFieldValue('firstName', '');
+    form.setFieldValue('lastName', '');
+    form.setFieldValue('email', '');
+    form.setFieldValue('phone', '');
+    form.setFieldValue('location', '');
+    form.setFieldValue('yearsOfExperience', '');
+    form.setFieldValue('education', '');
+    form.setFieldValue('technicalSkills', '');
+    form.setFieldValue('professionalSummary', '');
+    setExperiences([emptyExperience()]);
+    setEducations([emptyEducation()]);
+  };
+
+  const clearCvSelection = ({ resetProfile }: { resetProfile: boolean }) => {
+    setCvFile(null);
+    setCvFlow(null);
+    appliedProfileCandidateIdRef.current = null;
+    setFileError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    if (resetProfile) {
+      resetProfileFields();
+    }
+  };
+
+  const handleCancel = () => {
+    if (cvFlow) {
+      setDiscardAction('exit');
+      return;
+    }
+
+    router.push(backHref);
+  };
+
+  const handleRemoveCv = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+
+    if (cvFlow) {
+      setDiscardAction('remove');
+      return;
+    }
+
+    clearCvSelection({ resetProfile: false });
+  };
+
+  const handleConfirmDiscard = async () => {
+    const action = discardAction;
+    if (!action) {
+      return;
+    }
+
+    try {
+      if (cvFlow) {
+        await discardDraft.mutateAsync(cvFlow);
+      }
+
+      setDiscardAction(null);
+
+      if (action === 'exit') {
+        router.push(backHref);
+        return;
+      }
+
+      clearCvSelection({ resetProfile: true });
+    } catch {
+      // el error queda en discardDraft.error
+    }
   };
 
   const updateExperience = (
@@ -210,42 +331,136 @@ export function ManualCandidateForm({
           (e) => e.degree?.trim() || e.institution?.trim(),
         );
 
-        const result = await mutateAsync({
-          payload: {
-            jobId,
-            firstName: value.firstName.trim(),
-            lastName: value.lastName.trim(),
-            email: value.email.trim(),
-            phone: value.phone.trim(),
-            location: value.location.trim() || undefined,
-            yearsOfExperience: value.yearsOfExperience.trim()
-              ? Number(value.yearsOfExperience.trim())
-              : undefined,
-            education: value.education.trim() || undefined,
-            technicalSkills: value.technicalSkills
-              ? value.technicalSkills
-                  .split(',')
-                  .map((s) => s.trim())
-                  .filter(Boolean)
-              : undefined,
-            professionalSummary: value.professionalSummary.trim() || undefined,
-            parsedExperience: parsedExperience.length
-              ? parsedExperience
-              : undefined,
-            parsedEducation: parsedEducation.length
-              ? parsedEducation
-              : undefined,
-          },
-          file: cvFile ?? undefined,
-        });
+        const profilePayload = {
+          firstName: value.firstName.trim(),
+          lastName: value.lastName.trim(),
+          email: value.email.trim(),
+          phone: value.phone.trim(),
+          location: value.location.trim() || undefined,
+          yearsOfExperience: value.yearsOfExperience.trim()
+            ? Number(value.yearsOfExperience.trim())
+            : undefined,
+          education: value.education.trim() || undefined,
+          technicalSkills: value.technicalSkills
+            ? value.technicalSkills
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : undefined,
+          professionalSummary: value.professionalSummary.trim() || undefined,
+          parsedExperience: parsedExperience.length
+            ? parsedExperience
+            : undefined,
+          parsedEducation: parsedEducation.length ? parsedEducation : undefined,
+        };
+
+        const result = cvFlow
+          ? await profileConfirmation.mutateAsync({
+              candidateId: cvFlow.candidateId,
+              applicationId: cvFlow.applicationId,
+              profile: profilePayload,
+            })
+          : await manualRegistration.mutateAsync({
+              payload: {
+                jobId,
+                ...profilePayload,
+              },
+              file: cvFile ?? undefined,
+            });
         router.push(
           `/postulation/${jobId}/success?status=${result.cvParseStatus}`,
         );
       } catch {
-        // el error queda en isError/error del hook
+        // el error queda en los estados de mutation/query
       }
     },
   });
+
+  const profileQuery = useCandidateProfileForConfirmation({
+    candidateId: cvFlow?.candidateId,
+    applicationId: cvFlow?.applicationId,
+    enabled: Boolean(cvFlow),
+  });
+
+  const cvParseStatus = profileQuery.data?.cvParseStatus;
+  const isParsingCv =
+    cvParseStatus === 'pending' || cvParseStatus === 'processing';
+  const isSubmittingRegistration =
+    manualRegistration.isPending || profileConfirmation.isPending;
+  const isCvActionPending = cvRegistration.isPending || isParsingCv;
+  const isDiscardingDraft = discardDraft.isPending;
+  const submitError =
+    manualRegistration.error ??
+    profileConfirmation.error ??
+    cvRegistration.error ??
+    profileQuery.error ??
+    discardDraft.error;
+
+  useEffect(() => {
+    const data = profileQuery.data;
+    if (
+      !data ||
+      data.cvParseStatus !== 'done' ||
+      appliedProfileCandidateIdRef.current === data.candidateId
+    ) {
+      return;
+    }
+
+    const { profile } = data;
+    form.setFieldValue('firstName', profile.firstName ?? '');
+    form.setFieldValue('lastName', profile.lastName ?? '');
+    form.setFieldValue('email', profile.email ?? '');
+    form.setFieldValue('phone', profile.phone ?? '');
+    form.setFieldValue('location', profile.location ?? '');
+    form.setFieldValue(
+      'yearsOfExperience',
+      profile.yearsOfExperience === undefined
+        ? ''
+        : String(profile.yearsOfExperience),
+    );
+    form.setFieldValue('education', profile.education ?? '');
+    form.setFieldValue(
+      'technicalSkills',
+      profile.technicalSkills?.join(', ') ?? '',
+    );
+    form.setFieldValue(
+      'professionalSummary',
+      profile.professionalSummary ?? '',
+    );
+    setExperiences(
+      profile.parsedExperience?.length
+        ? profile.parsedExperience
+        : [emptyExperience()],
+    );
+    setEducations(
+      profile.parsedEducation?.length
+        ? profile.parsedEducation
+        : [emptyEducation()],
+    );
+    appliedProfileCandidateIdRef.current = data.candidateId;
+    setProcessingDialogOpen(false);
+  }, [form, profileQuery.data]);
+
+  const handleAutocompleteFromCv = async () => {
+    if (!cvFile) {
+      setFileError('Adjuntá un PDF para autocompletar el perfil.');
+      return;
+    }
+
+    setFileError(null);
+    appliedProfileCandidateIdRef.current = null;
+    setProcessingDialogOpen(true);
+
+    try {
+      const result = await cvRegistration.mutateAsync({ jobId, file: cvFile });
+      setCvFlow({
+        candidateId: result.candidateId,
+        applicationId: result.applicationId,
+      });
+    } catch {
+      setProcessingDialogOpen(false);
+    }
+  };
 
   const Field: MinimalFormFieldComponent =
     form.Field as MinimalFormFieldComponent;
@@ -310,10 +525,11 @@ export function ManualCandidateForm({
               </Typography>
             </Box>
             <IconButton
-              component={Link}
-              href={backHref}
+              type="button"
+              onClick={handleCancel}
               aria-label="Cerrar"
               sx={{ color: 'primary.contrastText', mt: -0.5 }}
+              disabled={isSubmittingRegistration || isCvActionPending}
             >
               <X size={20} aria-hidden />
             </IconButton>
@@ -324,12 +540,22 @@ export function ManualCandidateForm({
           <form
             onSubmit={(e) => {
               e.preventDefault();
+              if (!cvFile) {
+                setFileError('Se debe adjuntar un currículum en PDF.');
+                cvSectionRef.current?.scrollIntoView({
+                  behavior: 'smooth',
+                  block: 'center',
+                });
+                return;
+              }
+              setFileError(null);
               void form.handleSubmit();
+              scrollToFirstInvalidField();
             }}
             noValidate
           >
             {/* CV */}
-            <Box sx={{ mb: 4 }}>
+            <Box ref={cvSectionRef} sx={{ mb: 4 }}>
               <SectionHeader icon={<FileText size={16} />} label="CV" />
               <Box
                 sx={{
@@ -342,7 +568,14 @@ export function ManualCandidateForm({
                   transition: 'border-color 0.2s',
                   '&:hover': { borderColor: 'primary.main' },
                 }}
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => {
+                  if (cvFlow) {
+                    setDiscardAction('remove');
+                    return;
+                  }
+
+                  fileInputRef.current?.click();
+                }}
               >
                 <input
                   ref={fileInputRef}
@@ -360,6 +593,22 @@ export function ManualCandidateForm({
                     <Typography variant="caption" color="text.secondary">
                       {(cvFile.size / 1024).toFixed(0)} KB — Clic para cambiar
                     </Typography>
+                    <Box sx={{ mt: 1 }}>
+                      <Button
+                        type="button"
+                        size="small"
+                        color="error"
+                        onClick={handleRemoveCv}
+                        disabled={
+                          isCvActionPending ||
+                          isSubmittingRegistration ||
+                          isDiscardingDraft
+                        }
+                        sx={{ textTransform: 'none' }}
+                      >
+                        Quitar CV
+                      </Button>
+                    </Box>
                   </>
                 ) : (
                   <>
@@ -380,15 +629,31 @@ export function ManualCandidateForm({
               )}
               {cvFile && (
                 <Button
+                  type="button"
                   variant="outlined"
                   size="small"
-                  startIcon={<Sparkles size={16} />}
-                  disabled
+                  onClick={handleAutocompleteFromCv}
+                  startIcon={
+                    isCvActionPending ? (
+                      <CircularProgress size={16} color="inherit" />
+                    ) : (
+                      <Sparkles size={16} />
+                    )
+                  }
+                  disabled={isCvActionPending || isSubmittingRegistration}
                   sx={{ mt: 1.5, textTransform: 'none', borderRadius: '10px' }}
                 >
-                  Autocompletar desde CV
+                  {isCvActionPending
+                    ? 'Procesando CV...'
+                    : 'Autocompletar desde CV'}
                 </Button>
               )}
+              {cvFlow &&
+                appliedProfileCandidateIdRef.current === cvFlow.candidateId && (
+                  <Alert severity="success" sx={{ mt: 1.5 }}>
+                    Datos extraídos. Revisá el perfil antes de finalizar.
+                  </Alert>
+                )}
             </Box>
 
             <Divider sx={{ mb: 4 }} />
@@ -485,22 +750,28 @@ export function ManualCandidateForm({
                       border: '1px solid',
                       borderColor: 'divider',
                       borderRadius: 2,
-                      position: 'relative',
                     }}
                   >
                     {experiences.length > 1 && (
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          setExperiences((prev) =>
-                            prev.filter((_, i) => i !== index),
-                          )
-                        }
-                        sx={{ position: 'absolute', top: 8, right: 8 }}
-                        aria-label="Eliminar experiencia"
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'flex-end',
+                          mb: 1,
+                        }}
                       >
-                        <Trash2 size={15} />
-                      </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            setExperiences((prev) =>
+                              prev.filter((_, i) => i !== index),
+                            )
+                          }
+                          aria-label="Eliminar experiencia"
+                        >
+                          <Trash2 size={15} />
+                        </IconButton>
+                      </Box>
                     )}
                     <Box
                       sx={{
@@ -582,22 +853,28 @@ export function ManualCandidateForm({
                       border: '1px solid',
                       borderColor: 'divider',
                       borderRadius: 2,
-                      position: 'relative',
                     }}
                   >
                     {educations.length > 1 && (
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          setEducations((prev) =>
-                            prev.filter((_, i) => i !== index),
-                          )
-                        }
-                        sx={{ position: 'absolute', top: 8, right: 8 }}
-                        aria-label="Eliminar educación"
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'flex-end',
+                          mb: 1,
+                        }}
                       >
-                        <Trash2 size={15} />
-                      </IconButton>
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            setEducations((prev) =>
+                              prev.filter((_, i) => i !== index),
+                            )
+                          }
+                          aria-label="Eliminar educación"
+                        >
+                          <Trash2 size={15} />
+                        </IconButton>
+                      </Box>
                     )}
                     <Box
                       sx={{
@@ -690,10 +967,10 @@ export function ManualCandidateForm({
               </Box>
             </Box>
 
-            {isError && (
+            {submitError && (
               <Alert severity="error" sx={{ mb: 2 }}>
-                {error instanceof Error
-                  ? error.message
+                {submitError instanceof Error
+                  ? submitError.message
                   : 'Ocurrió un error al registrar. Intentá de nuevo.'}
               </Alert>
             )}
@@ -710,10 +987,14 @@ export function ManualCandidateForm({
             >
               <Button
                 variant="outlined"
-                component={Link}
-                href={backHref}
+                type="button"
+                onClick={handleCancel}
                 sx={{ px: 3 }}
-                disabled={isPending}
+                disabled={
+                  isSubmittingRegistration ||
+                  isCvActionPending ||
+                  isDiscardingDraft
+                }
               >
                 Cancelar
               </Button>
@@ -723,14 +1004,20 @@ export function ManualCandidateForm({
                   <Button
                     type="submit"
                     variant="contained"
-                    disabled={isSubmitting || isPending}
+                    disabled={
+                      isSubmitting ||
+                      isSubmittingRegistration ||
+                      isCvActionPending
+                    }
                     startIcon={
-                      isPending ? (
+                      isSubmittingRegistration ? (
                         <CircularProgress size={16} color="inherit" />
                       ) : null
                     }
                   >
-                    {isPending ? 'Registrando...' : 'Finalizar registro'}
+                    {isSubmittingRegistration
+                      ? 'Registrando...'
+                      : 'Finalizar registro'}
                   </Button>
                 )}
               </form.Subscribe>
@@ -738,6 +1025,105 @@ export function ManualCandidateForm({
           </form>
         </CardContent>
       </Card>
+
+      <Dialog
+        open={processingDialogOpen}
+        onClose={
+          cvParseStatus === 'failed'
+            ? () => setProcessingDialogOpen(false)
+            : undefined
+        }
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>
+          {cvParseStatus === 'failed'
+            ? 'No pudimos procesar tu CV'
+            : 'Estamos analizando tu CV'}
+        </DialogTitle>
+        <DialogContent>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+              py: 1,
+            }}
+          >
+            {cvParseStatus === 'failed' ? null : <CircularProgress size={24} />}
+            <Box>
+              <Typography variant="body2">
+                {cvRegistration.isPending
+                  ? 'Subiendo archivo...'
+                  : cvParseStatus === 'failed'
+                    ? 'Podés completar tus datos manualmente para continuar.'
+                    : 'Extrayendo la información principal del perfil.'}
+              </Typography>
+              {profileQuery.data?.cvParseError && (
+                <Typography variant="caption" color="error">
+                  {profileQuery.data.cvParseError}
+                </Typography>
+              )}
+            </Box>
+          </Box>
+        </DialogContent>
+        {cvParseStatus === 'failed' && (
+          <DialogActions>
+            <Button onClick={() => setProcessingDialogOpen(false)}>
+              Completar manualmente
+            </Button>
+          </DialogActions>
+        )}
+      </Dialog>
+
+      <Dialog
+        open={discardAction !== null}
+        onClose={isDiscardingDraft ? undefined : () => setDiscardAction(null)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>
+          {discardAction === 'exit'
+            ? 'Descartar postulación en progreso'
+            : 'Quitar CV procesado'}
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            {discardAction === 'exit'
+              ? 'Se eliminará el CV subido y los datos extraídos para esta postulación.'
+              : 'Se eliminará el CV subido y se limpiarán los datos extraídos para que puedas elegir otro archivo.'}
+          </Typography>
+          {discardDraft.error && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {discardDraft.error instanceof Error
+                ? discardDraft.error.message
+                : 'No se pudo descartar la postulación.'}
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            type="button"
+            onClick={() => setDiscardAction(null)}
+            disabled={isDiscardingDraft}
+          >
+            Seguir editando
+          </Button>
+          <Button
+            type="button"
+            color="error"
+            onClick={handleConfirmDiscard}
+            disabled={isDiscardingDraft}
+            startIcon={
+              isDiscardingDraft ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : null
+            }
+          >
+            {discardAction === 'exit' ? 'Descartar' : 'Quitar CV'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

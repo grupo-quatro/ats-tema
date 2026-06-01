@@ -73,13 +73,36 @@ describe('CvParsingService.parseFromBuffer', () => {
     expect(result).toMatchObject({
       firstName: 'Sofia',
       lastName: 'Demo',
-      email: 'sofia.demo@example.com',
+      email: 'candidata.demo@example.com',
       technicalSkills: [
         'TypeScript',
         'React',
-        'Next.js',
         'Node.js',
         'Firebase',
+        'PostgreSQL',
+        'Git',
+      ],
+      parsedExperience: [
+        {
+          company: 'Acme Software',
+          role: 'Full Stack Developer',
+          startDate: 'Mar 2024',
+          endDate: 'Presente',
+        },
+        {
+          company: 'Nexo Digital',
+          role: 'Frontend Developer',
+          startDate: 'Ene 2022',
+          endDate: 'Feb 2024',
+        },
+      ],
+      parsedEducation: [
+        {
+          institution: 'ORT Argentina',
+          degree: 'Tecnicatura Superior en Analisis de Sistemas',
+          startDate: '2023',
+          endDate: '2026',
+        },
       ],
     });
     expect(mocks.generateContent).not.toHaveBeenCalled();
@@ -92,10 +115,23 @@ describe('CvParsingService.parseFromBuffer', () => {
     mocks.generateContent.mockResolvedValue({
       text: `\`\`\`json
 {
-  "firstName": "Sofia",
-  "lastName": "Loria",
+  "fullName": "Sofia Loria",
   "email": "sofia@example.com",
-  "hardSkills": ["TypeScript", "Firebase"]
+  "hardSkills": ["TypeScript", "Firebase"],
+  "parsedExperience": [
+    {
+      "company": "Acme",
+      "role": "Developer",
+      "startDate": "2020",
+      "endDate": "Presente"
+    }
+  ],
+  "parsedEducation": [
+    {
+      "institution": "ORT Argentina",
+      "degree": "Analista en Sistemas"
+    }
+  ]
 }
 \`\`\``,
     });
@@ -128,9 +164,86 @@ describe('CvParsingService.parseFromBuffer', () => {
       lastName: 'Loria',
       fullName: 'Sofia Loria',
       email: 'sofia@example.com',
+      education: 'Analista en Sistemas, ORT Argentina',
       technicalSkills: ['TypeScript', 'Firebase'],
       skills: ['TypeScript', 'Firebase'],
+      parsedExperience: [
+        {
+          company: 'Acme',
+          role: 'Developer',
+          startDate: '2020',
+          endDate: 'Presente',
+        },
+      ],
+      parsedEducation: [
+        {
+          institution: 'ORT Argentina',
+          degree: 'Analista en Sistemas',
+        },
+      ],
       parserVersion: 'cv-parser/1.0+gemini-2.5-flash',
+    });
+  });
+
+  it('completa nombre, experiencia y educacion desde el texto cuando IA omite esos campos', async () => {
+    process.env.CV_PARSING_FORCE_REAL_AI = 'true';
+    process.env.GCP_PROJECT = 'ats-tema-ort';
+    mocks.getText.mockResolvedValue({
+      text: `Camila
+Perez
+Software Engineer | TypeScript & Cloud
+Sobre mi
+Desarrolladora backend.
+Experiencia
+Backend Developer | Acme Software
+Mar 2024 – Presente
+Frontend Developer | Nexo Digital
+Ene 2022 – Feb 2024
+Skills Técnicas
+TypeScript, Node.js
+Educación
+Tecnicatura Superior en Análisis de Sistemas ORT Argentina
+2023 – 2026`,
+    });
+    mocks.generateContent.mockResolvedValue({
+      text: JSON.stringify({
+        lastName: 'Perez',
+        technicalSkills: ['TypeScript', 'Node.js'],
+        professionalSummary: 'Desarrolladora backend.',
+      }),
+    });
+
+    const service = new CvParsingService();
+
+    const result = await service.parseFromBuffer(Buffer.from('pdf'));
+
+    expect(result).toMatchObject<Partial<ParsedCandidateProfileData>>({
+      firstName: 'Camila',
+      lastName: 'Perez',
+      fullName: 'Camila Perez',
+      education: 'Tecnicatura Superior en Análisis de Sistemas, ORT Argentina',
+      parsedExperience: [
+        {
+          company: 'Acme Software',
+          role: 'Backend Developer',
+          startDate: 'Mar 2024',
+          endDate: 'Presente',
+        },
+        {
+          company: 'Nexo Digital',
+          role: 'Frontend Developer',
+          startDate: 'Ene 2022',
+          endDate: 'Feb 2024',
+        },
+      ],
+      parsedEducation: [
+        {
+          institution: 'ORT Argentina',
+          degree: 'Tecnicatura Superior en Análisis de Sistemas',
+          startDate: '2023',
+          endDate: '2026',
+        },
+      ],
     });
   });
 });

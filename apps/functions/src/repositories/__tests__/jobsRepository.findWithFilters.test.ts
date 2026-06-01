@@ -137,10 +137,22 @@ describe('JobsRepository.findWithFilters', () => {
     expect(mockQuery.orderBy).toHaveBeenCalledWith('title', 'asc');
   });
 
-  it('usa publishedAt desc como orden default', async () => {
+  it('filtra por titulo en memoria de forma case-insensitive', async () => {
+    const result = await repo.findWithFilters({
+      search: 'front',
+      page: 1,
+      limit: 10,
+    });
+
+    expect(mockQuery.orderBy).toHaveBeenCalledWith('createdAt', 'desc');
+    expect(result.jobs).toHaveLength(1);
+    expect(result.jobs[0]?.title).toBe('Frontend Developer');
+  });
+
+  it('usa createdAt desc como orden default', async () => {
     await repo.findWithFilters({ page: 1, limit: 10 });
 
-    expect(mockQuery.orderBy).toHaveBeenCalledWith('publishedAt', 'desc');
+    expect(mockQuery.orderBy).toHaveBeenCalledWith('createdAt', 'desc');
   });
 
   it('devuelve lista vacía si no hay resultados', async () => {

@@ -7,9 +7,29 @@ import { Job } from '../../../../../../packages/shared-types/src/models/job';
 
 interface JobCardProps {
   job: Job;
+  disabled?: boolean;
 }
 
-export default function JobCard({ job }: JobCardProps) {
+export default function JobCard({ job, disabled = false }: JobCardProps) {
+  const detailsButton = (
+    <Button
+      variant="contained"
+      disabled={disabled}
+      sx={{
+        px: 3,
+        py: 1,
+        textTransform: 'none',
+        borderRadius: '8px',
+        '&:disabled': {
+          bgcolor: '#e2e8f0',
+          color: '#94a3b8',
+        },
+      }}
+    >
+      Ver detalles
+    </Button>
+  );
+
   return (
     <Card
       sx={{
@@ -59,14 +79,11 @@ export default function JobCard({ job }: JobCardProps) {
           </Box>
         </Stack>
 
-        <Link href={`/jobs/${job.id}`}>
-          <Button
-            variant="contained"
-            sx={{ px: 3, py: 1, textTransform: 'none', borderRadius: '8px' }}
-          >
-            Ver detalles
-          </Button>
-        </Link>
+        {disabled ? (
+          detailsButton
+        ) : (
+          <Link href={`/jobs/${job.id}`}>{detailsButton}</Link>
+        )}
       </Stack>
 
       <Stack direction="row" spacing={4} sx={{ mb: 2 }}>

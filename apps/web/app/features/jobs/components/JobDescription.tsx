@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -24,20 +25,25 @@ import {
   DollarSign,
 } from 'lucide-react';
 import { Job } from '../../../../../../packages/shared-types/src/models/job';
+import { getJobStatusStyle } from '@/shared/lib/jobStatus';
+import { useAuth } from '@/shared/lib/authContext';
+import { isInternalRole } from '@/shared/lib/internalRoles';
 
 interface JobDescriptionProps {
   job: Job;
 }
 
-const statusLabels: Record<Job['status'], string> = {
-  draft: 'Borrador',
-  open: 'Abierta',
-  paused: 'Pausada',
-  closed: 'Cerrada',
-};
-
 export default function JobDescription({ job }: JobDescriptionProps) {
   const router = useRouter();
+  const { role, loading } = useAuth();
+  const statusStyle = getJobStatusStyle(job.status);
+  const isInternal = isInternalRole(role);
+
+  useEffect(() => {
+    if (!loading && isInternal) {
+      router.replace('/dashboard/positions');
+    }
+  }, [isInternal, loading, router]);
   const mandatorySkills = job.skills.filter((s) => s.type === 'mandatory');
   const desirableSkills = job.skills.filter((s) => s.type === 'desirable');
   const responsabilities = job.responsabilities ?? [];
@@ -118,19 +124,22 @@ export default function JobDescription({ job }: JobDescriptionProps) {
               }}
             >
               <Chip
-                label={statusLabels[job.status]}
+                label={statusStyle.label}
                 size="small"
                 sx={{
-                  bgcolor: 'rgba(255,255,255,0.2)',
-                  color: 'white',
+                  bgcolor: statusStyle.backgroundColor,
+                  border: `1px solid ${statusStyle.borderColor}`,
+                  color: statusStyle.color,
                   fontWeight: 700,
-                  backdropFilter: 'blur(4px)',
                 }}
               />
               <Button
                 variant="contained"
                 size="large"
-                onClick={() => router.push(`/postulation/${job.id}`)}
+                disabled={isInternal}
+                onClick={() => {
+                  if (!isInternal) router.push(`/postulation/${job.id}`);
+                }}
                 sx={{
                   bgcolor: 'white',
                   color: 'primary.main',
@@ -139,6 +148,10 @@ export default function JobDescription({ job }: JobDescriptionProps) {
                   borderRadius: '12px',
                   textTransform: 'none',
                   '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
+                  '&:disabled': {
+                    bgcolor: '#e2e8f0',
+                    color: '#94a3b8',
+                  },
                 }}
               >
                 Postularme
@@ -383,8 +396,19 @@ export default function JobDescription({ job }: JobDescriptionProps) {
               <Button
                 variant="contained"
                 size="large"
-                sx={{ px: 4, textTransform: 'none', borderRadius: '12px' }}
-                onClick={() => router.push(`/postulation/${job.id}`)}
+                disabled={isInternal}
+                sx={{
+                  px: 4,
+                  textTransform: 'none',
+                  borderRadius: '12px',
+                  '&:disabled': {
+                    bgcolor: '#e2e8f0',
+                    color: '#94a3b8',
+                  },
+                }}
+                onClick={() => {
+                  if (!isInternal) router.push(`/postulation/${job.id}`);
+                }}
               >
                 Postularme ahora
               </Button>
