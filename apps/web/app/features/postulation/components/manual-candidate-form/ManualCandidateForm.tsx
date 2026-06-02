@@ -330,9 +330,7 @@ export function ManualCandidateForm({
         const parsedEducation = filterFilledEducations(educations);
         const yearsOfExperience =
           calculateApproximateYearsOfExperience(parsedExperience);
-        const technicalSkills = normalizeTechnicalSkills(
-          value.technicalSkills,
-        );
+        const technicalSkills = normalizeTechnicalSkills(value.technicalSkills);
 
         const profilePayload = {
           firstName: value.firstName.trim(),
@@ -428,7 +426,7 @@ export function ManualCandidateForm({
         ? normalizeEducationDates(profile.parsedEducation)
         : profile.education
           ? [{ ...emptyEducation(), degree: profile.education }]
-        : [emptyEducation()],
+          : [emptyEducation()],
     );
     setDateRangeErrors(emptyDateRangeErrors());
     appliedProfileCandidateIdRef.current = data.candidateId;

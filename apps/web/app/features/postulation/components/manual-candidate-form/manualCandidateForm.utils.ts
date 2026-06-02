@@ -119,10 +119,7 @@ export function normalizeDateForInput(value?: string | null): string {
   const yearMatch = rawValue.match(/\b(19|20)\d{2}\b/);
   if (!yearMatch) return '';
 
-  const monthKey = normalized
-    .replace(yearMatch[0], '')
-    .trim()
-    .split(' ')[0];
+  const monthKey = normalized.replace(yearMatch[0], '').trim().split(' ')[0];
   const month = monthKey ? (MONTHS[monthKey] ?? '01') : '01';
 
   return `${yearMatch[0]}-${month}-01`;
@@ -151,19 +148,19 @@ export function normalizeEducationDates(
 function hasExperienceValue(experience: ParsedExperience): boolean {
   return Boolean(
     experience.role?.trim() ||
-      experience.company?.trim() ||
-      experience.startDate?.trim() ||
-      experience.endDate?.trim() ||
-      experience.description?.trim(),
+    experience.company?.trim() ||
+    experience.startDate?.trim() ||
+    experience.endDate?.trim() ||
+    experience.description?.trim(),
   );
 }
 
 function hasEducationValue(education: ParsedEducation): boolean {
   return Boolean(
     education.degree?.trim() ||
-      education.institution?.trim() ||
-      education.startDate?.trim() ||
-      education.endDate?.trim(),
+    education.institution?.trim() ||
+    education.startDate?.trim() ||
+    education.endDate?.trim(),
   );
 }
 
@@ -237,9 +234,7 @@ export function calculateApproximateYearsOfExperience(
 
       return { start, end };
     })
-    .filter((range): range is { start: number; end: number } =>
-      Boolean(range),
-    )
+    .filter((range): range is { start: number; end: number } => Boolean(range))
     .sort((a, b) => a.start - b.start);
 
   if (!ranges.length) return undefined;

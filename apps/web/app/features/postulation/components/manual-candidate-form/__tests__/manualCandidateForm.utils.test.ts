@@ -15,11 +15,7 @@ describe('manualCandidateForm.utils', () => {
       normalizeTechnicalSkills(
         'Project Management, project-management, PowerBI, Power BI, Node.js, node js',
       ),
-    ).toEqual([
-      'Project Management',
-      'PowerBI',
-      'Node.js',
-    ]);
+    ).toEqual(['Project Management', 'PowerBI', 'Node.js']);
   });
 
   it('normaliza fechas del parser a valores compatibles con input date', () => {

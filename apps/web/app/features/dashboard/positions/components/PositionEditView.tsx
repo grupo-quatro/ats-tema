@@ -1068,7 +1068,6 @@ export default function PositionEditView({ job, onSave }: Props) {
                       )}
                     </form.Field>
                   </Grid>
-
                 </Grid>
 
                 <form.Field name="description">
