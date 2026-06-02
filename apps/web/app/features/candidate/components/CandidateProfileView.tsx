@@ -43,6 +43,7 @@ import { STAGE_LABELS, type CandidateMockProfile } from '../mock/candidateMock';
 import { STAGE_KEY_MAP } from '../utils/candidateProfile.utils';
 import { useCandidateProfile } from '../hooks/useCandidateProfile';
 import { CandidateInfoCard } from './CandidateInfoCard';
+import { CommunicationHistoryCard } from './CommunicationHistoryCard';
 import { CvViewerModal } from './CvViewerModal';
 import { InterviewModal } from './InterviewModal';
 import { useAuth } from '../../../shared/lib/authContext';
@@ -639,6 +640,8 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                 )}
               </Box>
             </Card>
+
+            <CommunicationHistoryCard candidateId={candidate.id} />
 
             <Box
               sx={{

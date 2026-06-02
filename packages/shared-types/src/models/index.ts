@@ -4,4 +4,6 @@ export * from './application';
 export * from './skillMatch';
 export * from './employee';
 export * from './emailTemplate';
+export * from './emailLog';
 export * from './parsing';
+export * from './user';

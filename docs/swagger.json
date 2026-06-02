@@ -376,6 +376,75 @@
       "EmployeeRole": {
         "type": "string",
         "enum": ["hr", "tech_lead", "hiring_manager", "admin"]
+      },
+      "EmailTemplateStage": {
+        "type": "string",
+        "enum": [
+          "application_received",
+          "screening",
+          "interview_hr",
+          "interview_technical",
+          "interview_final",
+          "offer",
+          "hired",
+          "rejected",
+          "withdrawn"
+        ],
+        "description": "Business-friendly stage key used to associate an email template with a recruiter pipeline stage"
+      },
+      "EmailLogStatus": {
+        "type": "string",
+        "enum": ["pending", "sent", "failed"]
+      },
+      "EmailLog": {
+        "type": "object",
+        "required": [
+          "id",
+          "applicationId",
+          "candidateId",
+          "candidateEmail",
+          "jobId",
+          "templateId",
+          "templateName",
+          "stage",
+          "subject",
+          "body",
+          "status",
+          "recruiterId",
+          "recruiterEmail",
+          "attemptedAt"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "applicationId": { "type": "string" },
+          "candidateId": { "type": "string" },
+          "candidateEmail": { "type": "string", "format": "email" },
+          "jobId": { "type": "string" },
+          "templateId": { "type": "string" },
+          "templateName": { "type": "string" },
+          "stage": { "$ref": "#/components/schemas/ApplicationStage" },
+          "subject": {
+            "type": "string",
+            "description": "Resolved subject — template variables already substituted"
+          },
+          "body": {
+            "type": "string",
+            "description": "Resolved HTML body — template variables already substituted"
+          },
+          "status": { "$ref": "#/components/schemas/EmailLogStatus" },
+          "error": {
+            "type": "string",
+            "description": "Present only when status is `failed`"
+          },
+          "recruiterId": { "type": "string" },
+          "recruiterEmail": { "type": "string", "format": "email" },
+          "attemptedAt": { "type": "string", "format": "date-time" },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Present only when status is `sent`"
+          }
+        }
       }
     }
   },
@@ -401,6 +470,10 @@
     {
       "name": "Auth / Admin",
       "description": "User role assignment and employee provisioning"
+    },
+    {
+      "name": "Email Templates",
+      "description": "Gmail OAuth connection and automated candidate communication via email templates"
     }
   ],
   "paths": {
@@ -1910,6 +1983,209 @@
           },
           "500": {
             "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exchangeGmailCode": {
+      "post": {
+        "tags": ["Email Templates"],
+        "operationId": "exchangeGmailCode",
+        "summary": "Exchange a Google OAuth authorization code for Gmail credentials",
+        "description": "Exchanges a Google OAuth2 authorization code (obtained via the `gmail.send` consent screen) for an access token and refresh token. Stores the credential in `users/{uid}.gmailCredential` so Cloud Functions can send emails on behalf of the authenticated user. Must be called once per user after the OAuth consent flow completes. Requires `access_type=offline&prompt=consent` in the OAuth request to obtain a refresh token.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["code", "redirectUri"],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "description": "Authorization code returned by Google OAuth2 consent screen"
+                  },
+                  "redirectUri": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Must match exactly the redirect URI registered in the Google Cloud Console OAuth client"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Gmail credential stored successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["ok"],
+                  "properties": {
+                    "ok": { "type": "boolean", "example": true }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid code / redirectUri",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Google token exchange failed or internal error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/getEmailLogs": {
+      "get": {
+        "tags": ["Email Templates"],
+        "operationId": "getEmailLogs",
+        "summary": "Get email communication history for a candidate",
+        "description": "Returns all `EmailLog` records for the given candidate, ordered by `attemptedAt` descending. Used to populate the Comunicaciones section in the candidate profile and the global email history view. Logs with `status=failed` include an `error` field explaining the failure.",
+        "parameters": [
+          {
+            "name": "candidateId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Firestore document ID of the candidate"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Email log entries for the candidate",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["logs"],
+                  "properties": {
+                    "logs": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/EmailLog" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing candidateId",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/retryEmailSend": {
+      "post": {
+        "tags": ["Email Templates"],
+        "operationId": "retryEmailSend",
+        "summary": "Retry a failed email send",
+        "description": "Re-attempts sending an email for a log entry with `status=failed` or `status=pending`. Uses the already-resolved `subject` and `body` stored in the log (no re-resolution of template variables). The email is sent using the Gmail credential of the authenticated user making the retry request. Updates `status` to `sent` or `failed` accordingly.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["logId"],
+                "properties": {
+                  "logId": {
+                    "type": "string",
+                    "description": "Firestore document ID of the EmailLog to retry"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["ok"],
+                  "properties": {
+                    "ok": { "type": "boolean", "example": true }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing logId",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "EmailLog not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Gmail send failed or internal error",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorResponse" }
