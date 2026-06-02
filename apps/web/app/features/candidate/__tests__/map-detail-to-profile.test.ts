@@ -65,11 +65,9 @@ describe('mapDetailToProfile', () => {
     expect(profile.strengths).toEqual([]);
   });
 
-  it('mapea interviewNotes desde notes', () => {
+  it('retorna interviewNotes vacío (se cargan desde el backend en el perfil)', () => {
     const profile = mapDetailToProfile(makeDetail());
-    expect(profile.interviewNotes).toHaveLength(1);
-    expect(profile.interviewNotes[0]!.note).toBe('Candidato proactivo.');
-    expect(profile.interviewNotes[0]!.authorName).toBe('Reclutador');
+    expect(profile.interviewNotes).toEqual([]);
   });
 
   it('retorna interviewNotes vacío cuando notes no está definido', () => {

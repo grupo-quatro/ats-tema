@@ -8,14 +8,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import type { CandidateInterviewNote } from '../mock/candidateMock';
+import { saveCandidacyNote } from '../../../shared/api/candidacyNotesApi';
 import { saveInterviewForm } from '../../../shared/api/interviewFormsApi';
 
 interface Props {
   applicationId: string;
   candidateName: string;
   onClose: () => void;
-  onSave?: (note: CandidateInterviewNote) => void | Promise<void>;
+  onSave?: () => void | Promise<void>;
 }
 
 export function HrInterviewForm({
@@ -31,11 +31,27 @@ export function HrInterviewForm({
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const trimmedComments = comments.trim();
+  const trimmedDecision = decision.trim();
+  const isFormValid =
+    communication >= 1 &&
+    teamwork >= 1 &&
+    trimmedDecision.length > 0 &&
+    trimmedComments.length > 0;
+
   const handleSave = async () => {
-    if (!communication || !teamwork || !decision.trim()) {
-      setErrorMessage(
-        'Completá las calificaciones de competencias y la decisión recomendada.',
-      );
+    if (!communication || !teamwork) {
+      setErrorMessage('Calificá comunicación y trabajo en equipo (1 a 5).');
+      return;
+    }
+
+    if (!trimmedDecision) {
+      setErrorMessage('La decisión recomendada es obligatoria.');
+      return;
+    }
+
+    if (!trimmedComments) {
+      setErrorMessage('Los comentarios y observaciones son obligatorios.');
       return;
     }
 
@@ -50,7 +66,7 @@ export function HrInterviewForm({
         type: 'hr',
         title: 'Evaluación RRHH – Entrevista',
         overallRating,
-        decision: decision.trim(),
+        decision: trimmedDecision,
         questions: [
           {
             question: 'Comunicación y claridad al expresarse',
@@ -68,37 +84,21 @@ export function HrInterviewForm({
           },
           {
             question: 'Decisión recomendada',
-            answer: decision.trim(),
+            answer: trimmedDecision,
           },
-          ...(comments.trim()
-            ? [
-                {
-                  question: 'Comentarios y observaciones',
-                  answer: comments.trim(),
-                },
-              ]
-            : []),
+          {
+            question: 'Comentarios y observaciones',
+            answer: trimmedComments,
+          },
         ],
       });
 
-      const note: CandidateInterviewNote = {
-        authorName: 'Evaluación RRHH',
-        date: new Date().toLocaleDateString('es-ES'),
-        rating: overallRating,
-        note: [
-          `Comunicación: ${communication}/5.`,
-          `Trabajo en equipo: ${teamwork}/5.`,
-          salaryExpectation.trim()
-            ? `Expectativa salarial: ${salaryExpectation.trim()}.`
-            : '',
-          `Decisión: ${decision.trim()}.`,
-          comments.trim(),
-        ]
-          .filter(Boolean)
-          .join(' '),
-      };
+      await saveCandidacyNote({
+        applicationId,
+        text: `[Entrevista RRHH] ${trimmedComments}`,
+      });
 
-      await onSave?.(note);
+      await onSave?.();
       onClose();
     } catch {
       setErrorMessage('No se pudo guardar la evaluación.');
@@ -122,7 +122,9 @@ export function HrInterviewForm({
         }}
       >
         <Box>
-          <Typography sx={{ fontWeight: 600 }}>Comunicación</Typography>
+          <Typography sx={{ fontWeight: 600 }}>
+            Comunicación <Typography component="span" color="error.main">*</Typography>
+          </Typography>
           <Typography variant="caption" color="text.secondary">
             Claridad al expresarse, escucha activa
           </Typography>
@@ -143,7 +145,9 @@ export function HrInterviewForm({
         }}
       >
         <Box>
-          <Typography sx={{ fontWeight: 600 }}>Trabajo en Equipo</Typography>
+          <Typography sx={{ fontWeight: 600 }}>
+            Trabajo en Equipo <Typography component="span" color="error.main">*</Typography>
+          </Typography>
           <Typography variant="caption" color="text.secondary">
             Colaboración, adaptabilidad
           </Typography>
@@ -173,8 +177,13 @@ export function HrInterviewForm({
         value={decision}
         onChange={(e) => setDecision(e.target.value)}
         fullWidth
+        required
         sx={{ mb: 2 }}
         disabled={isSaving}
+        error={Boolean(decision && !trimmedDecision)}
+        helperText={
+          decision && !trimmedDecision ? 'La decisión no puede estar vacía' : ''
+        }
       />
 
       <TextField
@@ -182,10 +191,17 @@ export function HrInterviewForm({
         value={comments}
         onChange={(e) => setComments(e.target.value)}
         fullWidth
+        required
         multiline
         minRows={4}
         sx={{ mb: 2 }}
         disabled={isSaving}
+        error={Boolean(comments && !trimmedComments)}
+        helperText={
+          comments && !trimmedComments
+            ? 'Los comentarios no pueden estar vacíos'
+            : ''
+        }
       />
 
       {errorMessage && (
@@ -201,7 +217,7 @@ export function HrInterviewForm({
         <Button
           variant="contained"
           onClick={handleSave}
-          disabled={isSaving || !communication || !teamwork || !decision.trim()}
+          disabled={isSaving || !isFormValid}
           startIcon={
             isSaving ? <CircularProgress size={16} color="inherit" /> : null
           }

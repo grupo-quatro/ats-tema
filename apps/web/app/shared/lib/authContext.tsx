@@ -34,7 +34,11 @@ function isEmailAllowed(email: string): boolean {
 interface AuthContextValue {
   user: User | null;
   role: EmployeeRole | null;
+  /** UID que usa el backend (en emulador: recruiter-dev, admin-dev, etc.) */
+  callerUid: string | null;
   isPendingApproval: boolean;
+  /** true después del primer evento de onAuthStateChanged */
+  authReady: boolean;
   loading: boolean;
   signInWithGoogle: (devRole?: DevRole) => Promise<void>;
   signOut: () => Promise<void>;
@@ -51,11 +55,32 @@ const DEV_PASSWORD = 'pass123';
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+const DEV_CALLER_UID_BY_TOKEN: Record<string, string> = {
+  'dev-admin': 'admin-dev',
+  'dev-recruiter': 'recruiter-dev',
+  'dev-hiring-manager': 'hiring-manager-dev',
+};
+
 function getDevRoleFromToken(token: string | null): EmployeeRole | null {
   if (token === 'dev-admin') return 'admin';
   if (token === 'dev-recruiter') return 'hr';
   if (token === 'dev-hiring-manager') return 'hiring_manager';
   return null;
+}
+
+function resolveCallerUid(
+  firebaseUid: string,
+  useEmulators: boolean,
+): string {
+  if (!useEmulators) return firebaseUid;
+  const token =
+    typeof localStorage !== 'undefined'
+      ? localStorage.getItem('ats-dev-token')
+      : null;
+  if (token && DEV_CALLER_UID_BY_TOKEN[token]) {
+    return DEV_CALLER_UID_BY_TOKEN[token];
+  }
+  return firebaseUid;
 }
 
 async function setSessionCookie(
@@ -90,34 +115,45 @@ async function callEnsureEmployee(user: User, idToken: string): Promise<void> {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [callerUid, setCallerUid] = useState<string | null>(null);
   const [role, setRole] = useState<EmployeeRole | null>(null);
   const [isPendingApproval, setIsPendingApproval] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === 'true';
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const tokenResult = await firebaseUser.getIdTokenResult();
-        const devRole = useEmulators
-          ? getDevRoleFromToken(localStorage.getItem('ats-dev-token'))
-          : null;
-        const claimedRole =
-          devRole ??
-          (tokenResult.claims['role'] as EmployeeRole | undefined) ??
-          null;
-        setUser(firebaseUser);
-        setRole(claimedRole);
-        setIsPendingApproval(!claimedRole);
-        if (claimedRole) {
-          await setSessionCookie(await firebaseUser.getIdToken(), claimedRole);
+      try {
+        if (firebaseUser) {
+          const tokenResult = await firebaseUser.getIdTokenResult();
+          const devRole = useEmulators
+            ? getDevRoleFromToken(localStorage.getItem('ats-dev-token'))
+            : null;
+          const claimedRole =
+            devRole ??
+            (tokenResult.claims['role'] as EmployeeRole | undefined) ??
+            null;
+          setUser(firebaseUser);
+          setCallerUid(resolveCallerUid(firebaseUser.uid, useEmulators));
+          setRole(claimedRole);
+          setIsPendingApproval(!claimedRole);
+          if (claimedRole) {
+            await setSessionCookie(
+              await firebaseUser.getIdToken(),
+              claimedRole,
+            );
+          }
+        } else if (!auth.currentUser) {
+          setUser(null);
+          setCallerUid(null);
+          setRole(null);
+          setIsPendingApproval(false);
         }
-      } else {
-        setUser(null);
-        setRole(null);
-        setIsPendingApproval(false);
+      } finally {
+        setAuthReady(true);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return unsubscribe;
@@ -135,8 +171,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('ats-dev-token', token);
         const role = getDevRoleFromToken(token);
         setUser(credential.user);
+        setCallerUid(resolveCallerUid(credential.user.uid, useEmulators));
         setRole(role);
         setIsPendingApproval(false);
+        setAuthReady(true);
+        setLoading(false);
         const idToken = await credential.user.getIdToken();
         await setSessionCookie(idToken, role);
         return;
@@ -176,8 +215,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        callerUid,
         role,
         isPendingApproval,
+        authReady,
         loading,
         signInWithGoogle,
         signOut,

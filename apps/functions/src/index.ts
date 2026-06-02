@@ -37,3 +37,8 @@ export {
   getInterviewForms,
   saveInterviewForm,
 } from './callables/interviewFormsCallables';
+export {
+  getCandidacyNotes,
+  saveCandidacyNote,
+  updateCandidacyNote,
+} from './callables/candidacyNotesCallables';

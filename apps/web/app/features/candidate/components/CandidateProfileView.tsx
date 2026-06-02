@@ -21,7 +21,6 @@ import {
   MenuItem,
   Radio,
   RadioGroup,
-  Rating,
   Snackbar,
   Stack,
   TextField,
@@ -35,8 +34,8 @@ import {
   ClipboardList,
   Clock,
   Info,
-  MessageSquare,
   MoreVertical,
+  Send,
   Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -55,18 +54,24 @@ interface CandidateProfileViewProps {
 
 export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
   const profile = useCandidateProfile(candidate);
-  const { role } = useAuth();
+  const { role, callerUid } = useAuth();
   const [formsModalOpen, setFormsModalOpen] = useState(false);
 
   const canDoHrInterview = role === 'hr' || role === 'admin';
   const canDoTechInterview =
     role === 'hiring_manager' || role === 'tech_lead' || role === 'admin';
 
-  const isNewNoteInvalid =
-    !profile.newNoteAuthor ||
-    !profile.newNoteDate ||
-    !profile.newNoteText ||
-    Number.isNaN(new Date(profile.newNoteDate).getTime());
+  const formatNoteDate = (iso: string) => {
+    const parsed = new Date(iso);
+    if (Number.isNaN(parsed.getTime())) return iso;
+    return `${parsed.toLocaleDateString('es-AR')} ${parsed.toLocaleTimeString(
+      'es-AR',
+      { hour: '2-digit', minute: '2-digit' },
+    )}`;
+  };
+
+  const canEditNote = (authorUid: string) =>
+    Boolean(callerUid && callerUid === authorUid) || role === 'admin';
 
   return (
     <Box
@@ -507,125 +512,259 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                   </Button>
                 )}
               </Box>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {profile.visibleStrengths.map((strength, i) => (
-                  <Box
-                    key={i}
-                    sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}
-                  >
-                    <CheckCircle2
-                      size={18}
-                      color="#16a34a"
-                      style={{ marginTop: 1, flexShrink: 0 }}
-                    />
-                    <Typography variant="body2" color="text.secondary">
-                      {strength}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-            </Card>
 
-            <Card>
+              {candidate.strengths.length > 0 && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 1.5,
+                    mb: 2.5,
+                  }}
+                >
+                  {profile.visibleStrengths.map((strength, i) => (
+                    <Box
+                      key={i}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 1.5,
+                      }}
+                    >
+                      <CheckCircle2
+                        size={18}
+                        color="#16a34a"
+                        style={{ marginTop: 1, flexShrink: 0 }}
+                      />
+                      <Typography variant="body2" color="text.secondary">
+                        {strength}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+
+              {candidate.strengths.length > 0 && (
+                <Divider sx={{ mb: 2.5 }} />
+              )}
+
               <Box
                 sx={{
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 1,
-                  mb: 2,
+                  flexDirection: 'column',
+                  gap: 2,
+                  mb: 2.5,
+                  minHeight: 80,
                 }}
               >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <MessageSquare size={16} color="#64748b" />
-                  <Typography
-                    variant="body2"
-                    sx={{ fontWeight: 600, color: 'text.secondary' }}
-                  >
-                    Notas de las entrevistas
-                  </Typography>
-                </Box>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={profile.openNewNoteModal}
-                >
-                  Añadir nota
-                </Button>
-              </Box>
-
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-                {profile.interviewNotes.length === 0 ? (
+                {profile.isLoadingNotes ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                    <CircularProgress size={24} />
+                  </Box>
+                ) : profile.candidacyNotes.length === 0 ? (
                   <Typography variant="body2" color="text.secondary">
-                    Aún no hay notas de entrevistas.
+                    Aún no hay notas sobre esta candidatura.
                   </Typography>
                 ) : (
-                  profile.interviewNotes.map((note, i) => (
-                    <Box key={`${note.authorName}-${note.date}-${i}`}>
+                  profile.candidacyNotes.map((note) => {
+                    const isEditing = profile.editingNoteId === note.id;
+
+                    return (
                       <Box
+                        key={note.id}
                         sx={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          mb: 1,
+                          bgcolor: 'background.default',
+                          borderRadius: '10px',
+                          p: 2,
                         }}
                       >
                         <Box
                           sx={{
                             display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.25,
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                            gap: 1,
+                            mb: 1,
                           }}
                         >
                           <Box
-                            sx={(theme) => ({
-                              width: 32,
-                              height: 32,
-                              borderRadius: '50%',
-                              bgcolor: theme.palette.primary.light,
-                              color: theme.palette.primary.main,
+                            sx={{
                               display: 'flex',
                               alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: 11,
-                              fontWeight: 700,
-                              flexShrink: 0,
-                            })}
+                              gap: 1.25,
+                              minWidth: 0,
+                            }}
                           >
-                            {note.authorName
-                              .split(' ')
-                              .map((n) => n[0])
-                              .join('')
-                              .slice(0, 2)
-                              .toUpperCase()}
-                          </Box>
-                          <Box>
-                            <Typography
-                              variant="body2"
-                              sx={{ fontWeight: 600, lineHeight: 1.3 }}
+                            <Box
+                              sx={(theme) => ({
+                                width: 32,
+                                height: 32,
+                                borderRadius: '50%',
+                                bgcolor: theme.palette.primary.light,
+                                color: 'primary.main',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: 11,
+                                fontWeight: 700,
+                                flexShrink: 0,
+                              })}
                             >
-                              {note.authorName}
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                            >
-                              {note.date}
-                            </Typography>
+                              {note.authorName
+                                .split(' ')
+                                .map((n) => n[0])
+                                .join('')
+                                .slice(0, 2)
+                                .toUpperCase()}
+                            </Box>
+                            <Box sx={{ minWidth: 0 }}>
+                              <Typography
+                                variant="body2"
+                                sx={{ fontWeight: 600, lineHeight: 1.3 }}
+                              >
+                                {note.authorName}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                color="text.secondary"
+                                sx={{ display: 'block', lineHeight: 1.4 }}
+                              >
+                                {note.authorRole} ·{' '}
+                                {formatNoteDate(note.createdAt)}
+                                {note.createdAt !== note.updatedAt && (
+                                  <>
+                                    {' '}
+                                    · Editado: {formatNoteDate(note.updatedAt)}
+                                  </>
+                                )}
+                              </Typography>
+                            </Box>
                           </Box>
+                          {canEditNote(note.authorUid) && !isEditing && (
+                            <Button
+                              size="small"
+                              onClick={() => profile.startEditingNote(note)}
+                              disabled={
+                                profile.isSavingEditNote ||
+                                profile.isSavingNewNote
+                              }
+                              sx={{ textTransform: 'none', flexShrink: 0 }}
+                            >
+                              Editar
+                            </Button>
+                          )}
                         </Box>
-                        <Rating value={note.rating} readOnly size="small" />
+
+                        {isEditing ? (
+                          <Stack spacing={1.5}>
+                            <TextField
+                              value={profile.editingText}
+                              onChange={(e) =>
+                                profile.setEditingText(e.target.value)
+                              }
+                              fullWidth
+                              multiline
+                              minRows={2}
+                              disabled={profile.isSavingEditNote}
+                              autoFocus
+                            />
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                justifyContent: 'flex-end',
+                                gap: 1,
+                              }}
+                            >
+                              <Button
+                                size="small"
+                                onClick={profile.cancelEditingNote}
+                                disabled={profile.isSavingEditNote}
+                              >
+                                Cancelar
+                              </Button>
+                              <Button
+                                size="small"
+                                variant="contained"
+                                onClick={profile.handleSaveEditedNote}
+                                disabled={
+                                  !profile.editingText.trim() ||
+                                  profile.isSavingEditNote
+                                }
+                                startIcon={
+                                  profile.isSavingEditNote ? (
+                                    <CircularProgress
+                                      size={14}
+                                      color="inherit"
+                                    />
+                                  ) : null
+                                }
+                              >
+                                {profile.isSavingEditNote
+                                  ? 'Guardando...'
+                                  : 'Guardar'}
+                              </Button>
+                            </Box>
+                          </Stack>
+                        ) : (
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ fontSize: 13, lineHeight: 1.55 }}
+                          >
+                            {note.text}
+                          </Typography>
+                        )}
                       </Box>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ fontSize: 13 }}
-                      >
-                        {note.note}
-                      </Typography>
-                    </Box>
-                  ))
+                    );
+                  })
                 )}
+              </Box>
+
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  gap: 1,
+                  pt: 1,
+                  borderTop: 1,
+                  borderColor: 'divider',
+                }}
+              >
+                <TextField
+                  placeholder="Escribí una nota sobre esta candidatura..."
+                  value={profile.newCommentText}
+                  onChange={(e) => profile.setNewCommentText(e.target.value)}
+                  fullWidth
+                  multiline
+                  minRows={2}
+                  maxRows={6}
+                  disabled={
+                    profile.isSavingNewNote || profile.isSavingEditNote
+                  }
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                      e.preventDefault();
+                      profile.handleSendComment();
+                    }
+                  }}
+                />
+                <IconButton
+                  color="primary"
+                  onClick={profile.handleSendComment}
+                  disabled={
+                    !profile.newCommentText.trim() ||
+                    profile.isSavingNewNote ||
+                    profile.isSavingEditNote
+                  }
+                  aria-label="Enviar nota"
+                  sx={{ mb: 0.5 }}
+                >
+                  {profile.isSavingNewNote ? (
+                    <CircularProgress size={20} />
+                  ) : (
+                    <Send size={20} />
+                  )}
+                </IconButton>
               </Box>
             </Card>
 
@@ -680,7 +819,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
         candidateName={candidate.fullName}
         type={profile.interviewType}
         skills={candidate.jobSkills}
-        onSave={profile.handleInterviewSave}
+        onSave={() => profile.handleInterviewSave()}
       />
 
       <InterviewFormsModal
@@ -690,94 +829,6 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
         candidateName={candidate.fullName}
         role={role}
       />
-
-      <Dialog
-        open={profile.newNoteModalOpen}
-        onClose={() =>
-          !profile.isSavingNote && profile.setNewNoteModalOpen(false)
-        }
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Añadir nueva nota de entrevista</DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ mb: 2, color: 'text.secondary' }}>
-            Completa los datos de la nota para agregarla a la ficha del
-            candidato.
-          </DialogContentText>
-          <Stack spacing={2}>
-            <TextField
-              label="Autor"
-              value={profile.newNoteAuthor}
-              onChange={(event) => profile.setNewNoteAuthor(event.target.value)}
-              fullWidth
-              disabled={profile.isSavingNote}
-            />
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                Fecha
-              </Typography>
-              <TextField
-                type="date"
-                value={profile.newNoteDate}
-                onChange={(event) => profile.setNewNoteDate(event.target.value)}
-                fullWidth
-                disabled={profile.isSavingNote}
-                error={Boolean(
-                  profile.newNoteDate &&
-                  Number.isNaN(new Date(profile.newNoteDate).getTime()),
-                )}
-                helperText={
-                  profile.newNoteDate &&
-                  Number.isNaN(new Date(profile.newNoteDate).getTime())
-                    ? 'Fecha inválida'
-                    : ''
-                }
-              />
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                Calificación:
-              </Typography>
-              <Rating
-                value={profile.newNoteRating}
-                onChange={(_, value) => profile.setNewNoteRating(value || 0)}
-                size="small"
-                disabled={profile.isSavingNote}
-              />
-            </Box>
-            <TextField
-              label="Nota"
-              value={profile.newNoteText}
-              onChange={(event) => profile.setNewNoteText(event.target.value)}
-              fullWidth
-              multiline
-              minRows={3}
-              disabled={profile.isSavingNote}
-            />
-          </Stack>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button
-            onClick={() => profile.setNewNoteModalOpen(false)}
-            disabled={profile.isSavingNote}
-          >
-            Cancelar
-          </Button>
-          <Button
-            variant="contained"
-            onClick={profile.handleSaveNewNote}
-            disabled={isNewNoteInvalid || profile.isSavingNote}
-            startIcon={
-              profile.isSavingNote ? (
-                <CircularProgress size={16} color="inherit" />
-              ) : null
-            }
-          >
-            {profile.isSavingNote ? 'Guardando...' : 'Guardar nota'}
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       <Dialog
         open={profile.stageDialogOpen}

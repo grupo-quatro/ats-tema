@@ -69,7 +69,7 @@ export function InterviewFormsModal({
 
     setIsLoading(true);
     setErrorMessage(null);
-    fetchInterviewFormResponses(applicationId, role)
+    fetchInterviewFormResponses(applicationId)
       .then((result) => {
         if (cancelled) return;
         setForms(result);

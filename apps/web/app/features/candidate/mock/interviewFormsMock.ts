@@ -1,4 +1,4 @@
-import type { EmployeeRole, InterviewFormDTO } from '@ats/shared-types';
+import type { InterviewFormDTO } from '@ats/shared-types';
 import { getInterviewForms } from '../../../shared/api/interviewFormsApi';
 
 export type InterviewFormType = InterviewFormDTO['type'];
@@ -9,7 +9,6 @@ export type InterviewFormResponse = InterviewFormDTO;
  */
 export async function fetchInterviewFormResponses(
   applicationId: string,
-  _role: EmployeeRole | null,
 ): Promise<InterviewFormResponse[]> {
   return getInterviewForms(applicationId);
 }

@@ -14,6 +14,7 @@ const validSavePayload = {
   questions: [
     { question: 'Comunicación', answer: 'Buena', rating: 4 },
     { question: 'Decisión', answer: 'Avanzar' },
+    { question: 'Comentarios y observaciones', answer: 'Muy buen perfil.' },
   ],
 };
 
@@ -69,11 +70,14 @@ describe('validateSaveInterviewFormPayload', () => {
     ).toThrow(InterviewFormsValidationError);
   });
 
-  it('acepta pregunta solo con rating', () => {
+  it('acepta pregunta solo con rating si incluye comentarios', () => {
     expect(() =>
       validateSaveInterviewFormPayload({
         ...validSavePayload,
-        questions: [{ question: 'Comunicación', answer: '', rating: 3 }],
+        questions: [
+          { question: 'Comunicación', answer: '', rating: 3 },
+          { question: 'Comentarios y observaciones', answer: 'Observación.' },
+        ],
       }),
     ).not.toThrow();
   });
@@ -82,7 +86,30 @@ describe('validateSaveInterviewFormPayload', () => {
     expect(() =>
       validateSaveInterviewFormPayload({
         ...validSavePayload,
-        questions: [{ question: 'Comunicación', answer: '' }],
+        questions: [
+          { question: 'Comunicación', answer: '' },
+          { question: 'Comentarios y observaciones', answer: 'Ok' },
+        ],
+      }),
+    ).toThrow(InterviewFormsValidationError);
+  });
+
+  it('lanza cuando falta decisión', () => {
+    expect(() =>
+      validateSaveInterviewFormPayload({
+        ...validSavePayload,
+        decision: '   ',
+      }),
+    ).toThrow(InterviewFormsValidationError);
+  });
+
+  it('lanza cuando faltan comentarios y observaciones', () => {
+    expect(() =>
+      validateSaveInterviewFormPayload({
+        ...validSavePayload,
+        questions: validSavePayload.questions.filter(
+          (q) => !q.question.toLowerCase().includes('comentarios'),
+        ),
       }),
     ).toThrow(InterviewFormsValidationError);
   });

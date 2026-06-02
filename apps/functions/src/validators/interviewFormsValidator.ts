@@ -44,11 +44,17 @@ export function validateSaveInterviewFormPayload(
   }
 
   if (
-    payload.overallRating !== undefined &&
+    payload.overallRating === undefined ||
     !isValidRating(payload.overallRating)
   ) {
     throw new InterviewFormsValidationError(
-      'La calificación general debe ser un entero entre 1 y 5.',
+      'La calificación general es obligatoria y debe ser un entero entre 1 y 5.',
+    );
+  }
+
+  if (!payload.decision || payload.decision.trim().length === 0) {
+    throw new InterviewFormsValidationError(
+      'La decisión recomendada es obligatoria.',
     );
   }
 
@@ -81,6 +87,16 @@ export function validateSaveInterviewFormPayload(
       );
     }
   });
+
+  const commentsQuestion = payload.questions.find((item) =>
+    item.question.toLowerCase().includes('comentarios'),
+  );
+
+  if (!commentsQuestion?.answer || commentsQuestion.answer.trim().length === 0) {
+    throw new InterviewFormsValidationError(
+      'Los comentarios y observaciones son obligatorios.',
+    );
+  }
 }
 
 export function validateGetInterviewFormsPayload(
