@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import {
   Briefcase,
+  Calendar,
   ChevronDown,
   ChevronUp,
   FileText,
@@ -86,6 +87,17 @@ export function CandidateInfoCard({
               {candidate.location}
             </Typography>
           </Box>
+          {candidate.yearsOfExperience !== undefined ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Calendar size={14} color="#64748b" />
+              <Typography variant="body2" color="text.secondary">
+                {candidate.yearsOfExperience}{' '}
+                {candidate.yearsOfExperience === 1
+                  ? 'año de experiencia'
+                  : 'años de experiencia'}
+              </Typography>
+            </Box>
+          ) : null}
         </Box>
 
         <Divider sx={{ mb: 2 }} />

@@ -57,7 +57,7 @@ export default function PositionsFilters({
     <Card sx={{ boxShadow: 4, mb: 2 }}>
       <Box sx={{ mb: 3 }}>
         <Typography variant="h2" sx={{ fontWeight: 800 }}>
-          Posiciones Activas
+          Posiciones
         </Typography>
       </Box>
       <Box

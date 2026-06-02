@@ -114,6 +114,11 @@ export default function LoginPage() {
     }
   }, [user, role, router]);
 
+  // Si ya tiene rol, redirigir al dashboard
+  if (user && role) {
+    return null;
+  }
+
   async function handleSignIn(devRole?: DevRole) {
     setError(null);
     setLoading(true);

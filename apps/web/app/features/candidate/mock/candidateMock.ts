@@ -75,6 +75,8 @@ export interface CandidateMockProfile {
   email: string;
   phone: string;
   location: string;
+  yearsOfExperience?: number;
+  professionalSummary?: string;
   experience: CandidateExperience[];
   education: CandidateEducation[];
   fitScore: number;
@@ -98,6 +100,9 @@ export const CANDIDATES_MOCK: CandidateMockProfile[] = [
     email: 'maria.garcia@email.com',
     phone: '+34 612 345 678',
     location: 'Madrid, España',
+    yearsOfExperience: 5,
+    professionalSummary:
+      'Desarrolladora frontend senior con experiencia liderando equipos y construyendo aplicaciones web complejas.',
     experience: [
       {
         role: 'Lead Frontend Developer',

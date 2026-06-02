@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from '@tanstack/react-form';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Alert,
   Box,
@@ -39,6 +40,7 @@ import type {
   Job,
   JobLocation,
   JobStatus,
+  ListPositionsResponse,
   Skill,
   UpdateJobDTO,
   UpdatePositionPayload,
@@ -93,6 +95,21 @@ function parseLines(value: string): string[] {
     .split('\n')
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function serializeFormValue(value: Record<string, unknown>): string {
+  return JSON.stringify(value);
+}
+
+function serializeSkills(skills: EditableSkill[]): string {
+  return JSON.stringify(
+    skills.map(({ name, years, weight, type }) => ({
+      name,
+      years,
+      weight,
+      type,
+    })),
+  );
 }
 
 function InfoMetric({
@@ -510,8 +527,11 @@ function SkillEditor({
 
 export default function PositionEditView({ job, onSave }: Props) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [message, setMessage] = useState('');
-  const statusStyle = getJobStatusStyle(job.status);
+  const [status, setStatus] = useState<JobStatus>(job.status);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const statusStyle = getJobStatusStyle(status);
   const [mandatorySkills, setMandatorySkills] = useState<EditableSkill[]>(() =>
     job.skills
       .filter((skill) => skill.type === 'mandatory')
@@ -538,23 +558,83 @@ export default function PositionEditView({ job, onSave }: Props) {
     years: '0',
     weight: '',
   });
+  const defaultFormValues = {
+    title: job.title,
+    department: job.department,
+    seniority: job.seniority,
+    location: job.location,
+    city: job.city ?? '',
+    type: job.type ?? '',
+    description: job.description,
+    requirements: formatLines(job.requirements),
+    responsabilities: formatLines(job.responsabilities),
+    benefits: formatLines(job.benefits),
+    observations: job.observations ?? '',
+    additionalCriteria: formatLines(job.additionalCriteria),
+  };
+  const defaultFormValueKey = serializeFormValue(defaultFormValues);
+  const defaultSkillsKey = serializeSkills([
+    ...job.skills
+      .filter((skill) => skill.type === 'mandatory')
+      .map((skill) => ({
+        ...skill,
+        years: skill.yearsOfExperience,
+      })),
+    ...job.skills
+      .filter((skill) => skill.type === 'desirable')
+      .map((skill) => ({
+        ...skill,
+        years: skill.yearsOfExperience,
+      })),
+  ]);
+  const currentSkillsKey = serializeSkills([
+    ...mandatorySkills,
+    ...desirableSkills,
+  ]);
+
+  useEffect(() => {
+    setStatus(job.status);
+  }, [job.status]);
+
+  async function handleStatusChange(nextStatus: JobStatus) {
+    if (nextStatus === status || isUpdatingStatus) return;
+
+    const previousStatus = status;
+    setStatus(nextStatus);
+    setIsUpdatingStatus(true);
+
+    try {
+      await updatePositionStatus({
+        id: job.id,
+        status: nextStatus,
+      });
+      queryClient.setQueriesData<ListPositionsResponse>(
+        { queryKey: ['positions'] },
+        (current) =>
+          current
+            ? {
+                ...current,
+                jobs: current.jobs.map((position) =>
+                  position.id === job.id
+                    ? { ...position, status: nextStatus }
+                    : position,
+                ),
+              }
+            : current,
+      );
+      await queryClient.invalidateQueries({ queryKey: ['positions'] });
+      await queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      setMessage('Estado actualizado correctamente');
+    } catch (error) {
+      console.error('Error updating position status:', error);
+      setStatus(previousStatus);
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  }
 
   const form = useForm({
-    defaultValues: {
-      title: job.title,
-      department: job.department,
-      seniority: job.seniority,
-      location: job.location,
-      city: job.city ?? '',
-      type: job.type ?? '',
-      status: job.status,
-      description: job.description,
-      requirements: formatLines(job.requirements),
-      responsabilities: formatLines(job.responsabilities),
-      benefits: formatLines(job.benefits),
-      observations: job.observations ?? '',
-      additionalCriteria: formatLines(job.additionalCriteria),
-    },
+    defaultValues: defaultFormValues,
     onSubmit: async ({ value }) => {
       const requirements = parseLines(value.requirements);
       const additionalCriteria = parseLines(value.additionalCriteria);
@@ -590,14 +670,12 @@ export default function PositionEditView({ job, onSave }: Props) {
         } as UpdatePositionPayload);
       }
 
-      if (value.status !== job.status) {
-        await updatePositionStatus({
-          id: job.id,
-          status: value.status as JobStatus,
-        });
-      }
-
+      await queryClient.invalidateQueries({ queryKey: ['positions'] });
+      await queryClient.invalidateQueries({ queryKey: ['jobs'] });
       setMessage('Cambios guardados correctamente');
+      setTimeout(() => {
+        router.push('/dashboard/positions');
+      }, 900);
     },
   });
 
@@ -684,17 +762,68 @@ export default function PositionEditView({ job, onSave }: Props) {
           >
             Volver al Listado
           </Button>
-          <Chip
-            label={statusStyle.label}
+          <Select
+            size="small"
+            value={status}
+            disabled={isUpdatingStatus}
+            onChange={(event) =>
+              void handleStatusChange(event.target.value as JobStatus)
+            }
+            MenuProps={{ disableScrollLock: true }}
+            renderValue={() => statusStyle.label}
             sx={{
               bgcolor: statusStyle.backgroundColor,
               border: `1px solid ${statusStyle.borderColor}`,
               color: statusStyle.color,
               fontWeight: 700,
               height: 34,
-              px: 0.8,
+              minWidth: 118,
+              borderRadius: '999px',
+              fontSize: '0.82rem',
+              '& .MuiSelect-select': {
+                py: 0.5,
+                pl: 2,
+                pr: '34px !important',
+                display: 'flex',
+                alignItems: 'center',
+              },
+              '& .MuiOutlinedInput-notchedOutline': {
+                border: 0,
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                border: 0,
+              },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                border: 0,
+              },
+              '& .MuiSvgIcon-root': {
+                color: statusStyle.color,
+                right: 10,
+              },
             }}
-          />
+          >
+            {(['draft', 'open', 'paused', 'closed'] as JobStatus[]).map(
+              (option) => {
+                const optionStyle = getJobStatusStyle(option);
+                return (
+                  <MenuItem key={option} value={option}>
+                    <Box
+                      component="span"
+                      sx={{
+                        width: 10,
+                        height: 10,
+                        borderRadius: '50%',
+                        bgcolor: optionStyle.backgroundColor,
+                        border: `1px solid ${optionStyle.borderColor}`,
+                        mr: 1,
+                      }}
+                    />
+                    {optionStyle.label}
+                  </MenuItem>
+                );
+              },
+            )}
+          </Select>
         </Stack>
 
         <Stack sx={{ alignItems: 'center', mb: 3.2 }}>
@@ -935,34 +1064,6 @@ export default function PositionEditView({ job, onSave }: Props) {
                             }
                             sx={inputSx}
                           />
-                        </FormControl>
-                      )}
-                    </form.Field>
-                  </Grid>
-
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <form.Field name="status">
-                      {(field) => (
-                        <FormControl fullWidth>
-                          <FieldLabel>Estado</FieldLabel>
-                          <Select
-                            fullWidth
-                            size="small"
-                            value={field.state.value}
-                            onChange={(event) =>
-                              field.handleChange(event.target.value)
-                            }
-                            sx={{
-                              borderRadius: '8px',
-                              bgcolor: '#f8fafc',
-                              minHeight: 44,
-                            }}
-                          >
-                            <MenuItem value="draft">Borrador</MenuItem>
-                            <MenuItem value="open">Abierta</MenuItem>
-                            <MenuItem value="paused">Pausada</MenuItem>
-                            <MenuItem value="closed">Cerrada</MenuItem>
-                          </Select>
                         </FormControl>
                       )}
                     </form.Field>
@@ -1219,18 +1320,36 @@ export default function PositionEditView({ job, onSave }: Props) {
                 >
                   Cancelar
                 </Button>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  startIcon={<Save size={16} />}
-                  sx={{
-                    height: 44,
-                    px: 3.6,
-                    boxShadow: '0 12px 22px rgba(37, 99, 235, 0.28)',
-                  }}
+                <form.Subscribe
+                  selector={(state) => ({
+                    values: state.values,
+                    isSubmitting: state.isSubmitting,
+                  })}
                 >
-                  Guardar Cambios
-                </Button>
+                  {({ values, isSubmitting }) => {
+                    const hasChanges =
+                      serializeFormValue(values) !== defaultFormValueKey ||
+                      currentSkillsKey !== defaultSkillsKey;
+
+                    return (
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        startIcon={<Save size={16} />}
+                        disabled={!hasChanges || Boolean(isSubmitting)}
+                        sx={{
+                          height: 44,
+                          px: 3.6,
+                          boxShadow: hasChanges
+                            ? '0 12px 22px rgba(37, 99, 235, 0.28)'
+                            : 'none',
+                        }}
+                      >
+                        {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
+                      </Button>
+                    );
+                  }}
+                </form.Subscribe>
               </Stack>
             </Stack>
           </Stack>
@@ -1239,11 +1358,25 @@ export default function PositionEditView({ job, onSave }: Props) {
 
       <Snackbar
         open={!!message}
-        autoHideDuration={2600}
+        autoHideDuration={2200}
         onClose={() => setMessage('')}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert severity="success" onClose={() => setMessage('')}>
+        <Alert
+          severity="success"
+          variant="filled"
+          onClose={() => setMessage('')}
+          sx={{
+            minWidth: { xs: 'calc(100vw - 32px)', sm: 420 },
+            py: 1.5,
+            px: 2,
+            borderRadius: '12px',
+            boxShadow: '0 18px 40px rgba(15, 23, 42, 0.24)',
+            fontSize: '0.95rem',
+            fontWeight: 700,
+            alignItems: 'center',
+          }}
+        >
           {message}
         </Alert>
       </Snackbar>

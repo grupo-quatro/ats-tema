@@ -89,6 +89,31 @@ function formatPeriod(startDate?: string, endDate?: string): string {
   return `${startDate} - ${endDate}`;
 }
 
+function mapEducation(
+  candidate: ApplicationDetailDTO['candidate'],
+): CandidateMockProfile['education'] {
+  const parsedEducation =
+    candidate.parsedEducation?.map((edu) => ({
+      degree: edu.degree ?? '',
+      institution: edu.institution ?? '',
+      period: formatPeriod(edu.startDate, edu.endDate),
+    })) ?? [];
+
+  if (parsedEducation.length > 0) {
+    return parsedEducation;
+  }
+
+  return candidate.education
+    ? [
+        {
+          degree: candidate.education,
+          institution: '',
+          period: '',
+        },
+      ]
+    : [];
+}
+
 export function mapApplicationToProfile(
   application: ApplicationWithCandidateDTO,
 ): CandidateMockProfile {
@@ -103,6 +128,8 @@ export function mapApplicationToProfile(
     email: application.candidateEmail ?? '',
     phone: '',
     location: '',
+    yearsOfExperience: undefined,
+    professionalSummary: undefined,
     experience: [],
     education: [],
     fitScore: application.fitScore ?? 0,
@@ -134,18 +161,15 @@ export function mapDetailToProfile(
     email: candidate.email ?? '',
     phone: candidate.phone ?? '',
     location: candidate.location ?? '',
+    yearsOfExperience: candidate.yearsOfExperience,
+    professionalSummary: candidate.professionalSummary,
     experience:
       candidate.parsedExperience?.map((exp) => ({
         role: exp.role ?? '',
         company: exp.company ?? '',
         period: formatPeriod(exp.startDate, exp.endDate),
       })) ?? [],
-    education:
-      candidate.parsedEducation?.map((edu) => ({
-        degree: edu.degree ?? '',
-        institution: edu.institution ?? '',
-        period: formatPeriod(edu.startDate, edu.endDate),
-      })) ?? [],
+    education: mapEducation(candidate),
     fitScore: detail.fitScore ?? 0,
     detectedSkills: candidate.technicalSkills ?? [],
     gapSkills: skillMatchStats?.skillsFaltantes.map((s) => s.name) ?? [],
