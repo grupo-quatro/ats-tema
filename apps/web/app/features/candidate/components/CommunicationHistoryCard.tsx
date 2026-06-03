@@ -38,8 +38,16 @@ export function CommunicationHistoryCard({
 
       {isLoading ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <Skeleton variant="rectangular" height={52} sx={{ borderRadius: 1 }} />
-          <Skeleton variant="rectangular" height={52} sx={{ borderRadius: 1 }} />
+          <Skeleton
+            variant="rectangular"
+            height={52}
+            sx={{ borderRadius: 1 }}
+          />
+          <Skeleton
+            variant="rectangular"
+            height={52}
+            sx={{ borderRadius: 1 }}
+          />
         </Box>
       ) : !logs || logs.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
@@ -88,7 +96,14 @@ export function CommunicationHistoryCard({
                     </Typography>
                   </Box>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5,
+                      flexShrink: 0,
+                    }}
+                  >
                     <Chip
                       label={
                         log.status === 'sent'

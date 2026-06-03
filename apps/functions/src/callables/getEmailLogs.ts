@@ -36,7 +36,12 @@ export const getEmailLogs = onRequest(async (request, response) => {
       return;
     }
 
-    logger.error('[getEmailLogs] Error inesperado obteniendo historial de emails', error);
-    response.status(500).json({ error: 'No se pudo obtener el historial de comunicaciones.' });
+    logger.error(
+      '[getEmailLogs] Error inesperado obteniendo historial de emails',
+      error,
+    );
+    response
+      .status(500)
+      .json({ error: 'No se pudo obtener el historial de comunicaciones.' });
   }
 });

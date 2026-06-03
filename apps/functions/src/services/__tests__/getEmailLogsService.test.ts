@@ -35,7 +35,10 @@ const makeEmailLogRepo = (): IEmailLogRepository => ({
 describe('GetEmailLogsService.getByCandidate', () => {
   it('delega a findByCandidate del repositorio y retorna los logs', async () => {
     const repo = makeEmailLogRepo();
-    const logs = [makeEmailLog(), makeEmailLog({ id: 'log-2', status: 'failed' })];
+    const logs = [
+      makeEmailLog(),
+      makeEmailLog({ id: 'log-2', status: 'failed' }),
+    ];
     vi.mocked(repo.findByCandidate).mockResolvedValue(logs);
 
     const service = new GetEmailLogsService(repo);

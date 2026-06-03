@@ -3,7 +3,9 @@ import type { EmailTemplate } from '@ats/shared-types';
 import { TemplateResolverService } from '../templateResolverService';
 import type { ResolverContext } from '../templateResolverService';
 
-const makeTemplate = (overrides: Partial<EmailTemplate> = {}): EmailTemplate => ({
+const makeTemplate = (
+  overrides: Partial<EmailTemplate> = {},
+): EmailTemplate => ({
   id: 'tpl-1',
   name: 'Template de prueba',
   stage: 'application_received',
@@ -15,7 +17,9 @@ const makeTemplate = (overrides: Partial<EmailTemplate> = {}): EmailTemplate => 
   ...overrides,
 });
 
-const makeContext = (overrides: Partial<ResolverContext> = {}): ResolverContext => ({
+const makeContext = (
+  overrides: Partial<ResolverContext> = {},
+): ResolverContext => ({
   candidateName: 'Ana García',
   positionName: 'Desarrolladora Frontend',
   recruiterName: 'Carlos López',
@@ -36,7 +40,8 @@ describe('TemplateResolverService.resolve', () => {
 
   it('reemplaza todas las variables en un template completo', () => {
     const template = makeTemplate({
-      subject: 'Tu postulación a [Nombre de la Posición] en [Nombre de la Empresa]',
+      subject:
+        'Tu postulación a [Nombre de la Posición] en [Nombre de la Empresa]',
       body: [
         'Estimado/a [Nombre del Candidato],',
         'Gracias por tu interés en [Nombre de la Posición].',
@@ -49,11 +54,19 @@ describe('TemplateResolverService.resolve', () => {
     const context = makeContext();
     const { subject, body } = service.resolve(template, context);
 
-    expect(subject).toBe('Tu postulación a Desarrolladora Frontend en TechCorp SA');
+    expect(subject).toBe(
+      'Tu postulación a Desarrolladora Frontend en TechCorp SA',
+    );
     expect(body).toContain('Estimado/a Ana García,');
-    expect(body).toContain('Gracias por tu interés en Desarrolladora Frontend.');
-    expect(body).toContain('Tu reclutador/a es Carlos López (carlos@empresa.com).');
-    expect(body).toContain('Agenda tu entrevista aquí: https://calendar.app/reunion.');
+    expect(body).toContain(
+      'Gracias por tu interés en Desarrolladora Frontend.',
+    );
+    expect(body).toContain(
+      'Tu reclutador/a es Carlos López (carlos@empresa.com).',
+    );
+    expect(body).toContain(
+      'Agenda tu entrevista aquí: https://calendar.app/reunion.',
+    );
     expect(body).toContain('Saludos, TechCorp SA.');
   });
 

@@ -23,7 +23,9 @@ import type { OAuth2Client } from 'google-auth-library';
 
 // --- Fixtures ---
 
-const makeApplication = (overrides: Partial<Application> = {}): Application => ({
+const makeApplication = (
+  overrides: Partial<Application> = {},
+): Application => ({
   id: 'app-1',
   jobId: 'job-1',
   candidateId: 'cand-1',
@@ -67,7 +69,9 @@ const makeJob = (overrides: Partial<Job> = {}): Job => ({
   ...overrides,
 });
 
-const makeTemplate = (overrides: Partial<EmailTemplate> = {}): EmailTemplate => ({
+const makeTemplate = (
+  overrides: Partial<EmailTemplate> = {},
+): EmailTemplate => ({
   id: 'tmpl-1',
   name: 'Postulación recibida',
   stage: 'application_received',
@@ -217,7 +221,9 @@ describe('StageEmailService.sendIfTemplateExists', () => {
       'recruiter@example.com',
     );
 
-    expect(templateRepo.findByStage).toHaveBeenCalledWith('application_received');
+    expect(templateRepo.findByStage).toHaveBeenCalledWith(
+      'application_received',
+    );
     expect(logRepo.create).not.toHaveBeenCalled();
     expect(sender.send).not.toHaveBeenCalled();
   });

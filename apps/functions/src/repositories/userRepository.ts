@@ -6,7 +6,10 @@ const USERS_COLLECTION = 'users';
 
 export interface IUserRepository {
   getGmailCredential(uid: string): Promise<GmailCredential | null>;
-  updateGmailCredential(uid: string, credential: GmailCredential): Promise<void>;
+  updateGmailCredential(
+    uid: string,
+    credential: GmailCredential,
+  ): Promise<void>;
 }
 
 export class UserRepositoryError extends Error {
@@ -47,10 +50,9 @@ export class UserRepository implements IUserRepository {
     credential: GmailCredential,
   ): Promise<void> {
     try {
-      await this.collection.doc(uid).set(
-        { gmailCredential: credential },
-        { merge: true },
-      );
+      await this.collection
+        .doc(uid)
+        .set({ gmailCredential: credential }, { merge: true });
     } catch (error) {
       throw new UserRepositoryError(
         `No se pudo actualizar la credencial de Gmail para el usuario ${uid}.`,

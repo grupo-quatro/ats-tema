@@ -15,7 +15,9 @@ export async function getEmailLogs(
   });
   if (!res.ok) {
     const error = await res.json();
-    throw new Error(error.error || 'Error al obtener el historial de comunicaciones');
+    throw new Error(
+      error.error || 'Error al obtener el historial de comunicaciones',
+    );
   }
   return res.json();
 }

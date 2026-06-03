@@ -50,7 +50,10 @@ export const exchangeGmailCode = onRequest(async (request, response) => {
       return;
     }
 
-    logger.error('[exchangeGmailCode] Error intercambiando código de Gmail', error);
+    logger.error(
+      '[exchangeGmailCode] Error intercambiando código de Gmail',
+      error,
+    );
     response
       .status(500)
       .json({ error: 'No se pudo conectar la cuenta de Gmail.' });

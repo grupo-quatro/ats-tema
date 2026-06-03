@@ -258,7 +258,9 @@ describe('UpdateApplicationStageService.updateStage', () => {
     mockRepo.update.mockResolvedValue(undefined);
     mockCandidateRepo.findById.mockResolvedValue(makeCandidate());
     mockJobRepo.findById.mockResolvedValue(makeJob());
-    vi.mocked(mockStageEmailService.sendIfTemplateExists).mockResolvedValue(undefined);
+    vi.mocked(mockStageEmailService.sendIfTemplateExists).mockResolvedValue(
+      undefined,
+    );
 
     const serviceWithEmail = new UpdateApplicationStageService(
       mockRepo as any,

@@ -23,12 +23,18 @@ import type { IEmailTemplateRepository } from '../interfaces/IEmailTemplateRepos
 
 const COLLECTION = 'emailTemplates';
 
-type FirestoreEmailTemplate = Omit<EmailTemplate, 'id' | 'createdAt' | 'updatedAt'> & {
+type FirestoreEmailTemplate = Omit<
+  EmailTemplate,
+  'id' | 'createdAt' | 'updatedAt'
+> & {
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };
 
-function toEmailTemplate(id: string, data: FirestoreEmailTemplate): EmailTemplate {
+function toEmailTemplate(
+  id: string,
+  data: FirestoreEmailTemplate,
+): EmailTemplate {
   return {
     ...data,
     id,
@@ -64,10 +70,16 @@ export class FirebaseEmailTemplateRepository implements IEmailTemplateRepository
       updatedAt: now,
     });
     const created = await getDoc(docRef);
-    return toEmailTemplate(created.id, created.data() as FirestoreEmailTemplate);
+    return toEmailTemplate(
+      created.id,
+      created.data() as FirestoreEmailTemplate,
+    );
   }
 
-  async update(id: string, dto: UpdateEmailTemplateDTO): Promise<EmailTemplate> {
+  async update(
+    id: string,
+    dto: UpdateEmailTemplateDTO,
+  ): Promise<EmailTemplate> {
     const ref = doc(db, COLLECTION, id);
     await updateDoc(ref, {
       ...dto,
@@ -77,7 +89,10 @@ export class FirebaseEmailTemplateRepository implements IEmailTemplateRepository
     if (!updated.exists()) {
       throw new Error('No se encontró la plantilla.');
     }
-    return toEmailTemplate(updated.id, updated.data() as FirestoreEmailTemplate);
+    return toEmailTemplate(
+      updated.id,
+      updated.data() as FirestoreEmailTemplate,
+    );
   }
 
   async delete(id: string): Promise<void> {

@@ -32,7 +32,8 @@ export class RetryEmailSendService {
     await this.emailLogRepository.updateStatus(logId, { status: 'pending' });
 
     // 3. Obtener credencial de Gmail del usuario que está reintentando
-    const credential = await this.userRepository.getGmailCredential(retryingUserId);
+    const credential =
+      await this.userRepository.getGmailCredential(retryingUserId);
 
     // 4. Sin credencial → marcar como failed y lanzar error descriptivo
     if (!credential) {
@@ -42,9 +43,7 @@ export class RetryEmailSendService {
           'El reclutador no tiene una cuenta de Gmail conectada. ' +
           'Conecta tu cuenta en Configuración → Gmail.',
       });
-      throw new Error(
-        'El reclutador no tiene una cuenta de Gmail conectada.',
-      );
+      throw new Error('El reclutador no tiene una cuenta de Gmail conectada.');
     }
 
     // 5. Refrescar token si está próximo a vencer

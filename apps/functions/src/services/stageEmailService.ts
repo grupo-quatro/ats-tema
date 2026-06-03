@@ -17,7 +17,10 @@ import type { IEmailTemplateRepository } from '../repositories/emailTemplateRepo
 import type { IOrgConfigRepository } from '../repositories/orgConfigRepository';
 import type { IUserRepository } from '../repositories/userRepository';
 import type { GmailSenderService } from './gmailSenderService';
-import type { ResolverContext, TemplateResolverService } from './templateResolverService';
+import type {
+  ResolverContext,
+  TemplateResolverService,
+} from './templateResolverService';
 
 export class StageEmailService {
   constructor(
@@ -48,7 +51,8 @@ export class StageEmailService {
       }
 
       // 2. Buscar template; si no existe, salir sin crear log
-      const template = await this.emailTemplateRepository.findByStage(emailTemplateStage);
+      const template =
+        await this.emailTemplateRepository.findByStage(emailTemplateStage);
       if (!template) {
         return;
       }
@@ -75,7 +79,10 @@ export class StageEmailService {
         companyName: orgConfig.companyName,
       };
 
-      const { subject, body } = this.templateResolver.resolve(template, context);
+      const { subject, body } = this.templateResolver.resolve(
+        template,
+        context,
+      );
 
       // 5. Crear EmailLog con status='pending'
       const candidateEmail = candidate.email ?? '';
@@ -113,10 +120,13 @@ export class StageEmailService {
       try {
         freshCredential = await this.refreshIfNeeded(credential, recruiterId);
       } catch (refreshError) {
-        logger.error('StageEmailService: no se pudo refrescar el token de Gmail', {
-          recruiterId,
-          error: refreshError,
-        });
+        logger.error(
+          'StageEmailService: no se pudo refrescar el token de Gmail',
+          {
+            recruiterId,
+            error: refreshError,
+          },
+        );
         await this.emailLogRepository.updateStatus(logId, {
           status: 'failed',
           error: 'No se pudo refrescar el token de acceso de Gmail.',
@@ -152,11 +162,14 @@ export class StageEmailService {
         });
       }
     } catch (error) {
-      logger.error('StageEmailService: error inesperado en sendIfTemplateExists', {
-        stage: newStage,
-        applicationId: application.id,
-        error,
-      });
+      logger.error(
+        'StageEmailService: error inesperado en sendIfTemplateExists',
+        {
+          stage: newStage,
+          applicationId: application.id,
+          error,
+        },
+      );
       // No relanzar: el cambio de etapa ya fue persistido exitosamente
     }
   }

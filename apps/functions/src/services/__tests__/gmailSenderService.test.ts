@@ -8,7 +8,9 @@ import { logger } from 'firebase-functions';
 import { GmailSenderService, GmailSendError } from '../gmailSenderService';
 import type { SendEmailPayload } from '../gmailSenderService';
 
-const makePayload = (overrides: Partial<SendEmailPayload> = {}): SendEmailPayload => ({
+const makePayload = (
+  overrides: Partial<SendEmailPayload> = {},
+): SendEmailPayload => ({
   accessToken: 'test-access-token',
   to: 'candidato@example.com',
   subject: 'Tu postulación ha sido recibida',

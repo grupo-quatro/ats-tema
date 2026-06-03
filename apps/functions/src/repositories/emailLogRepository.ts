@@ -1,6 +1,10 @@
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
-import type { CreateEmailLogDTO, EmailLog, UpdateEmailLogDTO } from '@ats/shared-types';
+import type {
+  CreateEmailLogDTO,
+  EmailLog,
+  UpdateEmailLogDTO,
+} from '@ats/shared-types';
 
 import { db } from '../core/firebaseAdmin';
 
@@ -53,7 +57,9 @@ export class EmailLogRepository implements IEmailLogRepository {
       await this.collection.doc(id).set(
         {
           ...update,
-          ...(update.status === 'sent' && { sentAt: FieldValue.serverTimestamp() }),
+          ...(update.status === 'sent' && {
+            sentAt: FieldValue.serverTimestamp(),
+          }),
         },
         { merge: true },
       );

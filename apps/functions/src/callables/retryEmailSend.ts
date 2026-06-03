@@ -58,7 +58,10 @@ export const retryEmailSend = onRequest(async (request, response) => {
       return;
     }
 
-    logger.error('[retryEmailSend] Error inesperado al reintentar envío de email', error);
+    logger.error(
+      '[retryEmailSend] Error inesperado al reintentar envío de email',
+      error,
+    );
     response.status(500).json({ error: 'No se pudo reenviar el email.' });
   }
 });

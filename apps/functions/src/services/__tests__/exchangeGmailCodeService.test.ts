@@ -53,8 +53,8 @@ describe('ExchangeGmailCodeService.exchange', () => {
       redirect_uri: 'https://app/callback',
     });
 
-    const savedCredential = vi.mocked(userRepository.updateGmailCredential)
-      .mock.calls[0][1] as GmailCredential;
+    const savedCredential = vi.mocked(userRepository.updateGmailCredential).mock
+      .calls[0][1] as GmailCredential;
 
     expect(savedCredential.accessToken).toBe('access-token-123');
     expect(savedCredential.refreshToken).toBe('refresh-token-abc');
@@ -77,8 +77,8 @@ describe('ExchangeGmailCodeService.exchange', () => {
 
     await service.exchange('uid-test', 'auth-code', 'https://app/callback');
 
-    const savedCredential = vi.mocked(userRepository.updateGmailCredential)
-      .mock.calls[0][1] as GmailCredential;
+    const savedCredential = vi.mocked(userRepository.updateGmailCredential).mock
+      .calls[0][1] as GmailCredential;
 
     expect(savedCredential.expiresAt).toBeGreaterThanOrEqual(
       beforeExchange + 3600 * 1000,

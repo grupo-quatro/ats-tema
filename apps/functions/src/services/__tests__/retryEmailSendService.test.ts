@@ -6,7 +6,10 @@ vi.mock('firebase-functions', () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
-import { RetryEmailSendService, EmailLogNotFoundError } from '../retryEmailSendService';
+import {
+  RetryEmailSendService,
+  EmailLogNotFoundError,
+} from '../retryEmailSendService';
 import type { IEmailLogRepository } from '../../repositories/emailLogRepository';
 import type { IUserRepository } from '../../repositories/userRepository';
 import type { GmailSenderService } from '../gmailSenderService';
@@ -80,15 +83,20 @@ describe('RetryEmailSendService.retry', () => {
     userRepo = makeUserRepo();
     gmailSender = makeGmailSender();
     oauth2 = makeOAuth2Client();
-    service = new RetryEmailSendService(emailLogRepo, userRepo, gmailSender, oauth2);
+    service = new RetryEmailSendService(
+      emailLogRepo,
+      userRepo,
+      gmailSender,
+      oauth2,
+    );
   });
 
   it('lanza EmailLogNotFoundError cuando el log no existe', async () => {
     vi.mocked(emailLogRepo.findById).mockResolvedValue(null);
 
-    await expect(service.retry('log-inexistente', 'recruiter-1')).rejects.toThrow(
-      EmailLogNotFoundError,
-    );
+    await expect(
+      service.retry('log-inexistente', 'recruiter-1'),
+    ).rejects.toThrow(EmailLogNotFoundError);
     expect(emailLogRepo.updateStatus).not.toHaveBeenCalled();
   });
 
@@ -102,7 +110,9 @@ describe('RetryEmailSendService.retry', () => {
     );
 
     // Primero pone pending, luego failed
-    expect(emailLogRepo.updateStatus).toHaveBeenCalledWith('log-1', { status: 'pending' });
+    expect(emailLogRepo.updateStatus).toHaveBeenCalledWith('log-1', {
+      status: 'pending',
+    });
     expect(emailLogRepo.updateStatus).toHaveBeenCalledWith(
       'log-1',
       expect.objectContaining({
@@ -117,12 +127,16 @@ describe('RetryEmailSendService.retry', () => {
     const log = makeEmailLog();
     vi.mocked(emailLogRepo.findById).mockResolvedValue(log);
     vi.mocked(emailLogRepo.updateStatus).mockResolvedValue(undefined);
-    vi.mocked(userRepo.getGmailCredential).mockResolvedValue(makeValidCredential());
+    vi.mocked(userRepo.getGmailCredential).mockResolvedValue(
+      makeValidCredential(),
+    );
     vi.mocked(gmailSender.send).mockResolvedValue(undefined);
 
     await service.retry('log-1', 'recruiter-1');
 
-    expect(emailLogRepo.updateStatus).toHaveBeenCalledWith('log-1', { status: 'pending' });
+    expect(emailLogRepo.updateStatus).toHaveBeenCalledWith('log-1', {
+      status: 'pending',
+    });
     expect(gmailSender.send).toHaveBeenCalledWith(
       expect.objectContaining({
         to: log.candidateEmail,
@@ -130,13 +144,17 @@ describe('RetryEmailSendService.retry', () => {
         htmlBody: log.body,
       }),
     );
-    expect(emailLogRepo.updateStatus).toHaveBeenCalledWith('log-1', { status: 'sent' });
+    expect(emailLogRepo.updateStatus).toHaveBeenCalledWith('log-1', {
+      status: 'sent',
+    });
   });
 
   it('marca el log como failed y propaga el error cuando GmailSenderService.send falla', async () => {
     vi.mocked(emailLogRepo.findById).mockResolvedValue(makeEmailLog());
     vi.mocked(emailLogRepo.updateStatus).mockResolvedValue(undefined);
-    vi.mocked(userRepo.getGmailCredential).mockResolvedValue(makeValidCredential());
+    vi.mocked(userRepo.getGmailCredential).mockResolvedValue(
+      makeValidCredential(),
+    );
     vi.mocked(gmailSender.send).mockRejectedValue(new Error('Gmail API 500'));
 
     await expect(service.retry('log-1', 'recruiter-1')).rejects.toThrow(
