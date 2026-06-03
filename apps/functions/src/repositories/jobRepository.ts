@@ -8,12 +8,13 @@ const JOBS_COLLECTION = 'jobs';
 
 type FirestoreJob = Omit<
   Job,
-  'createdAt' | 'updatedAt' | 'closedAt' | 'publishedAt'
+  'createdAt' | 'updatedAt' | 'closedAt' | 'publishedAt' | 'deletedAt'
 > & {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   closedAt?: Timestamp;
   publishedAt?: Timestamp;
+  deletedAt?: Timestamp;
 };
 
 export class JobsRepositoryError extends Error {
@@ -37,7 +38,9 @@ export class JobsRepository {
         return null;
       }
 
-      return this.mapToJob(snapshot.data() as FirestoreJob);
+      const job = this.mapToJob(snapshot.data() as FirestoreJob);
+
+      return job.deletedAt ? null : job;
     } catch (error) {
       throw new JobsRepositoryError(
         `No se pudo obtener la posición ${jobId}.`,
@@ -53,6 +56,7 @@ export class JobsRepository {
       updatedAt: job.updatedAt.toDate(),
       closedAt: job.closedAt?.toDate(),
       publishedAt: job.publishedAt?.toDate(),
+      deletedAt: job.deletedAt?.toDate(),
     };
   }
 }

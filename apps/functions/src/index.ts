@@ -1,6 +1,7 @@
 export { healthCheck } from './callables/healthCheck';
 export {
   createJob,
+  deletePosition,
   getInternalJobDetail,
   getJobDetail,
   getPosition,

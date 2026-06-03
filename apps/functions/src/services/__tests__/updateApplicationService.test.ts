@@ -3,6 +3,7 @@ import type { Application } from '@ats/shared-types';
 import {
   UpdateApplicationStageService,
   ApplicationNotFoundError,
+  ApplicationStageTransitionError,
 } from '../updateApplicationService';
 
 vi.mock('../../core/firebaseAdmin', () => ({
@@ -161,6 +162,38 @@ describe('UpdateApplicationStageService.updateStage', () => {
         'uid-test',
       ),
     ).rejects.toThrow('app-missing');
+  });
+
+  it('bloquea cambios de etapa en postulaciones draft', async () => {
+    mockRepo.findById.mockResolvedValue(
+      makeApplication({ stage: 'profile_pending', status: 'draft' }),
+    );
+
+    await expect(
+      service.updateStage(
+        { applicationId: 'app-1', stage: 'screening' },
+        'uid-test',
+      ),
+    ).rejects.toThrow(ApplicationStageTransitionError);
+
+    expect(mockRepo.update).not.toHaveBeenCalled();
+    expect(mockRepo.addStageHistoryEntry).not.toHaveBeenCalled();
+  });
+
+  it('bloquea avances desde estados finales sin reapertura', async () => {
+    mockRepo.findById.mockResolvedValue(
+      makeApplication({ stage: 'rejected', status: 'rejected' }),
+    );
+
+    await expect(
+      service.updateStage(
+        { applicationId: 'app-1', stage: 'screening' },
+        'uid-test',
+      ),
+    ).rejects.toThrow(ApplicationStageTransitionError);
+
+    expect(mockRepo.update).not.toHaveBeenCalled();
+    expect(mockRepo.addStageHistoryEntry).not.toHaveBeenCalled();
   });
 
   it('propaga errores del repositorio en findById', async () => {

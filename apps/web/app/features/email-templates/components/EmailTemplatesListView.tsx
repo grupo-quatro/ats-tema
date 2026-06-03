@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -22,6 +23,8 @@ import {
   useDeleteEmailTemplate,
   useEmailTemplates,
 } from '../hooks/useEmailTemplates';
+import PaginationControls from '@/shared/components/PaginationControls';
+import { usePaginationParams } from '@/shared/lib/usePaginationParams';
 
 const STAGE_COLORS: Record<
   EmailTemplateStage,
@@ -37,6 +40,8 @@ const STAGE_COLORS: Record<
   rejected: { color: '#64748b', background: '#f1f5f9' },
   withdrawn: { color: '#64748b', background: '#f1f5f9' },
 };
+
+const EMAIL_TEMPLATES_PAGE_SIZE = 5;
 
 function formatDate(date: Date): string {
   return new Intl.DateTimeFormat('fr-CA').format(date);
@@ -171,6 +176,19 @@ function TemplateCard({
 export default function EmailTemplatesListView() {
   const { data: templates = [], isLoading, isError } = useEmailTemplates();
   const deleteMutation = useDeleteEmailTemplate();
+  const { page, setPage } = usePaginationParams();
+  const totalPages = Math.max(
+    1,
+    Math.ceil(templates.length / EMAIL_TEMPLATES_PAGE_SIZE),
+  );
+  const paginatedTemplates = useMemo(() => {
+    const start = (page - 1) * EMAIL_TEMPLATES_PAGE_SIZE;
+    return templates.slice(start, start + EMAIL_TEMPLATES_PAGE_SIZE);
+  }, [page, templates]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, setPage, totalPages]);
 
   function handleDelete(id: string) {
     const shouldDelete = window.confirm(
@@ -299,7 +317,7 @@ export default function EmailTemplatesListView() {
         )}
 
         <Stack spacing={3}>
-          {templates.map((template) => (
+          {paginatedTemplates.map((template) => (
             <TemplateCard
               key={template.id}
               template={template}
@@ -311,6 +329,16 @@ export default function EmailTemplatesListView() {
             />
           ))}
         </Stack>
+
+        {!isLoading && !isError ? (
+          <PaginationControls
+            page={page}
+            pageSize={EMAIL_TEMPLATES_PAGE_SIZE}
+            totalItems={templates.length}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        ) : null}
       </Stack>
     </Container>
   );

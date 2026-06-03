@@ -88,6 +88,12 @@ function applyRejection(
   ];
 }
 
+function toVisibleStageHistory(
+  history: StageHistoryEntry[],
+): StageHistoryEntry[] {
+  return history.filter((entry) => entry.stage !== 'profile_pending');
+}
+
 export function useCandidateProfile(candidate: CandidateMockProfile) {
   const [cvModalOpen, setCvModalOpen] = useState(false);
   const [interviewModalOpen, setInterviewModalOpen] = useState(false);
@@ -135,7 +141,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
   useEffect(() => {
     if (!candidate.applicationId) return;
     getStageHistory(candidate.applicationId)
-      .then(setRealStageHistory)
+      .then((history) => setRealStageHistory(toVisibleStageHistory(history)))
       .catch(() => {});
     loadCandidacyNotes();
   }, [candidate.applicationId, loadCandidacyNotes]);
@@ -262,7 +268,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
         severity: 'success',
       });
       getStageHistory(candidate.applicationId)
-        .then(setRealStageHistory)
+        .then((history) => setRealStageHistory(toVisibleStageHistory(history)))
         .catch(() => {});
     } catch {
       setSnackbar({
@@ -293,7 +299,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
       setRejectReason('');
       setSnackbar({ message: 'Candidato rechazado', severity: 'success' });
       getStageHistory(candidate.applicationId)
-        .then(setRealStageHistory)
+        .then((history) => setRealStageHistory(toVisibleStageHistory(history)))
         .catch(() => {});
     } catch {
       setSnackbar({

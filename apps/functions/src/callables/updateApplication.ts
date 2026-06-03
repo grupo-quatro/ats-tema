@@ -7,9 +7,13 @@ import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
 import { ApplicationsRepository } from '../repositories/applicationRepository';
 import {
   ApplicationNotFoundError,
+  ApplicationStageTransitionError,
   UpdateApplicationStageService,
 } from '../services/updateApplicationService';
-import { validateUpdateApplicationStagePayload } from '../validators/updateApplicationValidator';
+import {
+  validateUpdateApplicationStagePayload,
+  UpdateApplicationValidationError,
+} from '../validators/updateApplicationValidator';
 
 interface UpdateApplicationPayload {
   applicationId: string;
@@ -97,6 +101,16 @@ export const updateApplicationStage = onRequest(async (request, response) => {
 
     if (error instanceof ApplicationNotFoundError) {
       response.status(404).json({ error: error.message });
+      return;
+    }
+
+    if (error instanceof UpdateApplicationValidationError) {
+      response.status(400).json({ error: error.message });
+      return;
+    }
+
+    if (error instanceof ApplicationStageTransitionError) {
+      response.status(409).json({ error: error.message });
       return;
     }
 

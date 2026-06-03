@@ -1,7 +1,6 @@
 import type { UpdateApplicationStagePayload } from '@ats/shared-types';
 
 const VALID_STAGES = [
-  'profile_pending',
   'applied',
   'screening',
   'cv_submitted',
