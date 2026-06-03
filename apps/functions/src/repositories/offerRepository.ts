@@ -1,10 +1,6 @@
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
-import type {
-  CreateOfferDTO,
-  Offer,
-  UpdateOfferDTO,
-} from '@ats/shared-types';
+import type { CreateOfferDTO, Offer, UpdateOfferDTO } from '@ats/shared-types';
 
 import { db } from '../core/firebaseAdmin';
 

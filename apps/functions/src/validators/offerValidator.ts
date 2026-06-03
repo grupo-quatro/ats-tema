@@ -22,10 +22,7 @@ export function validateCreateOfferDraftPayload(
     throw new OfferValidationError('El applicationId es obligatorio.');
   }
 
-  if (
-    payload.benefits !== undefined &&
-    !Array.isArray(payload.benefits)
-  ) {
+  if (payload.benefits !== undefined && !Array.isArray(payload.benefits)) {
     throw new OfferValidationError('El campo benefits debe ser un array.');
   }
 }
@@ -54,9 +51,7 @@ export function validateRespondOfferPayload(
   }
 
   if (payload.action !== 'accept' && payload.action !== 'decline') {
-    throw new OfferValidationError(
-      'La acción debe ser "accept" o "decline".',
-    );
+    throw new OfferValidationError('La acción debe ser "accept" o "decline".');
   }
 
   if (payload.action === 'accept' && !isNonEmptyString(payload.signerName)) {

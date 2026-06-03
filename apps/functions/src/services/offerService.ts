@@ -73,9 +73,8 @@ export class OfferService {
     createdBy: string,
   ): Promise<CreateOfferDraftResponse> {
     const applicationId = payload.applicationId.trim();
-    const application = await this.applicationsRepository.findById(
-      applicationId,
-    );
+    const application =
+      await this.applicationsRepository.findById(applicationId);
 
     if (!application) {
       throw new OfferNotFoundError('La candidatura no existe.');
@@ -261,7 +260,9 @@ export class OfferService {
   private async getOfferByToken(token: string): Promise<Offer> {
     const offer = await this.offerRepository.findByTokenHash(this.hash(token));
     if (!offer) {
-      throw new OfferNotFoundError('La oferta no existe o el link es inválido.');
+      throw new OfferNotFoundError(
+        'La oferta no existe o el link es inválido.',
+      );
     }
     return offer;
   }
