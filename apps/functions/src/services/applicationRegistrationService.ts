@@ -72,11 +72,13 @@ export class ApplicationRegistrationService {
         auth.getUser(candidateId).catch(() => null),
       ]);
 
-      await this.applicationsRepository.addStageHistoryEntry(applicationId, {
-        stage,
-        changedBy: candidateId,
-        changedByEmail: userRecord?.email ?? candidateId,
-      });
+      if (stage !== 'profile_pending') {
+        await this.applicationsRepository.addStageHistoryEntry(applicationId, {
+          stage,
+          changedBy: candidateId,
+          changedByEmail: userRecord?.email ?? candidate.email ?? candidateId,
+        });
+      }
 
       return applicationId;
     } catch (error) {

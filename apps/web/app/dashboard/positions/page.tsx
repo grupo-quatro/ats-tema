@@ -1,23 +1,19 @@
 'use client';
 
-import { useState } from 'react';
-import {
-  Container,
-  Box,
-  CircularProgress,
-  Typography,
-  Pagination,
-} from '@mui/material';
+import { useEffect, useState } from 'react';
+import { Container, Box, CircularProgress, Typography } from '@mui/material';
 import PositionsFilters, {
   type PositionFilters,
 } from '@/features/dashboard/positions/components/PositionsFilters';
 import PositionsTable from '@/features/dashboard/positions/components/PositionsTable';
+import PaginationControls from '@/shared/components/PaginationControls';
 import {
   usePositions,
   type ListPositionsOrderBy,
   type ListPositionsOrderDir,
 } from '@/features/dashboard/positions/hooks/usePositions';
 import { useDepartments } from '@/features/dashboard/positions/hooks/useDepartments';
+import { usePaginationParams } from '@/shared/lib/usePaginationParams';
 
 const DEFAULT_FILTERS: PositionFilters = {
   search: '',
@@ -26,23 +22,29 @@ const DEFAULT_FILTERS: PositionFilters = {
   department: '',
 };
 
-const PAGE_SIZE = 10;
+const POSITIONS_PAGE_SIZE = 10;
 
 export default function PositionsPage() {
   const [filters, setFilters] = useState<PositionFilters>(DEFAULT_FILTERS);
-  const [page, setPage] = useState(1);
   const [orderBy, setOrderBy] = useState<ListPositionsOrderBy>('createdAt');
   const [orderDir, setOrderDir] = useState<ListPositionsOrderDir>('desc');
+  const { page, setPage } = usePaginationParams();
 
   const { data, isLoading, isError } = usePositions({
     ...filters,
     status: filters.status || undefined,
     location: filters.location || undefined,
     page,
-    limit: PAGE_SIZE,
+    limit: POSITIONS_PAGE_SIZE,
     orderBy,
     orderDir,
   });
+
+  useEffect(() => {
+    if (data && data.totalPages > 0 && page > data.totalPages) {
+      setPage(data.totalPages);
+    }
+  }, [data, page, setPage]);
 
   function handleSort(field: ListPositionsOrderBy) {
     if (field === orderBy) {
@@ -87,16 +89,13 @@ export default function PositionsPage() {
               orderDir={orderDir}
               onSort={handleSort}
             />
-            {data.totalPages > 1 && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-                <Pagination
-                  count={data.totalPages}
-                  page={page}
-                  onChange={(_, value) => setPage(value)}
-                  color="primary"
-                />
-              </Box>
-            )}
+            <PaginationControls
+              page={page}
+              pageSize={POSITIONS_PAGE_SIZE}
+              totalItems={data.total}
+              totalPages={data.totalPages}
+              onPageChange={setPage}
+            />
           </>
         )}
       </Box>

@@ -258,7 +258,7 @@ Pero `parsedData` sale del mock local.
 Consume Vertex AI real aunque Firestore/Storage sean emulados.
 
 ```bash
-CV_PARSING_FORCE_REAL_AI=true firebase emulators:start --only functions,firestore,storage
+CV_PARSING_FORCE_REAL_AI=true firebase emulators:start --only functions,firestore,storage,auth
 ```
 
 Requiere ADC configurado localmente.

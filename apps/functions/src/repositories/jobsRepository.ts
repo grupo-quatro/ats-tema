@@ -16,12 +16,13 @@ const JOBS_COLLECTION = 'jobs';
 
 type FirestoreJob = Omit<
   Job,
-  'createdAt' | 'updatedAt' | 'closedAt' | 'publishedAt'
+  'createdAt' | 'updatedAt' | 'closedAt' | 'publishedAt' | 'deletedAt'
 > & {
   createdAt: Timestamp;
   updatedAt: Timestamp;
   closedAt?: Timestamp;
   publishedAt?: Timestamp;
+  deletedAt?: Timestamp;
 };
 
 export interface JobsRepositoryContract {
@@ -30,6 +31,7 @@ export interface JobsRepositoryContract {
   findByStatus(status: JobStatus): Promise<Job[]>;
   create(jobData: CreateJobDTO): Promise<string>;
   update(jobId: string, jobData: UpdateJobDTO): Promise<void>;
+  softDelete(jobId: string): Promise<void>;
 }
 
 export type SeedJobInput = CreateJobDTO & {
@@ -53,9 +55,9 @@ export class JobsRepository implements JobsRepositoryContract {
     try {
       const snapshot = await this.collection.get();
 
-      return snapshot.docs.map((document) =>
-        this.mapToJob(document.data() as FirestoreJob),
-      );
+      return snapshot.docs
+        .map((document) => this.mapToJob(document.data() as FirestoreJob))
+        .filter((job) => !job.deletedAt);
     } catch (error) {
       throw new JobsRepositoryError(
         'No se pudieron obtener los puestos.',
@@ -72,7 +74,9 @@ export class JobsRepository implements JobsRepositoryContract {
         return null;
       }
 
-      return this.mapToJob(snapshot.data() as FirestoreJob);
+      const job = this.mapToJob(snapshot.data() as FirestoreJob);
+
+      return job.deletedAt ? null : job;
     } catch (error) {
       throw new JobsRepositoryError(
         `No se pudo obtener el puesto ${jobId}.`,
@@ -87,9 +91,9 @@ export class JobsRepository implements JobsRepositoryContract {
         .where('status', '==', status)
         .get();
 
-      return snapshot.docs.map((document) =>
-        this.mapToJob(document.data() as FirestoreJob),
-      );
+      return snapshot.docs
+        .map((document) => this.mapToJob(document.data() as FirestoreJob))
+        .filter((job) => !job.deletedAt);
     } catch (error) {
       throw new JobsRepositoryError(
         `No se pudieron obtener puestos con estado ${status}.`,
@@ -128,6 +132,23 @@ export class JobsRepository implements JobsRepositoryContract {
     } catch (error) {
       throw new JobsRepositoryError(
         `No se pudo actualizar el puesto ${jobId}.`,
+        error,
+      );
+    }
+  }
+
+  async softDelete(jobId: string): Promise<void> {
+    try {
+      await this.collection.doc(jobId).set(
+        {
+          deletedAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true },
+      );
+    } catch (error) {
+      throw new JobsRepositoryError(
+        `No se pudo eliminar el puesto ${jobId}.`,
         error,
       );
     }
@@ -193,6 +214,8 @@ export class JobsRepository implements JobsRepositoryContract {
         this.mapToJob(doc.data() as FirestoreJob),
       );
 
+      jobs = jobs.filter((job) => !job.deletedAt);
+
       if (hasSearch && search) {
         jobs = jobs.filter((job) => job.title.toLowerCase().includes(search));
       }
@@ -224,7 +247,9 @@ export class JobsRepository implements JobsRepositoryContract {
     try {
       const snapshot = await this.collection.get();
       const departments = snapshot.docs
-        .map((doc) => doc.data().department as string)
+        .map((doc) => doc.data() as FirestoreJob)
+        .filter((job) => !job.deletedAt)
+        .map((job) => job.department)
         .filter(Boolean);
       return [...new Set(departments)].sort();
     } catch (error) {
@@ -242,6 +267,7 @@ export class JobsRepository implements JobsRepositoryContract {
       updatedAt: job.updatedAt.toDate(),
       closedAt: job.closedAt?.toDate(),
       publishedAt: job.publishedAt?.toDate(),
+      deletedAt: job.deletedAt?.toDate(),
     };
   }
 }

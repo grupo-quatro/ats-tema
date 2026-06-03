@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Box,
@@ -27,8 +27,14 @@ import type {
   ApplicationStage,
   ApplicationWithCandidateDTO,
 } from '@ats/shared-types';
-import { STAGE_LABELS } from '../constants/stageLabels';
+import {
+  getStageLabel,
+  isVisibleApplicationStage,
+  VISIBLE_STAGE_LABELS,
+} from '../constants/stageLabels';
 import { useGetCandidatesByJob } from '../hooks/usePipeline';
+import PaginationControls from '@/shared/components/PaginationControls';
+import { usePaginationParams } from '@/shared/lib/usePaginationParams';
 
 type Props = {
   jobId: string;
@@ -40,6 +46,7 @@ type SortField = 'candidateName' | 'fitScore' | 'stage' | 'updatedAt';
 type SortDirection = 'asc' | 'desc';
 
 const ALL_STAGES = 'Todos los estados';
+const CANDIDATES_PAGE_SIZE = 10;
 
 function formatDate(value?: Date | string): string {
   if (!value) return '-';
@@ -68,11 +75,7 @@ function getStatusChipSx(stage: ApplicationStage) {
   if (stage === 'cv_submitted') {
     return { bgcolor: '#dbeafe', color: '#4f46e5' };
   }
-  if (
-    stage === 'screening' ||
-    stage === 'applied' ||
-    stage === 'profile_pending'
-  ) {
+  if (stage === 'screening' || stage === 'applied') {
     return { bgcolor: '#f3e8ff', color: '#9333ea' };
   }
   if (stage === 'hired' || stage === 'offer_sent') {
@@ -100,7 +103,7 @@ function compareValues(
   }
 
   if (sortField === 'stage') {
-    return STAGE_LABELS[left.stage].localeCompare(STAGE_LABELS[right.stage]);
+    return getStageLabel(left.stage).localeCompare(getStageLabel(right.stage));
   }
 
   return (left.candidateName ?? '').localeCompare(right.candidateName ?? '');
@@ -148,6 +151,7 @@ export default function CandidatePipeline({
   const [filterAnchor, setFilterAnchor] = useState<null | HTMLElement>(null);
   const [sortField, setSortField] = useState<SortField>('fitScore');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const { page, setPage } = usePaginationParams();
 
   const {
     data: candidates = [],
@@ -159,6 +163,11 @@ export default function CandidatePipeline({
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
     return candidates
+      .filter(
+        (candidate) =>
+          candidate.status !== 'draft' &&
+          isVisibleApplicationStage(candidate.stage),
+      )
       .filter((candidate) => {
         const matchesSearch =
           !normalizedSearch ||
@@ -168,7 +177,7 @@ export default function CandidatePipeline({
 
         const matchesStatus =
           selectedStatus === ALL_STAGES ||
-          STAGE_LABELS[candidate.stage] === selectedStatus;
+          getStageLabel(candidate.stage) === selectedStatus;
 
         return matchesSearch && matchesStatus;
       })
@@ -178,7 +187,22 @@ export default function CandidatePipeline({
       });
   }, [candidates, searchTerm, selectedStatus, sortDirection, sortField]);
 
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredCandidates.length / CANDIDATES_PAGE_SIZE),
+  );
+
+  const paginatedCandidates = useMemo(() => {
+    const start = (page - 1) * CANDIDATES_PAGE_SIZE;
+    return filteredCandidates.slice(start, start + CANDIDATES_PAGE_SIZE);
+  }, [filteredCandidates, page]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, setPage, totalPages]);
+
   function handleSort(field: SortField) {
+    setPage(1);
     if (field === sortField) {
       setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'));
       return;
@@ -188,7 +212,7 @@ export default function CandidatePipeline({
     setSortDirection(field === 'fitScore' ? 'desc' : 'asc');
   }
 
-  const stageOptions = [ALL_STAGES, ...Object.values(STAGE_LABELS)];
+  const stageOptions = [ALL_STAGES, ...Object.values(VISIBLE_STAGE_LABELS)];
 
   return (
     <Box
@@ -232,7 +256,10 @@ export default function CandidatePipeline({
               fullWidth
               placeholder="Buscar por nombre o habilidades..."
               value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
+              onChange={(event) => {
+                setSearchTerm(event.target.value);
+                setPage(1);
+              }}
               slotProps={{
                 input: {
                   startAdornment: (
@@ -362,7 +389,7 @@ export default function CandidatePipeline({
               ) : null}
 
               {!isLoading
-                ? filteredCandidates.map((candidate) => {
+                ? paginatedCandidates.map((candidate) => {
                     const score = candidate.fitScore ?? 0;
                     return (
                       <TableRow
@@ -419,7 +446,7 @@ export default function CandidatePipeline({
                         </TableCell>
                         <TableCell>
                           <Chip
-                            label={STAGE_LABELS[candidate.stage]}
+                            label={getStageLabel(candidate.stage)}
                             size="small"
                             sx={{
                               ...getStatusChipSx(candidate.stage),
@@ -465,6 +492,16 @@ export default function CandidatePipeline({
             </TableBody>
           </Table>
         </TableContainer>
+
+        {!isLoading && !isError ? (
+          <PaginationControls
+            page={page}
+            pageSize={CANDIDATES_PAGE_SIZE}
+            totalItems={filteredCandidates.length}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        ) : null}
       </Stack>
 
       <Menu
@@ -478,6 +515,7 @@ export default function CandidatePipeline({
             selected={option === selectedStatus}
             onClick={() => {
               setSelectedStatus(option);
+              setPage(1);
               setFilterAnchor(null);
             }}
           >

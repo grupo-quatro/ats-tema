@@ -37,11 +37,12 @@ export interface Job {
   updatedAt: Date;
   closedAt?: Date;
   publishedAt?: Date;
+  deletedAt?: Date;
 }
 
 export type CreateJobDTO = Omit<
   Job,
-  'id' | 'createdAt' | 'updatedAt' | 'closedAt' | 'publishedAt'
+  'id' | 'createdAt' | 'updatedAt' | 'closedAt' | 'publishedAt' | 'deletedAt'
 >;
 
 export type UpdateJobDTO = Partial<Omit<Job, 'id' | 'createdAt'>>;

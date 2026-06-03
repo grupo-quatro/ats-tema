@@ -54,6 +54,11 @@ export const CANDIDATE_STAGE_TO_APP_STAGE: Record<
   descartado: 'rejected',
 };
 
+export function getCandidateStageLabel(stage: ApplicationStage): string {
+  const stageKey = STAGE_KEY_MAP[stage];
+  return stageKey ? STAGE_LABELS[stageKey] : STAGE_LABELS.postulacion_recibida;
+}
+
 export function getInitials(name?: string): string {
   if (!name) return '?';
   return name
@@ -89,11 +94,34 @@ function formatPeriod(startDate?: string, endDate?: string): string {
   return `${startDate} - ${endDate}`;
 }
 
+function mapEducation(
+  candidate: ApplicationDetailDTO['candidate'],
+): CandidateMockProfile['education'] {
+  const parsedEducation =
+    candidate.parsedEducation?.map((edu) => ({
+      degree: edu.degree ?? '',
+      institution: edu.institution ?? '',
+      period: formatPeriod(edu.startDate, edu.endDate),
+    })) ?? [];
+
+  if (parsedEducation.length > 0) {
+    return parsedEducation;
+  }
+
+  return candidate.education
+    ? [
+        {
+          degree: candidate.education,
+          institution: '',
+          period: '',
+        },
+      ]
+    : [];
+}
+
 export function mapApplicationToProfile(
   application: ApplicationWithCandidateDTO,
 ): CandidateMockProfile {
-  const stageKey = STAGE_KEY_MAP[application.stage];
-
   return {
     id: application.candidateId,
     applicationId: application.id,
@@ -103,6 +131,8 @@ export function mapApplicationToProfile(
     email: application.candidateEmail ?? '',
     phone: '',
     location: '',
+    yearsOfExperience: undefined,
+    professionalSummary: undefined,
     experience: [],
     education: [],
     fitScore: application.fitScore ?? 0,
@@ -112,9 +142,7 @@ export function mapApplicationToProfile(
     strengths: application.fitSummary ? [application.fitSummary] : [],
     interviewNotes: [],
     stageHistory: buildStageHistory(application.stage),
-    currentStage: stageKey
-      ? (STAGE_LABELS[stageKey] ?? application.stage)
-      : application.stage,
+    currentStage: getCandidateStageLabel(application.stage),
     cvMockUrl: null,
   };
 }
@@ -123,7 +151,6 @@ export function mapDetailToProfile(
   detail: ApplicationDetailDTO,
 ): CandidateMockProfile {
   const { candidate, skillMatchStats } = detail;
-  const stageKey = STAGE_KEY_MAP[detail.stage];
 
   return {
     id: candidate.id,
@@ -134,18 +161,15 @@ export function mapDetailToProfile(
     email: candidate.email ?? '',
     phone: candidate.phone ?? '',
     location: candidate.location ?? '',
+    yearsOfExperience: candidate.yearsOfExperience,
+    professionalSummary: candidate.professionalSummary,
     experience:
       candidate.parsedExperience?.map((exp) => ({
         role: exp.role ?? '',
         company: exp.company ?? '',
         period: formatPeriod(exp.startDate, exp.endDate),
       })) ?? [],
-    education:
-      candidate.parsedEducation?.map((edu) => ({
-        degree: edu.degree ?? '',
-        institution: edu.institution ?? '',
-        period: formatPeriod(edu.startDate, edu.endDate),
-      })) ?? [],
+    education: mapEducation(candidate),
     fitScore: detail.fitScore ?? 0,
     detectedSkills: candidate.technicalSkills ?? [],
     gapSkills: skillMatchStats?.skillsFaltantes.map((s) => s.name) ?? [],
@@ -153,9 +177,7 @@ export function mapDetailToProfile(
     strengths: detail.fitSummary ? [detail.fitSummary] : [],
     interviewNotes: [],
     stageHistory: buildStageHistory(detail.stage),
-    currentStage: stageKey
-      ? (STAGE_LABELS[stageKey] ?? detail.stage)
-      : detail.stage,
+    currentStage: getCandidateStageLabel(detail.stage),
     cvMockUrl: null,
   };
 }

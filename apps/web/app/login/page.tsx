@@ -114,6 +114,12 @@ export default function LoginPage() {
     }
   }, [user, role, router]);
 
+  useEffect(() => {
+    if (user && role) {
+      router.replace('/dashboard/positions');
+    }
+  }, [user, role, router]);
+
   async function handleSignIn(devRole?: DevRole) {
     setError(null);
     setLoading(true);

@@ -15,6 +15,13 @@ export class ApplicationNotFoundError extends Error {
   }
 }
 
+export class ApplicationStageTransitionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ApplicationStageTransitionError';
+  }
+}
+
 export class UpdateApplicationStageService {
   constructor(
     private readonly applicationsRepository: ApplicationsRepository = new ApplicationsRepository(),
@@ -30,6 +37,21 @@ export class UpdateApplicationStageService {
       await this.applicationsRepository.findById(applicationId);
     if (!application) {
       throw new ApplicationNotFoundError(applicationId);
+    }
+
+    if (application.status === 'draft') {
+      throw new ApplicationStageTransitionError(
+        'No se puede cambiar la etapa de una postulaciÃ³n draft.',
+      );
+    }
+
+    if (
+      ['rejected', 'withdrawn', 'hired'].includes(application.status) &&
+      application.stage !== stage
+    ) {
+      throw new ApplicationStageTransitionError(
+        'La postulaciÃ³n estÃ¡ en un estado final y no puede avanzar sin una regla de reapertura.',
+      );
     }
 
     const status = this.resolveStatus(stage);
