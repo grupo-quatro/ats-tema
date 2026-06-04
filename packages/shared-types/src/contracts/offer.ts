@@ -30,6 +30,14 @@ export interface GetOfferByTokenPayload {
   token: string;
 }
 
+export interface GetOfferByApplicationPayload {
+  applicationId: string;
+}
+
+export interface GetOfferByApplicationResponse {
+  offer: Offer | null;
+}
+
 export interface PublicOfferResponse {
   offerId: string;
   status: OfferStatus;

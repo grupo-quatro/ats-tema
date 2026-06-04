@@ -91,6 +91,26 @@ export class OfferRepository {
     }
   }
 
+  async findLatestByApplicationId(
+    applicationId: string,
+  ): Promise<Offer | null> {
+    try {
+      const snapshot = await this.collection
+        .where('applicationId', '==', applicationId)
+        .orderBy('createdAt', 'desc')
+        .limit(1)
+        .get();
+
+      if (snapshot.empty) return null;
+      return this.mapToOffer(snapshot.docs[0]!.data() as FirestoreOffer);
+    } catch (error) {
+      throw new OfferRepositoryError(
+        `No se pudo obtener la oferta para applicationId=${applicationId}.`,
+        error,
+      );
+    }
+  }
+
   async update(offerId: string, data: UpdateOfferDTO): Promise<Offer> {
     try {
       const cleanData = this.clean(data);

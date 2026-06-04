@@ -3,6 +3,7 @@ import { createHash, randomBytes } from 'crypto';
 import type {
   CreateOfferDraftPayload,
   CreateOfferDraftResponse,
+  GetOfferByApplicationResponse,
   Job,
   Offer,
   PublicOfferResponse,
@@ -187,6 +188,23 @@ export class OfferService {
     const updatedOffer = await this.getRequiredOffer(offer.id);
 
     return { offer: updatedOffer, publicUrl };
+  }
+
+  async getOfferByApplication(
+    applicationId: string,
+  ): Promise<GetOfferByApplicationResponse> {
+    const application = await this.applicationsRepository.findById(
+      applicationId.trim(),
+    );
+    if (!application) {
+      throw new OfferNotFoundError('La candidatura no existe.');
+    }
+
+    const offer = await this.offerRepository.findLatestByApplicationId(
+      applicationId.trim(),
+    );
+
+    return { offer };
   }
 
   async getPublicOffer(token: string): Promise<PublicOfferResponse> {

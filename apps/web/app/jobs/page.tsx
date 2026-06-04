@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import JobPortal from '../features/jobs/components/JobPortal';
 
 export const metadata: Metadata = {
@@ -6,5 +7,9 @@ export const metadata: Metadata = {
 };
 
 export default function JobsPage() {
-  return <JobPortal />;
+  return (
+    <Suspense fallback={null}>
+      <JobPortal />
+    </Suspense>
+  );
 }

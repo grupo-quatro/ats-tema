@@ -21,6 +21,7 @@ vi.mock('../../core/firebaseAdmin', () => ({
 
 import {
   OfferInvalidStateError,
+  OfferNotFoundError,
   OfferService,
   OfferUnauthorizedStateError,
 } from '../offerService';
@@ -60,6 +61,7 @@ const offerRepository = {
   createId: vi.fn(),
   create: vi.fn(),
   findById: vi.fn(),
+  findLatestByApplicationId: vi.fn(),
   findByTokenHash: vi.fn(),
   update: vi.fn(),
 };
@@ -107,6 +109,7 @@ describe('OfferService', () => {
         }),
       ),
     );
+    offerRepository.findLatestByApplicationId.mockResolvedValue(makeOffer());
 
     applicationsRepository.findById.mockResolvedValue(makeApplication());
     applicationsRepository.update.mockResolvedValue(undefined);
@@ -204,6 +207,38 @@ describe('OfferService', () => {
       }),
     );
     expect(result.publicUrl).toContain('/offer/');
+  });
+
+  it('obtiene la oferta interna asociada a una candidatura', async () => {
+    offerRepository.findLatestByApplicationId.mockResolvedValue(
+      makeOffer({ status: 'accepted' }),
+    );
+
+    const result = await service.getOfferByApplication('app-1');
+
+    expect(applicationsRepository.findById).toHaveBeenCalledWith('app-1');
+    expect(offerRepository.findLatestByApplicationId).toHaveBeenCalledWith(
+      'app-1',
+    );
+    expect(result).toEqual({
+      offer: expect.objectContaining({ status: 'accepted' }),
+    });
+  });
+
+  it('retorna null si la candidatura no tiene carta oferta', async () => {
+    offerRepository.findLatestByApplicationId.mockResolvedValue(null);
+
+    await expect(service.getOfferByApplication('app-1')).resolves.toEqual({
+      offer: null,
+    });
+  });
+
+  it('lanza OfferNotFoundError si se consulta oferta de una candidatura inexistente', async () => {
+    applicationsRepository.findById.mockResolvedValue(null);
+
+    await expect(service.getOfferByApplication('missing-app')).rejects.toThrow(
+      OfferNotFoundError,
+    );
   });
 
   it('registra aceptación desde token público sin mover automáticamente a hired', async () => {

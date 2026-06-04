@@ -18,6 +18,7 @@ import {
 import {
   OfferValidationError,
   validateCreateOfferDraftPayload,
+  validateGetOfferByApplicationPayload,
   validateGetOfferByTokenPayload,
   validateRespondOfferPayload,
   validateSendOfferPayload,
@@ -82,6 +83,30 @@ export const getOfferByToken = onRequest(async (request, response) => {
     response.status(200).json(result);
   } catch (error) {
     handleOfferError(response, error, '[getOfferByToken]');
+  }
+});
+
+export const getOfferByApplication = onRequest(async (request, response) => {
+  try {
+    if (request.method !== 'GET') {
+      response.status(405).json({ error: 'Method Not Allowed.' });
+      return;
+    }
+
+    const { role } = await requireAuthenticatedUser(request);
+    assertCanManageOffers(role);
+
+    const payload = {
+      applicationId: getQueryString(request.query.applicationId),
+    };
+    validateGetOfferByApplicationPayload(payload);
+
+    const result = await offerService.getOfferByApplication(
+      payload.applicationId,
+    );
+    response.status(200).json(result);
+  } catch (error) {
+    handleOfferError(response, error, '[getOfferByApplication]');
   }
 });
 

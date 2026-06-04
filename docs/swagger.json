@@ -249,6 +249,16 @@
           }
         }
       },
+      "GetOfferByApplicationResponse": {
+        "type": "object",
+        "required": ["offer"],
+        "properties": {
+          "offer": {
+            "allOf": [{ "$ref": "#/components/schemas/Offer" }],
+            "nullable": true
+          }
+        }
+      },
       "PublicOfferResponse": {
         "type": "object",
         "required": [
@@ -2074,6 +2084,75 @@
           },
           "409": {
             "description": "Offer is not in draft status or cannot be sent",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/getOfferByApplication": {
+      "get": {
+        "tags": ["Offers"],
+        "operationId": "getOfferByApplication",
+        "summary": "Get the latest offer linked to an application",
+        "description": "Internal endpoint used by recruiter/manager dashboards to retrieve the latest Offer associated with an application. Returns `offer: null` when the application exists but no offer has been created yet.",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Latest offer for the application, or null",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetOfferByApplicationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Application not found",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorResponse" }

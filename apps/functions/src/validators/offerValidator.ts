@@ -43,6 +43,14 @@ export function validateGetOfferByTokenPayload(
   }
 }
 
+export function validateGetOfferByApplicationPayload(
+  payload: Partial<{ applicationId: string }>,
+): asserts payload is { applicationId: string } {
+  if (!isNonEmptyString(payload.applicationId)) {
+    throw new OfferValidationError('El applicationId es obligatorio.');
+  }
+}
+
 export function validateRespondOfferPayload(
   payload: Partial<RespondOfferPayload>,
 ): asserts payload is RespondOfferPayload {
