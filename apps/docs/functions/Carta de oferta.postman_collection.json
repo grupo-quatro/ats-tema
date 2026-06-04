@@ -1,0 +1,929 @@
+{
+  "info": {
+    "_postman_id": "01676b2c-2c72-4c48-abf5-1205336de2fd",
+    "name": "Carta de oferta",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "7969977"
+  },
+  "item": [
+    {
+      "name": "Carta de oferta - Draft",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "dev-recruiter",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"applicationId\": \"seed-candidate-01_frontend-ssr-developer\",\n    \"compensation\": \"ARS 1.500.000 bruto mensual\",\n    \"startDate\": \"2026-07-01\",\n    \"modality\": \"Remoto\",\n    \"benefits\": [\n        \"Prepaga\",\n        \"Capacitaciones\",\n        \"Día de cumpleaños libre\"\n    ],\n    \"expirationDate\": \"2026-06-15\",\n    \"observations\": \"Oferta sujeta a validación final de documentación.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5001/ats-tema-ort/us-central1/createOfferDraft",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5001",
+          "path": [
+            "ats-tema-ort",
+            "us-central1",
+            "createOfferDraft"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "carta de oferta draft",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"applicationId\": \"seed-candidate-01_frontend-ssr-developer\",\n    \"compensation\": \"ARS 1.500.000 bruto mensual\",\n    \"startDate\": \"2026-07-01\",\n    \"modality\": \"Remoto\",\n    \"benefits\": [\n        \"Prepaga\",\n        \"Capacitaciones\",\n        \"Día de cumpleaños libre\"\n    ],\n    \"expirationDate\": \"2026-06-15\",\n    \"observations\": \"Oferta sujeta a validación final de documentación.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5001/ats-tema-ort/us-central1/createOfferDraft",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "createOfferDraft"
+              ]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "868"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"364-Onc8Na1BrdybGofEYQteP/ktuIc\""
+            },
+            {
+              "key": "date",
+              "value": "Wed, 03 Jun 2026 15:16:33 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"offer\": {\n        \"id\": \"HY9fYfihev6D4w5A8zut\",\n        \"applicationId\": \"seed-candidate-01_frontend-ssr-developer\",\n        \"candidateId\": \"seed-candidate-01\",\n        \"jobId\": \"frontend-ssr-developer\",\n        \"status\": \"draft\",\n        \"candidateName\": \"Valentina Rossi\",\n        \"candidateEmail\": \"valentina.rossi@example.com\",\n        \"jobTitle\": \"Frontend SSR Developer\",\n        \"compensation\": \"ARS 1.500.000 bruto mensual\",\n        \"startDate\": \"2026-07-01\",\n        \"modality\": \"Remoto\",\n        \"benefits\": [\n            \"Prepaga\",\n            \"Capacitaciones\",\n            \"Día de cumpleaños libre\"\n        ],\n        \"expirationDate\": \"2026-06-15\",\n        \"observations\": \"Oferta sujeta a validación final de documentación.\",\n        \"templateId\": \"default-offer-letter\",\n        \"templateVersion\": \"1.0\",\n        \"documentStoragePath\": \"offers/HY9fYfihev6D4w5A8zut/offer.html\",\n        \"documentHash\": \"877e084963b3b843fb706fa582c7979fd2b1bee5c12a008edb9a6196caea5a5e\",\n        \"createdBy\": \"recruiter-dev\",\n        \"createdAt\": \"2026-06-03T15:16:33.190Z\",\n        \"updatedAt\": \"2026-06-03T15:16:33.190Z\"\n    }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Carta de oferta - Enviar",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "dev-recruiter",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"offerId\": \"2HQBDHrstFvg6PYnPh12\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5001/ats-tema-ort/us-central1/sendOffer",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5001",
+          "path": [
+            "ats-tema-ort",
+            "us-central1",
+            "sendOffer"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Carta de oferta - Enviar",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"offerId\": \"HY9fYfihev6D4w5A8zut\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5001/ats-tema-ort/us-central1/sendOffer",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "sendOffer"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "1137"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"471-ydBD1jpNnqkwd3bjAXbDBjyBNKE\""
+            },
+            {
+              "key": "date",
+              "value": "Wed, 03 Jun 2026 15:30:05 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"offer\": {\n        \"id\": \"HY9fYfihev6D4w5A8zut\",\n        \"applicationId\": \"seed-candidate-01_frontend-ssr-developer\",\n        \"candidateId\": \"seed-candidate-01\",\n        \"jobId\": \"frontend-ssr-developer\",\n        \"candidateName\": \"Valentina Rossi\",\n        \"candidateEmail\": \"valentina.rossi@example.com\",\n        \"jobTitle\": \"Frontend SSR Developer\",\n        \"compensation\": \"ARS 1.500.000 bruto mensual\",\n        \"startDate\": \"2026-07-01\",\n        \"modality\": \"Remoto\",\n        \"benefits\": [\n            \"Prepaga\",\n            \"Capacitaciones\",\n            \"Día de cumpleaños libre\"\n        ],\n        \"expirationDate\": \"2026-06-15\",\n        \"observations\": \"Oferta sujeta a validación final de documentación.\",\n        \"templateId\": \"default-offer-letter\",\n        \"templateVersion\": \"1.0\",\n        \"documentStoragePath\": \"offers/HY9fYfihev6D4w5A8zut/offer.html\",\n        \"documentHash\": \"877e084963b3b843fb706fa582c7979fd2b1bee5c12a008edb9a6196caea5a5e\",\n        \"createdBy\": \"recruiter-dev\",\n        \"createdAt\": \"2026-06-03T15:16:33.190Z\",\n        \"tokenExpiresAt\": \"2026-06-10T15:30:05.907Z\",\n        \"tokenHash\": \"c9a1ccc5ab814c832e800bc40d7cc195c7c5be53c6978dee2cfb3b6229e0621d\",\n        \"sentBy\": \"recruiter-dev\",\n        \"status\": \"sent\",\n        \"sentAt\": \"2026-06-03T15:30:05.914Z\",\n        \"updatedAt\": \"2026-06-03T15:30:05.914Z\"\n    },\n    \"publicUrl\": \"http://localhost:3000/offer/NexUS6M7KXdHaIQscQag-c9bYh8FyEs2UVFdpjhrhyo\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Consultar oferta - candidato",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5001/ats-tema-ort/us-central1/getOfferByToken?token=NexUS6M7KXdHaIQscQag-c9bYh8FyEs2UVFdpjhrhyo",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5001",
+          "path": [
+            "ats-tema-ort",
+            "us-central1",
+            "getOfferByToken"
+          ],
+          "query": [
+            {
+              "key": "token",
+              "value": "NexUS6M7KXdHaIQscQag-c9bYh8FyEs2UVFdpjhrhyo"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "get",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/ats-tema-ort/us-central1/getOfferByToken?token=NexUS6M7KXdHaIQscQag-c9bYh8FyEs2UVFdpjhrhyo",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "getOfferByToken"
+              ],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "NexUS6M7KXdHaIQscQag-c9bYh8FyEs2UVFdpjhrhyo"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "1370"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"55a-qVgJSDeA+yVBjNnrbNacQMbqcrk\""
+            },
+            {
+              "key": "date",
+              "value": "Wed, 03 Jun 2026 17:03:37 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"offerId\": \"HY9fYfihev6D4w5A8zut\",\n    \"status\": \"sent\",\n    \"candidateName\": \"Valentina Rossi\",\n    \"candidateEmail\": \"valentina.rossi@example.com\",\n    \"jobTitle\": \"Frontend SSR Developer\",\n    \"compensation\": \"ARS 1.500.000 bruto mensual\",\n    \"startDate\": \"2026-07-01\",\n    \"modality\": \"Remoto\",\n    \"benefits\": [\n        \"Prepaga\",\n        \"Capacitaciones\",\n        \"Día de cumpleaños libre\"\n    ],\n    \"expirationDate\": \"2026-06-15\",\n    \"observations\": \"Oferta sujeta a validación final de documentación.\",\n    \"documentHtml\": \"<!doctype html>\\n      <html lang=\\\"es\\\">\\n        <head>\\n          <meta charset=\\\"utf-8\\\" />\\n          <title>Carta oferta - Frontend SSR Developer</title>\\n        </head>\\n        <body>\\n          <h1>Carta oferta</h1>\\n          <p>Estimada/o Valentina Rossi,</p>\\n          <p>Tenemos el agrado de acercarte una propuesta para la posición <strong>Frontend SSR Developer</strong>.</p>\\n          <p><strong>Compensación:</strong> ARS 1.500.000 bruto mensual</p>\\n          <p><strong>Modalidad:</strong> Remoto</p>\\n          <p><strong>Fecha estimada de inicio:</strong> 2026-07-01</p>\\n          <p><strong>Vigencia de la oferta:</strong> 2026-06-15</p>\\n          <h2>Beneficios</h2>\\n          <ul><li>Prepaga</li><li>Capacitaciones</li><li>Día de cumpleaños libre</li></ul>\\n          <h2>Observaciones</h2>\\n          <p>Oferta sujeta a validación final de documentación.</p>\\n        </body>\\n      </html>\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Aceptar oferta",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"token\": \"NexUS6M7KXdHaIQscQag-c9bYh8FyEs2UVFdpjhrhyo\",\n    \"action\": \"accept\",\n    \"signerName\": \"Valentina Rossi\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5001/ats-tema-ort/us-central1/respondOffer",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5001",
+          "path": [
+            "ats-tema-ort",
+            "us-central1",
+            "respondOffer"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "aceptar oferta",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"token\": \"NexUS6M7KXdHaIQscQag-c9bYh8FyEs2UVFdpjhrhyo\",\n    \"action\": \"accept\",\n    \"signerName\": \"Valentina Rossi\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5001/ats-tema-ort/us-central1/respondOffer",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "respondOffer"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "54"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"36-PK6ltNMFS+WpW8CTxTMyNEUFpLg\""
+            },
+            {
+              "key": "date",
+              "value": "Wed, 03 Jun 2026 17:04:48 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"offerId\": \"HY9fYfihev6D4w5A8zut\",\n    \"status\": \"accepted\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Rechazar oferta",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"token\": \"elZweELKvML3t6NafE6uDeZLaaG1DFz_a93qu92tPKU\",\n    \"action\": \"decline\",\n    \"declineReason\": \"Valentina Rossi\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5001/ats-tema-ort/us-central1/respondOffer",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5001",
+          "path": [
+            "ats-tema-ort",
+            "us-central1",
+            "respondOffer"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "responder dos veces",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"token\": \"NexUS6M7KXdHaIQscQag-c9bYh8FyEs2UVFdpjhrhyo\",\n    \"action\": \"decline\",\n    \"declineReason\": \"Valentina Rossi\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5001/ats-tema-ort/us-central1/respondOffer",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "respondOffer"
+              ]
+            }
+          },
+          "status": "Conflict",
+          "code": 409,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "45"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"2d-/Ija/prxwpfy19h9g6JupwRsZNc\""
+            },
+            {
+              "key": "date",
+              "value": "Wed, 03 Jun 2026 22:07:01 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"error\": \"La oferta ya no está disponible.\"\n}"
+        },
+        {
+          "name": "oferta rechazada",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"token\": \"elZweELKvML3t6NafE6uDeZLaaG1DFz_a93qu92tPKU\",\n    \"action\": \"decline\",\n    \"declineReason\": \"Valentina Rossi\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5001/ats-tema-ort/us-central1/respondOffer",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "respondOffer"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "54"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"36-1GILSt9cfn90Ako53Cn6J8LiWNE\""
+            },
+            {
+              "key": "date",
+              "value": "Thu, 04 Jun 2026 03:23:06 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"offerId\": \"2HQBDHrstFvg6PYnPh12\",\n    \"status\": \"declined\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Confirmar contratacion",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "dev-recruiter",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"applicationId\": \"seed-candidate-01_frontend-ssr-developer\",\n    \"stage\": \"hired\",\n    \"notes\": \"Oferta aceptada por el candidato. Se confirma contratación.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5001/ats-tema-ort/us-central1/updateApplicationStage",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5001",
+          "path": [
+            "ats-tema-ort",
+            "us-central1",
+            "updateApplicationStage"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "Confirmar contratacion",
+          "originalRequest": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"applicationId\": \"seed-candidate-01_frontend-ssr-developer\",\n    \"stage\": \"hired\",\n    \"notes\": \"Oferta aceptada por el candidato. Se confirma contratación.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:5001/ats-tema-ort/us-central1/updateApplicationStage",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "updateApplicationStage"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "11"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"b-Ai2R8hgEarLmHKwesT1qcY913ys\""
+            },
+            {
+              "key": "date",
+              "value": "Wed, 03 Jun 2026 22:18:58 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"ok\": true\n}"
+        }
+      ]
+    },
+    {
+      "name": "consultar oferta - rrhh",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "dev-recruiter",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5001/ats-tema-ort/us-central1/getOfferByApplication?applicationId=seed-candidate-01_frontend-ssr-developer",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5001",
+          "path": [
+            "ats-tema-ort",
+            "us-central1",
+            "getOfferByApplication"
+          ],
+          "query": [
+            {
+              "key": "applicationId",
+              "value": "seed-candidate-01_frontend-ssr-developer"
+            }
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "no existe candidatura",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/ats-tema-ort/us-central1/getOfferByApplication?applicationId=seed-candidate-01_frontend-ssr-developer",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "getOfferByApplication"
+              ],
+              "query": [
+                {
+                  "key": "applicationId",
+                  "value": "seed-candidate-01_frontend-ssr-developer"
+                }
+              ]
+            }
+          },
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "37"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"25-w3TlMr+dMWKuAWFw51V45CRDU9w\""
+            },
+            {
+              "key": "date",
+              "value": "Thu, 04 Jun 2026 03:20:46 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"error\": \"La candidatura no existe.\"\n}"
+        },
+        {
+          "name": "no hay oferta para la application retorna 200 - null",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/ats-tema-ort/us-central1/getOfferByApplication?applicationId=seed-candidate-01_frontend-ssr-developer",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "getOfferByApplication"
+              ],
+              "query": [
+                {
+                  "key": "applicationId",
+                  "value": "seed-candidate-01_frontend-ssr-developer"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "14"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"e-3uEO++CaYPQwBVXlrQCdipPRXDY\""
+            },
+            {
+              "key": "date",
+              "value": "Thu, 04 Jun 2026 03:21:31 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"offer\": null\n}"
+        },
+        {
+          "name": "get oferta y estado",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5001/ats-tema-ort/us-central1/getOfferByApplication?applicationId=seed-candidate-01_frontend-ssr-developer",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "5001",
+              "path": [
+                "ats-tema-ort",
+                "us-central1",
+                "getOfferByApplication"
+              ],
+              "query": [
+                {
+                  "key": "applicationId",
+                  "value": "seed-candidate-01_frontend-ssr-developer"
+                }
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": null,
+          "header": [
+            {
+              "key": "x-powered-by",
+              "value": "Express"
+            },
+            {
+              "key": "vary",
+              "value": "Origin"
+            },
+            {
+              "key": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "content-length",
+              "value": "1214"
+            },
+            {
+              "key": "etag",
+              "value": "W/\"4be-+o6lCXF8TW68olJlks0iNBBchFg\""
+            },
+            {
+              "key": "date",
+              "value": "Thu, 04 Jun 2026 03:23:16 GMT"
+            },
+            {
+              "key": "connection",
+              "value": "keep-alive"
+            },
+            {
+              "key": "keep-alive",
+              "value": "timeout=5"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"offer\": {\n        \"id\": \"2HQBDHrstFvg6PYnPh12\",\n        \"applicationId\": \"seed-candidate-01_frontend-ssr-developer\",\n        \"candidateId\": \"seed-candidate-01\",\n        \"jobId\": \"frontend-ssr-developer\",\n        \"candidateName\": \"Valentina Rossi\",\n        \"candidateEmail\": \"valentina.rossi@example.com\",\n        \"jobTitle\": \"Frontend SSR Developer\",\n        \"compensation\": \"ARS 1.500.000 bruto mensual\",\n        \"startDate\": \"2026-07-01\",\n        \"modality\": \"Remoto\",\n        \"benefits\": [\n            \"Prepaga\",\n            \"Capacitaciones\",\n            \"Día de cumpleaños libre\"\n        ],\n        \"expirationDate\": \"2026-06-15\",\n        \"observations\": \"Oferta sujeta a validación final de documentación.\",\n        \"templateId\": \"default-offer-letter\",\n        \"templateVersion\": \"1.0\",\n        \"documentStoragePath\": \"offers/2HQBDHrstFvg6PYnPh12/offer.html\",\n        \"documentHash\": \"877e084963b3b843fb706fa582c7979fd2b1bee5c12a008edb9a6196caea5a5e\",\n        \"createdBy\": \"recruiter-dev\",\n        \"createdAt\": \"2026-06-04T03:22:04.319Z\",\n        \"tokenExpiresAt\": \"2026-06-11T03:22:23.961Z\",\n        \"tokenHash\": \"6b5a8494c159b5490d86890f0fa28ba1c1d9fbc3c62241da667a3a8605b9c5d4\",\n        \"sentBy\": \"recruiter-dev\",\n        \"sentAt\": \"2026-06-04T03:22:23.972Z\",\n        \"declineReason\": \"Valentina Rossi\",\n        \"declinedAt\": \"2026-06-04T03:23:05.999Z\",\n        \"responseUserAgent\": \"PostmanRuntime/7.53.0\",\n        \"tokenUsedAt\": \"2026-06-04T03:23:05.999Z\",\n        \"status\": \"declined\",\n        \"updatedAt\": \"2026-06-04T03:23:06.002Z\"\n    }\n}"
+        }
+      ]
+    }
+  ]
+}
