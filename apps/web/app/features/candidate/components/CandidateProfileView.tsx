@@ -73,7 +73,6 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
 
   const canEditNote = (authorUid: string) =>
     Boolean(callerUid && callerUid === authorUid) || role === 'admin';
- 
   const isTerminalStage =
     profile.currentStage === STAGE_LABELS.descartado ||
     profile.currentStage === STAGE_LABELS.contratado;
