@@ -3,6 +3,7 @@ import { createHash, randomBytes } from 'crypto';
 import type {
   CreateOfferDraftPayload,
   CreateOfferDraftResponse,
+  Job,
   Offer,
   PublicOfferResponse,
   RespondOfferPayload,
@@ -101,10 +102,11 @@ export class OfferService {
     const documentData: OfferDocumentData = {
       candidateName,
       jobTitle,
-      compensation: payload.compensation?.trim() || undefined,
+      compensation:
+        payload.compensation?.trim() || this.formatJobCompensation(job),
       startDate: payload.startDate?.trim() || undefined,
-      modality: payload.modality?.trim() || undefined,
-      benefits: this.cleanBenefits(payload.benefits),
+      modality: payload.modality?.trim() || this.formatJobModality(job),
+      benefits: this.cleanBenefits(payload.benefits) ?? job?.benefits,
       expirationDate: payload.expirationDate?.trim() || undefined,
       observations: payload.observations?.trim() || undefined,
     };
@@ -297,6 +299,31 @@ export class OfferService {
       ?.map((benefit) => benefit.trim())
       .filter((benefit) => benefit.length > 0);
     return clean?.length ? clean : undefined;
+  }
+
+  private formatJobCompensation(job: Job | null): string | undefined {
+    if (!job?.salaryMin && !job?.salaryMax) return undefined;
+
+    const currency = job.currency ? `${job.currency} ` : '';
+    if (job.salaryMin && job.salaryMax) {
+      return `${currency}${job.salaryMin} - ${job.salaryMax}`;
+    }
+
+    if (job.salaryMin) return `Desde ${currency}${job.salaryMin}`;
+
+    return `Hasta ${currency}${job.salaryMax}`;
+  }
+
+  private formatJobModality(job: Job | null): string | undefined {
+    if (!job?.location) return undefined;
+
+    const labels: Record<Job['location'], string> = {
+      remote: 'Remoto',
+      hybrid: 'Híbrido',
+      'on-site': 'Presencial',
+    };
+
+    return labels[job.location];
   }
 
   private generateToken(): string {

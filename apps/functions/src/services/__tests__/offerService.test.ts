@@ -115,7 +115,14 @@ describe('OfferService', () => {
       fullName: 'Ana Demo',
       email: 'ana@example.com',
     });
-    jobsRepository.findById.mockResolvedValue({ title: 'Backend Developer' });
+    jobsRepository.findById.mockResolvedValue({
+      title: 'Backend Developer',
+      location: 'remote',
+      salaryMin: 2000,
+      salaryMax: 2800,
+      currency: 'USD',
+      benefits: ['Home office total', 'Learning budget'],
+    });
     offerWorkflowRepository.sendOffer.mockResolvedValue(undefined);
 
     service = new OfferService(
@@ -157,6 +164,24 @@ describe('OfferService', () => {
       }),
     );
     expect(result.offer.status).toBe('draft');
+  });
+
+  it('usa defaults de la posición cuando la oferta no sobrescribe modalidad, beneficios o compensación', async () => {
+    await service.createDraft(
+      {
+        applicationId: 'app-1',
+      },
+      'hr-1',
+    );
+
+    expect(offerRepository.create).toHaveBeenCalledWith(
+      'offer-1',
+      expect.objectContaining({
+        compensation: 'USD 2000 - 2800',
+        modality: 'Remoto',
+        benefits: ['Home office total', 'Learning budget'],
+      }),
+    );
   });
 
   it('envía la oferta, mueve la candidatura a offer_sent y registra historial', async () => {
@@ -223,6 +248,18 @@ describe('OfferService', () => {
     await expect(
       service.createDraft({ applicationId: 'app-1' }, 'hr-1'),
     ).rejects.toThrow(OfferUnauthorizedStateError);
+  });
+
+  it('permite generar ofertas para candidaturas active aunque el stage previo varíe', async () => {
+    applicationsRepository.findById.mockResolvedValue(
+      makeApplication({ stage: 'screening', status: 'active' }),
+    );
+
+    await expect(
+      service.createDraft({ applicationId: 'app-1' }, 'hr-1'),
+    ).resolves.toMatchObject({
+      offer: expect.objectContaining({ status: 'draft' }),
+    });
   });
 
   it('vence una oferta si el token expiró', async () => {

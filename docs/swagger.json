@@ -138,6 +138,169 @@
           "publishedAt": { "type": "string", "format": "date-time" }
         }
       },
+      "OfferStatus": {
+        "type": "string",
+        "enum": ["draft", "sent", "accepted", "declined", "expired", "cancelled"]
+      },
+      "Offer": {
+        "type": "object",
+        "required": [
+          "id",
+          "applicationId",
+          "candidateId",
+          "jobId",
+          "status",
+          "candidateName",
+          "candidateEmail",
+          "jobTitle",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "applicationId": { "type": "string" },
+          "candidateId": { "type": "string" },
+          "jobId": { "type": "string" },
+          "status": { "$ref": "#/components/schemas/OfferStatus" },
+          "candidateName": { "type": "string" },
+          "candidateEmail": { "type": "string", "format": "email" },
+          "jobTitle": { "type": "string" },
+          "compensation": { "type": "string" },
+          "startDate": { "type": "string" },
+          "modality": { "type": "string" },
+          "benefits": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "expirationDate": { "type": "string" },
+          "observations": { "type": "string" },
+          "templateId": { "type": "string" },
+          "templateVersion": { "type": "string" },
+          "documentStoragePath": { "type": "string" },
+          "documentHash": { "type": "string" },
+          "tokenHash": {
+            "type": "string",
+            "description": "SHA-256 hash of the public token. The plain token is never persisted."
+          },
+          "tokenExpiresAt": { "type": "string", "format": "date-time" },
+          "tokenUsedAt": { "type": "string", "format": "date-time" },
+          "sentAt": { "type": "string", "format": "date-time" },
+          "sentBy": { "type": "string" },
+          "acceptedAt": { "type": "string", "format": "date-time" },
+          "declinedAt": { "type": "string", "format": "date-time" },
+          "acceptedByName": { "type": "string" },
+          "acceptedByEmail": { "type": "string", "format": "email" },
+          "responseFromIp": { "type": "string" },
+          "responseUserAgent": { "type": "string" },
+          "declineReason": { "type": "string" },
+          "createdBy": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateOfferDraftRequest": {
+        "type": "object",
+        "required": ["applicationId"],
+        "properties": {
+          "applicationId": { "type": "string" },
+          "compensation": {
+            "type": "string",
+            "description": "Overrides the compensation text. If omitted, job salary/currency defaults can be used."
+          },
+          "startDate": { "type": "string" },
+          "modality": {
+            "type": "string",
+            "description": "Overrides the job modality/location label."
+          },
+          "benefits": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Overrides job benefits. If omitted, defaults from the job are used."
+          },
+          "expirationDate": { "type": "string" },
+          "observations": { "type": "string" },
+          "templateId": { "type": "string" }
+        }
+      },
+      "CreateOfferDraftResponse": {
+        "type": "object",
+        "required": ["offer"],
+        "properties": {
+          "offer": { "$ref": "#/components/schemas/Offer" }
+        }
+      },
+      "SendOfferRequest": {
+        "type": "object",
+        "required": ["offerId"],
+        "properties": {
+          "offerId": { "type": "string" }
+        }
+      },
+      "SendOfferResponse": {
+        "type": "object",
+        "required": ["offer", "publicUrl"],
+        "properties": {
+          "offer": { "$ref": "#/components/schemas/Offer" },
+          "publicUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "Public secure link containing the plain token. Only tokenHash is stored in Firestore."
+          }
+        }
+      },
+      "PublicOfferResponse": {
+        "type": "object",
+        "required": [
+          "offerId",
+          "status",
+          "candidateName",
+          "candidateEmail",
+          "jobTitle",
+          "documentHtml"
+        ],
+        "properties": {
+          "offerId": { "type": "string" },
+          "status": { "$ref": "#/components/schemas/OfferStatus" },
+          "candidateName": { "type": "string" },
+          "candidateEmail": { "type": "string", "format": "email" },
+          "jobTitle": { "type": "string" },
+          "compensation": { "type": "string" },
+          "startDate": { "type": "string" },
+          "modality": { "type": "string" },
+          "benefits": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "expirationDate": { "type": "string" },
+          "observations": { "type": "string" },
+          "documentHtml": {
+            "type": "string",
+            "description": "Generated offer letter HTML shown to the candidate."
+          }
+        }
+      },
+      "RespondOfferRequest": {
+        "type": "object",
+        "required": ["token", "action"],
+        "properties": {
+          "token": { "type": "string" },
+          "action": { "type": "string", "enum": ["accept", "decline"] },
+          "signerName": {
+            "type": "string",
+            "description": "Required when action is accept."
+          },
+          "declineReason": { "type": "string" }
+        }
+      },
+      "RespondOfferResponse": {
+        "type": "object",
+        "required": ["offerId", "status"],
+        "properties": {
+          "offerId": { "type": "string" },
+          "status": { "type": "string", "enum": ["accepted", "declined"] }
+        }
+      },
       "ApplicationStage": {
         "type": "string",
         "enum": [
@@ -1757,6 +1920,276 @@
           },
           "404": {
             "description": "Application not found or candidate has no CV",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/createOfferDraft": {
+      "post": {
+        "tags": ["Offers"],
+        "operationId": "createOfferDraft",
+        "summary": "Create an offer letter draft",
+        "description": "Creates an Offer in `draft` status for an active, non-terminal application. Candidate/job data is denormalized, the offer letter HTML is generated from the default template and persisted in Storage. Compensation, modality and benefits can be overridden; otherwise job defaults are used when available.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOfferDraftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Offer draft created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateOfferDraftResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden or application is draft/terminal",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Application not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "409": {
+            "description": "Offer cannot be created for the current data state",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sendOffer": {
+      "post": {
+        "tags": ["Offers"],
+        "operationId": "sendOffer",
+        "summary": "Publish/send an offer and generate a secure link",
+        "description": "Moves an Offer from `draft` to `sent`, generates a random public token, stores only its SHA-256 hash with an expiration date, updates the application to `stage: offer_sent`, and writes stageHistory atomically. The current implementation prepares the communication/link; real outbound email delivery is handled separately.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SendOfferRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Offer published and secure link generated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SendOfferResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden or application is draft/terminal",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Offer or associated application not found",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "409": {
+            "description": "Offer is not in draft status or cannot be sent",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/getOfferByToken": {
+      "get": {
+        "tags": ["Offers"],
+        "operationId": "getOfferByToken",
+        "summary": "Get a public offer by token",
+        "description": "Public endpoint used by candidates to retrieve a sent offer letter. The received token is hashed server-side and matched against `tokenHash`; expired links are marked as `expired`.",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public offer payload",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PublicOfferResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Offer not found or token is invalid",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "409": {
+            "description": "Offer is unavailable, already answered or expired",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/respondOffer": {
+      "post": {
+        "tags": ["Offers"],
+        "operationId": "respondOffer",
+        "summary": "Accept or decline a public offer",
+        "description": "Public endpoint used by candidates to accept or decline a sent offer. It records response evidence including server timestamp, candidate email, signer name when accepting, IP, user agent and token usage. It updates only OfferStatus to `accepted` or `declined`; it does not mark the application as `hired` automatically.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RespondOfferRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Offer response recorded",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RespondOfferResponse" }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Offer not found or token is invalid",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "409": {
+            "description": "Offer is unavailable, already answered or expired",
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/ErrorResponse" }
