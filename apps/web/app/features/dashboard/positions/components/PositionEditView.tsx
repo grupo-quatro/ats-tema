@@ -57,7 +57,6 @@ type EditableSkill = Skill & {
 
 type SkillDraft = {
   name: string;
-  years: string;
   weight: string;
 };
 
@@ -303,14 +302,13 @@ function SkillEditor({
   function startEditingSkill(skill: EditableSkill, index: number) {
     setDraft({
       name: skill.name,
-      years: String(skill.years),
       weight: String(skill.weight),
     });
     setEditingIndex(index);
   }
 
   function cancelEditingSkill() {
-    setDraft({ name: '', years: '0', weight: '' });
+    setDraft({ name: '', weight: '' });
     setEditingIndex(null);
   }
 
@@ -359,29 +357,6 @@ function SkillEditor({
               value={draft.name}
               onChange={(event) =>
                 setDraft({ ...draft, name: event.target.value })
-              }
-              sx={inputSx}
-            />
-          </Grid>
-          <Grid size={{ xs: 6, md: 2 }}>
-            <Typography
-              sx={{
-                fontSize: '0.72rem',
-                color: '#64748b',
-                fontWeight: 700,
-                mb: 0.7,
-              }}
-            >
-              Años Exp.
-            </Typography>
-            <TextField
-              fullWidth
-              size="small"
-              type="number"
-              slotProps={{ htmlInput: { min: 0 } }}
-              value={draft.years}
-              onChange={(event) =>
-                setDraft({ ...draft, years: event.target.value })
               }
               sx={inputSx}
             />
@@ -474,17 +449,6 @@ function SkillEditor({
                 >
                   {skill.name}
                 </Typography>
-                <Chip
-                  label={`${skill.years} años`}
-                  size="small"
-                  sx={{
-                    bgcolor: '#dbfce7',
-                    color: '#16a34a',
-                    height: 24,
-                    fontSize: '0.7rem',
-                    fontWeight: 700,
-                  }}
-                />
               </Stack>
               <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
                 <Button
@@ -550,12 +514,10 @@ export default function PositionEditView({ job, onSave }: Props) {
   );
   const [mandatoryDraft, setMandatoryDraft] = useState<SkillDraft>({
     name: '',
-    years: '0',
     weight: '',
   });
   const [desirableDraft, setDesirableDraft] = useState<SkillDraft>({
     name: '',
-    years: '0',
     weight: '',
   });
   const defaultFormValues = {
@@ -691,13 +653,13 @@ export default function PositionEditView({ job, onSave }: Props) {
       ...current,
       {
         name: draft.name.trim(),
-        years: Number(draft.years) || 0,
-        yearsOfExperience: Number(draft.years) || 0,
+        years: 0,
+        yearsOfExperience: 0,
         weight: Math.min(10, Math.max(1, Number(draft.weight) || 1)),
         type,
       },
     ]);
-    reset({ name: '', years: '0', weight: '' });
+    reset({ name: '', weight: '' });
   };
 
   const updateSkillFromDraft = (
@@ -710,20 +672,20 @@ export default function PositionEditView({ job, onSave }: Props) {
     if (!draft.name.trim()) return;
     if (!draft.weight.trim()) return;
 
-    const updatedSkill: EditableSkill = {
-      name: draft.name.trim(),
-      years: Number(draft.years) || 0,
-      yearsOfExperience: Number(draft.years) || 0,
-      weight: Math.min(10, Math.max(1, Number(draft.weight) || 1)),
-      type,
-    };
-
     update((current) =>
       current.map((skill, itemIndex) =>
-        itemIndex === index ? updatedSkill : skill,
+        itemIndex === index
+          ? {
+              name: draft.name.trim(),
+              years: skill.years,
+              yearsOfExperience: skill.yearsOfExperience,
+              weight: Math.min(10, Math.max(1, Number(draft.weight) || 1)),
+              type,
+            }
+          : skill,
       ),
     );
-    reset({ name: '', years: '0', weight: '' });
+    reset({ name: '', weight: '' });
   };
 
   return (

@@ -69,6 +69,14 @@ describe('JobsRepository.findWithFilters', () => {
         location: 'remote',
         status: 'open',
       }),
+      makeFirestoreJob({
+        id: 'job-4',
+        title: 'Deleted Developer',
+        department: 'Engineering',
+        location: 'remote',
+        status: 'open',
+        deletedAt: { toDate: () => new Date('2026-06-01') } as any,
+      }),
     ]);
     (db.collection as any).mockReturnValue(mockQuery);
     repo = new JobsRepository();
@@ -81,6 +89,12 @@ describe('JobsRepository.findWithFilters', () => {
     expect(result.page).toBe(1);
     expect(result.totalPages).toBe(1);
     expect(result.jobs).toHaveLength(3);
+  });
+
+  it('omite posiciones eliminadas del listado', async () => {
+    const result = await repo.findWithFilters({ page: 1, limit: 10 });
+
+    expect(result.jobs.some((job) => job.id === 'job-4')).toBe(false);
   });
 
   it('aplica filtro de location en memoria', async () => {
@@ -183,6 +197,12 @@ describe('JobsRepository.findDepartments', () => {
           { data: () => ({ department: 'Design' }) },
           { data: () => ({ department: 'Engineering' }) },
           { data: () => ({ department: 'QA' }) },
+          {
+            data: () => ({
+              department: 'Product',
+              deletedAt: { toDate: () => new Date('2026-06-01') },
+            }),
+          },
         ],
       }),
     };

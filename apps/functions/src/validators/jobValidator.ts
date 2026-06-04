@@ -2,6 +2,7 @@ import { HttpsError } from 'firebase-functions/v2/https';
 
 import type {
   CreateJobPayload,
+  DeletePositionPayload,
   GetInternalJobDetailPayload,
   JobStatus,
   Skill,
@@ -232,6 +233,12 @@ export function validateUpdatePositionStatusPayload(
   ) {
     throw new HttpsError('invalid-argument', 'Estado inválido.');
   }
+}
+
+export function validateDeletePositionPayload(
+  payload: Partial<DeletePositionPayload>,
+): asserts payload is DeletePositionPayload {
+  validateRequiredString(payload.id, 'El campo id es requerido.');
 }
 
 function validateRequiredString(

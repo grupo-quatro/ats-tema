@@ -113,7 +113,6 @@ export default function LoginPage() {
       router.replace('/dashboard/positions');
     }
   }, [user, role, router]);
-
   // Si ya tiene rol, redirigir al dashboard
   if (user && role) {
     return null;

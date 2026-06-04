@@ -9,22 +9,23 @@ import {
 } from '@mui/material';
 import { X } from 'lucide-react';
 import type { Skill } from '@ats/shared-types';
-import type { CandidateInterviewNote } from '../mock/candidateMock';
 import TechnicalInterviewForm from './TechnicalInterviewForm';
 import HrInterviewForm from './HrInterviewForm';
 
 interface InterviewModalProps {
   open: boolean;
   onClose: () => void;
+  applicationId: string;
   candidateName: string;
   type?: 'tech' | 'hr';
   skills?: Skill[];
-  onSave?: (note: CandidateInterviewNote) => void | Promise<void>;
+  onSave?: () => void | Promise<void>;
 }
 
 export function InterviewModal({
   open,
   onClose,
+  applicationId,
   candidateName,
   type = 'tech',
   skills = [],
@@ -68,6 +69,7 @@ export function InterviewModal({
       <DialogContent sx={{ p: 4, minHeight: 200 }}>
         {type === 'tech' ? (
           <TechnicalInterviewForm
+            applicationId={applicationId}
             skills={skills}
             candidateName={candidateName}
             onClose={onClose}
@@ -75,6 +77,7 @@ export function InterviewModal({
           />
         ) : (
           <HrInterviewForm
+            applicationId={applicationId}
             candidateName={candidateName}
             onClose={onClose}
             onSave={onSave}

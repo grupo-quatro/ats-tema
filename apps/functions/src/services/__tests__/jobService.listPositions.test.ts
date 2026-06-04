@@ -30,6 +30,7 @@ const mockRepo = {
   findDepartments: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
+  softDelete: vi.fn(),
   createOrUpdateJob: vi.fn(),
 };
 
@@ -128,5 +129,34 @@ describe('JobService.listDepartments', () => {
     mockRepo.findDepartments.mockRejectedValue(new Error('Firestore error'));
 
     await expect(service.listDepartments()).rejects.toThrow();
+  });
+});
+
+describe('JobService.deletePosition', () => {
+  let service: JobService;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    service = new JobService(mockRepo as any, mockApplicationsRepo as any);
+  });
+
+  it('marca la posicion como eliminada', async () => {
+    mockRepo.findById.mockResolvedValue(makeJob({ id: 'job-1' }));
+    mockRepo.softDelete.mockResolvedValue(undefined);
+
+    const result = await service.deletePosition(' job-1 ');
+
+    expect(mockRepo.findById).toHaveBeenCalledWith('job-1');
+    expect(mockRepo.softDelete).toHaveBeenCalledWith('job-1');
+    expect(result).toEqual({ ok: true });
+  });
+
+  it('falla si la posicion no existe', async () => {
+    mockRepo.findById.mockResolvedValue(null);
+
+    await expect(service.deletePosition('job-1')).rejects.toThrow(
+      'job-1 no existe',
+    );
+    expect(mockRepo.softDelete).not.toHaveBeenCalled();
   });
 });

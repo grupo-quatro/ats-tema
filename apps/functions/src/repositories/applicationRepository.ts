@@ -157,7 +157,9 @@ export class ApplicationsRepository {
 
         snapshot.docs.forEach((doc) => {
           const application = doc.data() as FirestoreApplication;
-          counts[application.jobId] = (counts[application.jobId] ?? 0) + 1;
+          if (application.status !== 'draft') {
+            counts[application.jobId] = (counts[application.jobId] ?? 0) + 1;
+          }
         });
       }
 

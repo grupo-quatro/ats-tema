@@ -1,14 +1,19 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import type { CandidacyNoteDTO } from '@ats/shared-types';
 import {
   STAGE_LABELS,
   STAGE_ORDER,
-  type CandidateInterviewNote,
   type CandidateMockProfile,
   type CandidateStageEntry,
   type CandidateStageKey,
 } from '../mock/candidateMock';
+import {
+  getCandidacyNotes,
+  saveCandidacyNote,
+  updateCandidacyNote,
+} from '@/shared/api/candidacyNotesApi';
 import {
   getStageHistory,
   updateApplicationStage,
@@ -83,11 +88,16 @@ function applyRejection(
   ];
 }
 
+function toVisibleStageHistory(
+  history: StageHistoryEntry[],
+): StageHistoryEntry[] {
+  return history.filter((entry) => entry.stage !== 'profile_pending');
+}
+
 export function useCandidateProfile(candidate: CandidateMockProfile) {
   const [cvModalOpen, setCvModalOpen] = useState(false);
   const [interviewModalOpen, setInterviewModalOpen] = useState(false);
   const [interviewType, setInterviewType] = useState<'tech' | 'hr'>('tech');
-  const [newNoteModalOpen, setNewNoteModalOpen] = useState(false);
   const [stageDialogOpen, setStageDialogOpen] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
@@ -95,7 +105,9 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     CandidateStageKey | ''
   >('');
   const [rejectReason, setRejectReason] = useState('');
-  const [isSavingNote, setIsSavingNote] = useState(false);
+  const [isSavingNewNote, setIsSavingNewNote] = useState(false);
+  const [isSavingEditNote, setIsSavingEditNote] = useState(false);
+  const [isLoadingNotes, setIsLoadingNotes] = useState(false);
   const [isUpdatingStage, setIsUpdatingStage] = useState(false);
   const [showAllStrengths, setShowAllStrengths] = useState(false);
   const [snackbar, setSnackbar] = useState<SnackbarState>(null);
@@ -105,21 +117,34 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
   const [realStageHistory, setRealStageHistory] = useState<StageHistoryEntry[]>(
     [],
   );
-  const [interviewNotes, setInterviewNotes] = useState(
-    candidate.interviewNotes,
-  );
+  const [candidacyNotes, setCandidacyNotes] = useState<CandidacyNoteDTO[]>([]);
+  const [newCommentText, setNewCommentText] = useState('');
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState('');
 
-  const [newNoteAuthor, setNewNoteAuthor] = useState('');
-  const [newNoteDate, setNewNoteDate] = useState('');
-  const [newNoteRating, setNewNoteRating] = useState(0);
-  const [newNoteText, setNewNoteText] = useState('');
+  const loadCandidacyNotes = useCallback(async () => {
+    if (!candidate.applicationId) return;
+    setIsLoadingNotes(true);
+    try {
+      const notes = await getCandidacyNotes(candidate.applicationId);
+      setCandidacyNotes(notes);
+    } catch {
+      setSnackbar({
+        message: 'No se pudieron cargar las notas',
+        severity: 'error',
+      });
+    } finally {
+      setIsLoadingNotes(false);
+    }
+  }, [candidate.applicationId]);
 
   useEffect(() => {
     if (!candidate.applicationId) return;
     getStageHistory(candidate.applicationId)
-      .then(setRealStageHistory)
+      .then((history) => setRealStageHistory(toVisibleStageHistory(history)))
       .catch(() => {});
-  }, [candidate.applicationId]);
+    loadCandidacyNotes();
+  }, [candidate.applicationId, loadCandidacyNotes]);
 
   const pendingStages = stageHistory.filter(
     (stage) => stage.status === 'pending' && stage.key !== 'descartado',
@@ -128,18 +153,6 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
   const visibleStrengths = showAllStrengths
     ? candidate.strengths
     : candidate.strengths.slice(0, 2);
-
-  const resetNewNoteForm = useCallback(() => {
-    setNewNoteAuthor('');
-    setNewNoteDate('');
-    setNewNoteRating(0);
-    setNewNoteText('');
-  }, []);
-
-  const openNewNoteModal = useCallback(() => {
-    resetNewNoteForm();
-    setNewNoteModalOpen(true);
-  }, [resetNewNoteForm]);
 
   const openInterviewModal = useCallback((type: 'tech' | 'hr') => {
     setInterviewType(type);
@@ -158,47 +171,77 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     setMenuAnchor(null);
   }, []);
 
-  const handleSaveNewNote = useCallback(async () => {
-    const parsedDate = new Date(newNoteDate);
-    if (
-      !newNoteAuthor ||
-      !newNoteDate ||
-      !newNoteText ||
-      Number.isNaN(parsedDate.getTime())
-    ) {
-      return;
-    }
+  const handleSendComment = useCallback(async () => {
+    const text = newCommentText.trim();
+    if (!text || !candidate.applicationId) return;
 
-    setIsSavingNote(true);
+    setIsSavingNewNote(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 600));
-
-      const note: CandidateInterviewNote = {
-        authorName: newNoteAuthor,
-        date: formatDateToSpanish(newNoteDate),
-        rating: newNoteRating || 0,
-        note: newNoteText,
-      };
-
-      setInterviewNotes((current) => [...current, note]);
-      setNewNoteModalOpen(false);
-      resetNewNoteForm();
+      await saveCandidacyNote({
+        applicationId: candidate.applicationId,
+        text,
+      });
+      setNewCommentText('');
+      await loadCandidacyNotes();
       setSnackbar({
-        message: 'Nota guardada correctamente',
+        message: 'Nota agregada correctamente',
         severity: 'success',
       });
     } catch {
       setSnackbar({ message: 'No se pudo guardar la nota', severity: 'error' });
     } finally {
-      setIsSavingNote(false);
+      setIsSavingNewNote(false);
     }
-  }, [
-    newNoteAuthor,
-    newNoteDate,
-    newNoteRating,
-    newNoteText,
-    resetNewNoteForm,
-  ]);
+  }, [newCommentText, candidate.applicationId, loadCandidacyNotes]);
+
+  const startEditingNote = useCallback((note: CandidacyNoteDTO) => {
+    setEditingNoteId(note.id);
+    setEditingText(note.text);
+  }, []);
+
+  const cancelEditingNote = useCallback(() => {
+    setEditingNoteId(null);
+    setEditingText('');
+  }, []);
+
+  const handleSaveEditedNote = useCallback(async () => {
+    const text = editingText.trim();
+    if (!text || !editingNoteId || !candidate.applicationId) return;
+
+    const noteId = editingNoteId;
+    const previousNotes = candidacyNotes;
+
+    setCandidacyNotes((current) =>
+      current.map((note) => (note.id === noteId ? { ...note, text } : note)),
+    );
+    setIsSavingEditNote(true);
+
+    try {
+      const updated = await updateCandidacyNote({
+        applicationId: candidate.applicationId,
+        id: noteId,
+        text,
+      });
+
+      setCandidacyNotes((current) =>
+        current.map((note) => (note.id === updated.id ? updated : note)),
+      );
+      setEditingNoteId(null);
+      setEditingText('');
+      setSnackbar({
+        message: 'Nota actualizada correctamente',
+        severity: 'success',
+      });
+    } catch {
+      setCandidacyNotes(previousNotes);
+      setSnackbar({
+        message: 'No se pudo actualizar la nota',
+        severity: 'error',
+      });
+    } finally {
+      setIsSavingEditNote(false);
+    }
+  }, [editingText, editingNoteId, candidate.applicationId, candidacyNotes]);
 
   const handleStageChange = useCallback(async () => {
     if (!selectedStageKey) return;
@@ -218,7 +261,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
         severity: 'success',
       });
       getStageHistory(candidate.applicationId)
-        .then(setRealStageHistory)
+        .then((history) => setRealStageHistory(toVisibleStageHistory(history)))
         .catch(() => {});
     } catch {
       setSnackbar({
@@ -249,7 +292,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
       setRejectReason('');
       setSnackbar({ message: 'Candidato rechazado', severity: 'success' });
       getStageHistory(candidate.applicationId)
-        .then(setRealStageHistory)
+        .then((history) => setRealStageHistory(toVisibleStageHistory(history)))
         .catch(() => {});
     } catch {
       setSnackbar({
@@ -261,17 +304,14 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     }
   }, [rejectReason, candidate.applicationId]);
 
-  const handleInterviewSave = useCallback(
-    async (note: CandidateInterviewNote) => {
-      setInterviewNotes((current) => [...current, note]);
-      setInterviewModalOpen(false);
-      setSnackbar({
-        message: 'Evaluación de entrevista registrada',
-        severity: 'success',
-      });
-    },
-    [],
-  );
+  const handleInterviewSave = useCallback(async () => {
+    setInterviewModalOpen(false);
+    await loadCandidacyNotes();
+    setSnackbar({
+      message: 'Evaluación de entrevista registrada',
+      severity: 'success',
+    });
+  }, [loadCandidacyNotes]);
 
   return {
     cvModalOpen,
@@ -279,8 +319,6 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     interviewModalOpen,
     setInterviewModalOpen,
     interviewType,
-    newNoteModalOpen,
-    setNewNoteModalOpen,
     stageDialogOpen,
     setStageDialogOpen,
     rejectDialogOpen,
@@ -291,7 +329,9 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     setSelectedStageKey,
     rejectReason,
     setRejectReason,
-    isSavingNote,
+    isSavingNewNote,
+    isSavingEditNote,
+    isLoadingNotes,
     isUpdatingStage,
     showAllStrengths,
     setShowAllStrengths,
@@ -300,22 +340,21 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     currentStage,
     stageHistory,
     realStageHistory,
-    interviewNotes,
+    candidacyNotes,
     pendingStages,
     visibleStrengths,
-    newNoteAuthor,
-    setNewNoteAuthor,
-    newNoteDate,
-    setNewNoteDate,
-    newNoteRating,
-    setNewNoteRating,
-    newNoteText,
-    setNewNoteText,
-    openNewNoteModal,
+    newCommentText,
+    setNewCommentText,
+    editingNoteId,
+    editingText,
+    setEditingText,
     openInterviewModal,
     openStageDialog,
     openRejectDialog,
-    handleSaveNewNote,
+    handleSendComment,
+    startEditingNote,
+    cancelEditingNote,
+    handleSaveEditedNote,
     handleStageChange,
     handleReject,
     handleInterviewSave,

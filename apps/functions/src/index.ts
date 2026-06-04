@@ -1,6 +1,7 @@
 export { healthCheck } from './callables/healthCheck';
 export {
   createJob,
+  deletePosition,
   getInternalJobDetail,
   getJobDetail,
   getPosition,
@@ -39,3 +40,12 @@ export {
   respondOffer,
   sendOffer,
 } from './callables/offerCallables';
+export {
+  getInterviewForms,
+  saveInterviewForm,
+} from './callables/interviewFormsCallables';
+export {
+  getCandidacyNotes,
+  saveCandidacyNote,
+  updateCandidacyNote,
+} from './callables/candidacyNotesCallables';

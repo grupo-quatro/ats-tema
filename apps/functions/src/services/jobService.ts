@@ -11,6 +11,7 @@ import type {
   ListPositionsFilters,
   ListPositionsResponse,
   UpdateJobDTO,
+  DeletePositionResponse,
   UpdatePositionPayload,
   UpdatePositionResponse,
   UpdatePositionStatusResponse,
@@ -306,6 +307,30 @@ export class JobService {
 
       throw new UpdateJobServiceError(
         'No se pudo actualizar el estado de la posición.',
+        error,
+      );
+    }
+  }
+
+  async deletePosition(jobId: string): Promise<DeletePositionResponse> {
+    try {
+      const normalizedJobId = jobId.trim();
+      const job = await this.jobsRepository.findById(normalizedJobId);
+
+      if (!job) {
+        throw new JobUpdateNotFoundError(normalizedJobId);
+      }
+
+      await this.jobsRepository.softDelete(normalizedJobId);
+
+      return { ok: true };
+    } catch (error) {
+      if (error instanceof JobUpdateNotFoundError) {
+        throw error;
+      }
+
+      throw new UpdateJobServiceError(
+        'No se pudo eliminar la posición.',
         error,
       );
     }

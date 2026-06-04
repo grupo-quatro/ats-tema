@@ -1,5 +1,6 @@
 import type {
   CreateJobPayload,
+  DeletePositionPayload,
   ListPositionsFilters,
   ListPositionsResponse,
   UpdatePositionPayload,
@@ -88,6 +89,23 @@ export async function updatePosition(
   });
   if (!res.ok) {
     throw new Error(await readApiError(res, 'Error al actualizar la posicion'));
+  }
+}
+
+export async function deletePosition(
+  payload: DeletePositionPayload,
+): Promise<void> {
+  const token = await getToken();
+  const res = await fetch(getFunctionUrl('deletePosition'), {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(await readApiError(res, 'Error al eliminar la posicion'));
   }
 }
 

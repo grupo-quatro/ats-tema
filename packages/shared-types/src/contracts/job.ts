@@ -48,6 +48,14 @@ export interface UpdatePositionStatusResponse {
   ok: true;
 }
 
+export interface DeletePositionPayload {
+  id: string;
+}
+
+export interface DeletePositionResponse {
+  ok: true;
+}
+
 export interface GetInternalJobDetailPayload {
   jobId: string;
 }

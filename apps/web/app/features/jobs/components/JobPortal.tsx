@@ -13,11 +13,15 @@ import {
 } from '@mui/material';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import JobCard from './JobCard';
 import { useJobs } from '../hooks/useJobs';
 import { useAuth } from '@/shared/lib/authContext';
 import { isInternalRole } from '@/shared/lib/internalRoles';
+import PaginationControls from '@/shared/components/PaginationControls';
+import { usePaginationParams } from '@/shared/lib/usePaginationParams';
+
+const JOB_PORTAL_PAGE_SIZE = 6;
 
 export default function JobPortal() {
   const { data: jobs, isLoading, isError } = useJobs();
@@ -25,6 +29,7 @@ export default function JobPortal() {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const isInternal = isInternalRole(role);
+  const { page, setPage } = usePaginationParams();
 
   useEffect(() => {
     if (!loading && isInternal) {
@@ -32,11 +37,28 @@ export default function JobPortal() {
     }
   }, [isInternal, loading, router]);
 
-  const filtered = (jobs ?? []).filter(
-    (job) =>
-      job.title.toLowerCase().includes(search.toLowerCase()) ||
-      job.department?.toLowerCase().includes(search.toLowerCase()),
+  const filtered = useMemo(
+    () =>
+      (jobs ?? []).filter(
+        (job) =>
+          job.title.toLowerCase().includes(search.toLowerCase()) ||
+          job.department?.toLowerCase().includes(search.toLowerCase()),
+      ),
+    [jobs, search],
   );
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filtered.length / JOB_PORTAL_PAGE_SIZE),
+  );
+  const paginatedJobs = useMemo(() => {
+    const start = (page - 1) * JOB_PORTAL_PAGE_SIZE;
+    return filtered.slice(start, start + JOB_PORTAL_PAGE_SIZE);
+  }, [filtered, page]);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, setPage, totalPages]);
 
   return (
     <Container>
@@ -57,7 +79,10 @@ export default function JobPortal() {
           fullWidth
           placeholder="Buscar por título o área..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
           slotProps={{
             input: {
               startAdornment: (
@@ -87,12 +112,21 @@ export default function JobPortal() {
                 No se encontraron posiciones.
               </Typography>
             ) : (
-              filtered.map((job) => (
+              paginatedJobs.map((job) => (
                 <JobCard key={job.id} job={job} disabled={isInternal} />
               ))
             )}
           </Stack>
         )}
+        {!isLoading && !isError ? (
+          <PaginationControls
+            page={page}
+            pageSize={JOB_PORTAL_PAGE_SIZE}
+            totalItems={filtered.length}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        ) : null}
       </Box>
     </Container>
   );
