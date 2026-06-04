@@ -138,13 +138,17 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     }
   }, [candidate.applicationId]);
 
+  const refreshStageHistory = useCallback(async () => {
+    if (!candidate.applicationId) return;
+    const history = await getStageHistory(candidate.applicationId);
+    setRealStageHistory(toVisibleStageHistory(history));
+  }, [candidate.applicationId]);
+
   useEffect(() => {
     if (!candidate.applicationId) return;
-    getStageHistory(candidate.applicationId)
-      .then((history) => setRealStageHistory(toVisibleStageHistory(history)))
-      .catch(() => {});
+    refreshStageHistory().catch(() => {});
     loadCandidacyNotes();
-  }, [candidate.applicationId, loadCandidacyNotes]);
+  }, [candidate.applicationId, loadCandidacyNotes, refreshStageHistory]);
 
   const pendingStages = stageHistory.filter(
     (stage) => stage.status === 'pending' && stage.key !== 'descartado',
@@ -260,9 +264,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
         message: `Etapa actualizada a "${STAGE_LABELS[selectedStageKey]}"`,
         severity: 'success',
       });
-      getStageHistory(candidate.applicationId)
-        .then((history) => setRealStageHistory(toVisibleStageHistory(history)))
-        .catch(() => {});
+      refreshStageHistory().catch(() => {});
     } catch {
       setSnackbar({
         message: 'No se pudo cambiar la etapa',
@@ -271,7 +273,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     } finally {
       setIsUpdatingStage(false);
     }
-  }, [selectedStageKey, candidate.applicationId]);
+  }, [selectedStageKey, candidate.applicationId, refreshStageHistory]);
 
   const handleReject = useCallback(async () => {
     if (!rejectReason.trim()) return;
@@ -291,9 +293,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
       setRejectDialogOpen(false);
       setRejectReason('');
       setSnackbar({ message: 'Candidato rechazado', severity: 'success' });
-      getStageHistory(candidate.applicationId)
-        .then((history) => setRealStageHistory(toVisibleStageHistory(history)))
-        .catch(() => {});
+      refreshStageHistory().catch(() => {});
     } catch {
       setSnackbar({
         message: 'No se pudo rechazar al candidato',
@@ -302,7 +302,40 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     } finally {
       setIsUpdatingStage(false);
     }
-  }, [rejectReason, candidate.applicationId]);
+  }, [rejectReason, candidate.applicationId, refreshStageHistory]);
+
+  const handleOfferSent = useCallback(() => {
+    setStageHistory((current) => applyStageChange(current, 'oferta_enviada'));
+    setCurrentStage(STAGE_LABELS.oferta_enviada);
+    refreshStageHistory().catch(() => {});
+  }, [refreshStageHistory]);
+
+  const handleMarkAsHired = useCallback(async () => {
+    setIsUpdatingStage(true);
+    try {
+      await updateApplicationStage({
+        applicationId: candidate.applicationId,
+        stage: 'hired',
+        notes:
+          'Oferta aceptada por el candidato. Contratación confirmada por RR.HH.',
+      });
+
+      setStageHistory((current) => applyStageChange(current, 'contratado'));
+      setCurrentStage(STAGE_LABELS.contratado);
+      setSnackbar({
+        message: 'Candidato marcado como contratado',
+        severity: 'success',
+      });
+      refreshStageHistory().catch(() => {});
+    } catch {
+      setSnackbar({
+        message: 'No se pudo marcar al candidato como contratado',
+        severity: 'error',
+      });
+    } finally {
+      setIsUpdatingStage(false);
+    }
+  }, [candidate.applicationId, refreshStageHistory]);
 
   const handleInterviewSave = useCallback(async () => {
     setInterviewModalOpen(false);
@@ -357,6 +390,8 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     handleSaveEditedNote,
     handleStageChange,
     handleReject,
+    handleOfferSent,
+    handleMarkAsHired,
     handleInterviewSave,
     formatDateToSpanish,
   };

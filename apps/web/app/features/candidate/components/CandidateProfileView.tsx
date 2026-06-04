@@ -48,6 +48,7 @@ import { CvViewerModal } from './CvViewerModal';
 import { InterviewModal } from './InterviewModal';
 import { InterviewFormsModal } from './InterviewFormsModal';
 import { useAuth } from '../../../shared/lib/authContext';
+import { OfferManagementCard } from './OfferManagementCard';
 
 interface CandidateProfileViewProps {
   candidate: CandidateMockProfile;
@@ -61,6 +62,8 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
   const canDoHrInterview = role === 'hr' || role === 'admin';
   const canDoTechInterview =
     role === 'hiring_manager' || role === 'tech_lead' || role === 'admin';
+  const canManageOffer =
+    role === 'admin' || role === 'hr' || role === 'hiring_manager';
 
   const formatNoteDate = (iso: string) => {
     const parsed = new Date(iso);
@@ -509,6 +512,16 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                   {candidate.professionalSummary}
                 </Typography>
               </Card>
+            ) : null}
+
+            {canManageOffer ? (
+              <OfferManagementCard
+                applicationId={candidate.applicationId}
+                disabled={isTerminalStage}
+                isMarkingHired={profile.isUpdatingStage}
+                onOfferSent={profile.handleOfferSent}
+                onMarkAsHired={profile.handleMarkAsHired}
+              />
             ) : null}
 
             <Card>
