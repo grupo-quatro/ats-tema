@@ -72,7 +72,8 @@ export function validateSaveInterviewFormPayload(
     }
 
     const hasAnswer = Boolean(item.answer && item.answer.trim().length > 0);
-    const hasRating = item.rating !== undefined && isValidRating(item.rating);
+    const hasRating =
+      item.rating !== undefined && isValidRating(item.rating);
 
     if (!hasAnswer && !hasRating) {
       throw new InterviewFormsValidationError(
@@ -91,10 +92,7 @@ export function validateSaveInterviewFormPayload(
     item.question.toLowerCase().includes('comentarios'),
   );
 
-  if (
-    !commentsQuestion?.answer ||
-    commentsQuestion.answer.trim().length === 0
-  ) {
+  if (!commentsQuestion?.answer || commentsQuestion.answer.trim().length === 0) {
     throw new InterviewFormsValidationError(
       'Los comentarios y observaciones son obligatorios.',
     );

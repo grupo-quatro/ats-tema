@@ -216,7 +216,9 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     const previousNotes = candidacyNotes;
 
     setCandidacyNotes((current) =>
-      current.map((note) => (note.id === noteId ? { ...note, text } : note)),
+      current.map((note) =>
+        note.id === noteId ? { ...note, text } : note,
+      ),
     );
     setIsSavingEditNote(true);
 
@@ -245,7 +247,12 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     } finally {
       setIsSavingEditNote(false);
     }
-  }, [editingText, editingNoteId, candidate.applicationId, candidacyNotes]);
+  }, [
+    editingText,
+    editingNoteId,
+    candidate.applicationId,
+    candidacyNotes,
+  ]);
 
   const handleStageChange = useCallback(async () => {
     if (!selectedStageKey) return;

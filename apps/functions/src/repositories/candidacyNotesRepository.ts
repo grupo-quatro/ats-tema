@@ -7,7 +7,10 @@ import { db } from '../core/firebaseAdmin';
 const APPLICATIONS_COLLECTION = 'applications';
 const CANDIDACY_NOTES_SUBCOLLECTION = 'candidacyNotes';
 
-type FirestoreCandidacyNote = Omit<CandidacyNote, 'createdAt' | 'updatedAt'> & {
+type FirestoreCandidacyNote = Omit<
+  CandidacyNote,
+  'createdAt' | 'updatedAt'
+> & {
   createdAt: Timestamp;
   updatedAt: Timestamp;
 };
@@ -84,7 +87,9 @@ export class CandidacyNotesRepository {
 
       const snapshot = await ref.get();
       if (!snapshot.exists) {
-        throw new CandidacyNotesRepositoryError(`La nota ${noteId} no existe.`);
+        throw new CandidacyNotesRepositoryError(
+          `La nota ${noteId} no existe.`,
+        );
       }
 
       return this.mapToCandidacyNote(snapshot.data() as FirestoreCandidacyNote);

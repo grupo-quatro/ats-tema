@@ -81,9 +81,7 @@ describe('InterviewFormsService.saveInterviewForm', () => {
       expect.objectContaining({
         type: 'hr',
         authorUid: 'uid-hr',
-        questions: [
-          { id: 'q1', question: 'Comunicación', answer: 'Buena', rating: 4 },
-        ],
+        questions: [{ id: 'q1', question: 'Comunicación', answer: 'Buena', rating: 4 }],
       }),
     );
   });

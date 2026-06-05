@@ -68,7 +68,10 @@ function getDevRoleFromToken(token: string | null): EmployeeRole | null {
   return null;
 }
 
-function resolveCallerUid(firebaseUid: string, useEmulators: boolean): string {
+function resolveCallerUid(
+  firebaseUid: string,
+  useEmulators: boolean,
+): string {
   if (!useEmulators) return firebaseUid;
   const token =
     typeof localStorage !== 'undefined'
@@ -84,11 +87,15 @@ async function setSessionCookie(
   idToken: string,
   role?: EmployeeRole | null,
 ): Promise<void> {
-  await fetch('/api/auth/session', {
+  const response = await fetch('/api/auth/session', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ idToken, role }),
   });
+
+  if (!response.ok) {
+    throw new Error('No se pudo crear la sesiÃ³n de usuario.');
+  }
 }
 
 async function clearSessionCookie(): Promise<void> {
@@ -131,16 +138,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             devRole ??
             (tokenResult.claims['role'] as EmployeeRole | undefined) ??
             null;
-          setUser(firebaseUser);
-          setCallerUid(resolveCallerUid(firebaseUser.uid, useEmulators));
-          setRole(claimedRole);
-          setIsPendingApproval(!claimedRole);
           if (claimedRole) {
             await setSessionCookie(
               await firebaseUser.getIdToken(),
               claimedRole,
             );
           }
+          setUser(firebaseUser);
+          setCallerUid(resolveCallerUid(firebaseUser.uid, useEmulators));
+          setRole(claimedRole);
+          setIsPendingApproval(!claimedRole);
         } else if (!auth.currentUser) {
           setUser(null);
           setCallerUid(null);
@@ -167,14 +174,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
         localStorage.setItem('ats-dev-token', token);
         const role = getDevRoleFromToken(token);
+        const idToken = await credential.user.getIdToken();
+        await setSessionCookie(idToken, role);
         setUser(credential.user);
         setCallerUid(resolveCallerUid(credential.user.uid, useEmulators));
         setRole(role);
         setIsPendingApproval(false);
         setAuthReady(true);
         setLoading(false);
-        const idToken = await credential.user.getIdToken();
-        await setSessionCookie(idToken, role);
         return;
       }
 
