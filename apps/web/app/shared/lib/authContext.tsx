@@ -68,10 +68,7 @@ function getDevRoleFromToken(token: string | null): EmployeeRole | null {
   return null;
 }
 
-function resolveCallerUid(
-  firebaseUid: string,
-  useEmulators: boolean,
-): string {
+function resolveCallerUid(firebaseUid: string, useEmulators: boolean): string {
   if (!useEmulators) return firebaseUid;
   const token =
     typeof localStorage !== 'undefined'

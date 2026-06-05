@@ -100,7 +100,10 @@ export const getInterviewForms = onRequest(async (request, response) => {
       return;
     }
 
-    logger.error('Error inesperado obteniendo formularios de entrevista', error);
+    logger.error(
+      'Error inesperado obteniendo formularios de entrevista',
+      error,
+    );
     response
       .status(500)
       .json({ error: 'No se pudieron obtener los formularios.' });

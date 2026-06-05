@@ -123,7 +123,10 @@ export function HrInterviewForm({
       >
         <Box>
           <Typography sx={{ fontWeight: 600 }}>
-            Comunicación <Typography component="span" color="error.main">*</Typography>
+            Comunicación{' '}
+            <Typography component="span" color="error.main">
+              *
+            </Typography>
           </Typography>
           <Typography variant="caption" color="text.secondary">
             Claridad al expresarse, escucha activa
@@ -146,7 +149,10 @@ export function HrInterviewForm({
       >
         <Box>
           <Typography sx={{ fontWeight: 600 }}>
-            Trabajo en Equipo <Typography component="span" color="error.main">*</Typography>
+            Trabajo en Equipo{' '}
+            <Typography component="span" color="error.main">
+              *
+            </Typography>
           </Typography>
           <Typography variant="caption" color="text.secondary">
             Colaboración, adaptabilidad

@@ -101,8 +101,14 @@ function PendingApprovalCard({
 }
 
 export default function LoginPage() {
-  const { user, role, authReady, isPendingApproval, signInWithGoogle, signOut } =
-    useAuth();
+  const {
+    user,
+    role,
+    authReady,
+    isPendingApproval,
+    signInWithGoogle,
+    signOut,
+  } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

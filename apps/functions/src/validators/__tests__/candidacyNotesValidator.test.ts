@@ -17,9 +17,9 @@ describe('validateSaveCandidacyNotePayload', () => {
   });
 
   it('lanza cuando applicationId está ausente', () => {
-    expect(() =>
-      validateSaveCandidacyNotePayload({ text: 'Nota' }),
-    ).toThrow(CandidacyNotesValidationError);
+    expect(() => validateSaveCandidacyNotePayload({ text: 'Nota' })).toThrow(
+      CandidacyNotesValidationError,
+    );
   });
 
   it('lanza cuando text está vacío', () => {
