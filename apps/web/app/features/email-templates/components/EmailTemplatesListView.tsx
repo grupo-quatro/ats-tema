@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Box,
   Button,
@@ -25,6 +26,9 @@ import {
 } from '../hooks/useEmailTemplates';
 import PaginationControls from '@/shared/components/PaginationControls';
 import { usePaginationParams } from '@/shared/lib/usePaginationParams';
+import AppSnackbar, {
+  type AppSnackbarState,
+} from '@/shared/components/AppSnackbar';
 
 const STAGE_COLORS: Record<
   EmailTemplateStage,
@@ -174,9 +178,12 @@ function TemplateCard({
 }
 
 export default function EmailTemplatesListView() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: templates = [], isLoading, isError } = useEmailTemplates();
   const deleteMutation = useDeleteEmailTemplate();
   const { page, setPage } = usePaginationParams();
+  const [snackbar, setSnackbar] = useState<AppSnackbarState>(null);
   const totalPages = Math.max(
     1,
     Math.ceil(templates.length / EMAIL_TEMPLATES_PAGE_SIZE),
@@ -190,11 +197,45 @@ export default function EmailTemplatesListView() {
     if (page > totalPages) setPage(totalPages);
   }, [page, setPage, totalPages]);
 
+  useEffect(() => {
+    const toast = searchParams.get('toast');
+    if (!toast) return;
+
+    const messages: Record<string, string> = {
+      'template-created': 'Plantilla creada correctamente',
+      'template-updated': 'Plantilla actualizada correctamente',
+    };
+
+    const message = messages[toast];
+    if (!message) return;
+
+    setSnackbar({ message, severity: 'success' });
+    router.replace('/dashboard/communication-templates', { scroll: false });
+  }, [router, searchParams]);
+
   function handleDelete(id: string) {
     const shouldDelete = window.confirm(
       '¿Querés eliminar esta plantilla de comunicación?',
     );
-    if (shouldDelete) deleteMutation.mutate(id);
+    if (!shouldDelete) return;
+
+    deleteMutation.mutate(id, {
+      onSuccess: () => {
+        setSnackbar({
+          message: 'Plantilla eliminada correctamente',
+          severity: 'success',
+        });
+      },
+      onError: (error) => {
+        setSnackbar({
+          message:
+            error instanceof Error
+              ? error.message
+              : 'No se pudo eliminar la plantilla.',
+          severity: 'error',
+        });
+      },
+    });
   }
 
   return (
@@ -340,6 +381,7 @@ export default function EmailTemplatesListView() {
           />
         ) : null}
       </Stack>
+      <AppSnackbar snackbar={snackbar} onClose={() => setSnackbar(null)} />
     </Container>
   );
 }

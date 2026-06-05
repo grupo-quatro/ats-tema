@@ -11,7 +11,7 @@ export default function CreateEmailTemplateView() {
 
   async function handleSubmit(payload: CreateEmailTemplateDTO) {
     await createMutation.mutateAsync(payload);
-    router.push('/dashboard/communication-templates');
+    router.push('/dashboard/communication-templates?toast=template-created');
   }
 
   return (

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import {
-  Alert,
   Table,
   TableBody,
   TableCell,
@@ -38,6 +37,9 @@ import type {
 import { useUpdatePositionStatus } from '../hooks/useUpdatePositionStatus';
 import { useDeletePosition } from '../hooks/useDeletePosition';
 import { getJobStatusStyle } from '@/shared/lib/jobStatus';
+import AppSnackbar, {
+  type AppSnackbarState,
+} from '@/shared/components/AppSnackbar';
 
 type Props = {
   jobs: Job[];
@@ -64,32 +66,68 @@ export default function PositionsTable({
   const { mutate: updateStatus } = useUpdatePositionStatus();
   const deletePositionMutation = useDeletePosition();
   const [positionToDelete, setPositionToDelete] = useState<Job | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [snackbar, setSnackbar] = useState<AppSnackbarState>(null);
 
   const isDeletingPosition = deletePositionMutation.isPending;
 
   function handleCloseDeleteDialog() {
     if (isDeletingPosition) return;
     setPositionToDelete(null);
-    setDeleteError(null);
   }
 
   function handleConfirmDeletePosition() {
     if (!positionToDelete) return;
 
-    setDeleteError(null);
+    setSnackbar(null);
     deletePositionMutation.mutate(
       { id: positionToDelete.id },
       {
         onSuccess: () => {
+          setSnackbar({
+            message: 'Posicion eliminada correctamente',
+            severity: 'success',
+          });
           setPositionToDelete(null);
         },
         onError: (error) => {
-          setDeleteError(
-            error instanceof Error
-              ? error.message
-              : 'No se pudo eliminar la posicion.',
-          );
+          setSnackbar({
+            message:
+              error instanceof Error
+                ? error.message
+                : 'No se pudo eliminar la posicion.',
+            severity: 'error',
+          });
+        },
+      },
+    );
+  }
+
+  function handleToggleStatus(job: Job) {
+    const nextStatus = job.status === 'open' ? 'closed' : 'open';
+
+    updateStatus(
+      {
+        id: job.id,
+        status: nextStatus,
+      },
+      {
+        onSuccess: () => {
+          setSnackbar({
+            message:
+              nextStatus === 'open'
+                ? 'Posicion abierta correctamente'
+                : 'Posicion cerrada correctamente',
+            severity: 'success',
+          });
+        },
+        onError: (error) => {
+          setSnackbar({
+            message:
+              error instanceof Error
+                ? error.message
+                : 'No se pudo actualizar el estado de la posicion.',
+            severity: 'error',
+          });
         },
       },
     );
@@ -241,12 +279,7 @@ export default function PositionsTable({
                           ? 'Cerrar posición'
                           : 'Abrir posición'
                       }
-                      onClick={() =>
-                        updateStatus({
-                          id: job.id,
-                          status: job.status === 'open' ? 'closed' : 'open',
-                        })
-                      }
+                      onClick={() => handleToggleStatus(job)}
                       sx={actionButtonSx}
                     >
                       {job.status === 'open' ? (
@@ -258,6 +291,7 @@ export default function PositionsTable({
                     <IconButton
                       size="small"
                       aria-label={`Eliminar ${job.title}`}
+                      onClick={() => setPositionToDelete(job)}
                       sx={actionButtonSx}
                     >
                       <Trash2 size={16} />
@@ -282,11 +316,6 @@ export default function PositionsTable({
             {positionToDelete ? ` "${positionToDelete.title}"` : ''}. No
             aparecera en el dashboard ni en el portal de empleos.
           </DialogContentText>
-          {deleteError ? (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              {deleteError}
-            </Alert>
-          ) : null}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button
@@ -305,6 +334,7 @@ export default function PositionsTable({
           </Button>
         </DialogActions>
       </Dialog>
+      <AppSnackbar snackbar={snackbar} onClose={() => setSnackbar(null)} />
     </TableContainer>
   );
 }

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Alert,
   Box,
   Button,
   CircularProgress,
@@ -10,6 +9,7 @@ import {
 } from '@mui/material';
 import { saveCandidacyNote } from '../../../shared/api/candidacyNotesApi';
 import { saveInterviewForm } from '../../../shared/api/interviewFormsApi';
+import AppSnackbar from '@/shared/components/AppSnackbar';
 
 interface Props {
   applicationId: string;
@@ -210,12 +210,6 @@ export function HrInterviewForm({
         }
       />
 
-      {errorMessage && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {errorMessage}
-        </Alert>
-      )}
-
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
         <Button onClick={onClose} disabled={isSaving}>
           Cancelar
@@ -231,6 +225,12 @@ export function HrInterviewForm({
           {isSaving ? 'Enviando...' : 'Enviar Evaluación'}
         </Button>
       </Box>
+      <AppSnackbar
+        snackbar={
+          errorMessage ? { message: errorMessage, severity: 'error' } : null
+        }
+        onClose={() => setErrorMessage('')}
+      />
     </Box>
   );
 }

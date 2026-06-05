@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import {
-  Alert,
   Box,
   Button,
   Card,
@@ -21,7 +20,6 @@ import {
   MenuItem,
   Radio,
   RadioGroup,
-  Snackbar,
   Stack,
   TextField,
   Typography,
@@ -49,6 +47,7 @@ import { InterviewModal } from './InterviewModal';
 import { InterviewFormsModal } from './InterviewFormsModal';
 import { useAuth } from '../../../shared/lib/authContext';
 import { OfferManagementCard } from './OfferManagementCard';
+import AppSnackbar from '@/shared/components/AppSnackbar';
 
 interface CandidateProfileViewProps {
   candidate: CandidateMockProfile;
@@ -974,21 +973,10 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={Boolean(profile.snackbar)}
-        autoHideDuration={3000}
+      <AppSnackbar
+        snackbar={profile.snackbar}
         onClose={() => profile.setSnackbar(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        {profile.snackbar ? (
-          <Alert
-            severity={profile.snackbar.severity}
-            onClose={() => profile.setSnackbar(null)}
-          >
-            {profile.snackbar.message}
-          </Alert>
-        ) : undefined}
-      </Snackbar>
+      />
     </Box>
   );
 }
