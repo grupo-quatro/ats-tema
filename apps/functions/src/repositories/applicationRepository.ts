@@ -273,6 +273,34 @@ export class ApplicationsRepository {
     }
   }
 
+  async getLatestStageHistoryEntry(
+    applicationId: string,
+  ): Promise<StageHistoryEntry | null> {
+    try {
+      const snapshot = await this.collection
+        .doc(applicationId)
+        .collection('stageHistory')
+        .orderBy('changedAt', 'desc')
+        .limit(1)
+        .get();
+
+      if (snapshot.empty) {
+        return null;
+      }
+
+      const data = snapshot.docs[0].data();
+      return {
+        ...data,
+        changedAt: (data.changedAt as Timestamp).toDate(),
+      } as StageHistoryEntry;
+    } catch (error) {
+      throw new ApplicationsRepositoryError(
+        `No se pudo obtener el último historial de etapa para ${applicationId}.`,
+        error,
+      );
+    }
+  }
+
   async getStageHistory(applicationId: string): Promise<StageHistoryEntry[]> {
     try {
       const snapshot = await this.collection

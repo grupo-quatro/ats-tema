@@ -7,6 +7,7 @@ export interface Employee {
   role: EmployeeRole;
   department: string;
   active: boolean;
+  calendarLink?: string; // URL de Agenda de Citas de Google Calendar del reclutador
   createdAt: Date;
   updatedAt: Date;
 }

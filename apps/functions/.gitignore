@@ -1,0 +1,11 @@
+# Dependencias
+node_modules/
+
+# Build
+lib/
+
+# Env
+.env*
+
+# Archivos de desarrollo local — nunca se pushean
+src/callables/dev/
