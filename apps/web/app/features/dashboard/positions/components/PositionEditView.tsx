@@ -15,7 +15,6 @@ import {
   Paper,
   Select,
   MenuItem,
-  Snackbar,
   Stack,
   TextField,
   Typography,
@@ -50,6 +49,9 @@ import {
   updatePositionStatus,
 } from '@/shared/api/positionsApi';
 import { getJobStatusStyle } from '@/shared/lib/jobStatus';
+import AppSnackbar, {
+  type AppSnackbarState,
+} from '@/shared/components/AppSnackbar';
 
 type EditableSkill = Skill & {
   years: number;
@@ -492,7 +494,7 @@ function SkillEditor({
 export default function PositionEditView({ job, onSave }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [message, setMessage] = useState('');
+  const [snackbar, setSnackbar] = useState<AppSnackbarState>(null);
   const [status, setStatus] = useState<JobStatus>(job.status);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const statusStyle = getJobStatusStyle(status);
@@ -586,10 +588,20 @@ export default function PositionEditView({ job, onSave }: Props) {
       );
       await queryClient.invalidateQueries({ queryKey: ['positions'] });
       await queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      setMessage('Estado actualizado correctamente');
+      setSnackbar({
+        message: 'Estado actualizado correctamente',
+        severity: 'success',
+      });
     } catch (error) {
       console.error('Error updating position status:', error);
       setStatus(previousStatus);
+      setSnackbar({
+        message:
+          error instanceof Error
+            ? error.message
+            : 'No se pudo actualizar el estado',
+        severity: 'error',
+      });
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -623,21 +635,37 @@ export default function PositionEditView({ job, onSave }: Props) {
         ),
       };
 
-      if (onSave) {
-        await onSave(job.id, payload);
-      } else {
-        await updatePosition({
-          id: job.id,
-          ...payload,
-        } as UpdatePositionPayload);
-      }
+      try {
+        if (onSave) {
+          await onSave(job.id, payload);
+        } else {
+          await updatePosition({
+            id: job.id,
+            ...payload,
+          } as UpdatePositionPayload);
+        }
 
-      await queryClient.invalidateQueries({ queryKey: ['positions'] });
-      await queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      setMessage('Cambios guardados correctamente');
-      setTimeout(() => {
-        router.push('/dashboard/positions');
-      }, 900);
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['positions'] }),
+          queryClient.invalidateQueries({ queryKey: ['departments'] }),
+          queryClient.invalidateQueries({ queryKey: ['jobs'] }),
+        ]);
+        setSnackbar({
+          message: 'Cambios guardados correctamente',
+          severity: 'success',
+        });
+        setTimeout(() => {
+          router.push('/dashboard/positions');
+        }, 900);
+      } catch (error) {
+        setSnackbar({
+          message:
+            error instanceof Error
+              ? error.message
+              : 'No se pudieron guardar los cambios',
+          severity: 'error',
+        });
+      }
     },
   });
 
@@ -1318,30 +1346,11 @@ export default function PositionEditView({ job, onSave }: Props) {
         </Box>
       </Container>
 
-      <Snackbar
-        open={!!message}
+      <AppSnackbar
+        snackbar={snackbar}
+        onClose={() => setSnackbar(null)}
         autoHideDuration={2200}
-        onClose={() => setMessage('')}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert
-          severity="success"
-          variant="filled"
-          onClose={() => setMessage('')}
-          sx={{
-            minWidth: { xs: 'calc(100vw - 32px)', sm: 420 },
-            py: 1.5,
-            px: 2,
-            borderRadius: '12px',
-            boxShadow: '0 18px 40px rgba(15, 23, 42, 0.24)',
-            fontSize: '0.95rem',
-            fontWeight: 700,
-            alignItems: 'center',
-          }}
-        >
-          {message}
-        </Alert>
-      </Snackbar>
+      />
     </Box>
   );
 }

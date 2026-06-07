@@ -8,7 +8,10 @@ import {
   InterviewFormForbiddenError,
   InterviewFormsService,
 } from '../services/interviewFormsService';
-import { ApplicationNotFoundError } from '../services/updateApplicationService';
+import {
+  ApplicationNotFoundError,
+  ApplicationStageTransitionError,
+} from '../services/updateApplicationService';
 import {
   InterviewFormsValidationError,
   validateGetInterviewFormsPayload,
@@ -56,6 +59,11 @@ export const saveInterviewForm = onRequest(async (request, response) => {
       return;
     }
 
+    if (error instanceof ApplicationStageTransitionError) {
+      response.status(409).json({ error: error.message });
+      return;
+    }
+
     logger.error('Error inesperado guardando formulario de entrevista', error);
     response.status(500).json({ error: 'No se pudo guardar el formulario.' });
   }
@@ -100,7 +108,10 @@ export const getInterviewForms = onRequest(async (request, response) => {
       return;
     }
 
-    logger.error('Error inesperado obteniendo formularios de entrevista', error);
+    logger.error(
+      'Error inesperado obteniendo formularios de entrevista',
+      error,
+    );
     response
       .status(500)
       .json({ error: 'No se pudieron obtener los formularios.' });

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -102,22 +101,61 @@ function PendingApprovalCard({
 }
 
 export default function LoginPage() {
-  const { user, role, isPendingApproval, signInWithGoogle, signOut } =
-    useAuth();
-  const router = useRouter();
+  const {
+    user,
+    role,
+    authReady,
+    isPendingApproval,
+    signInWithGoogle,
+    signOut,
+  } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-
-
   useEffect(() => {
     if (user && role) {
-      router.replace('/dashboard/positions');
+      window.location.replace('/dashboard/positions');
     }
-  }, [user, role, router]);
+  }, [user, role]);
+
   // Si ya tiene rol, redirigir al dashboard
   if (user && role) {
-    return null;
+    return (
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          py: 8,
+          px: 2,
+        }}
+      >
+        <Stack spacing={2} sx={{ alignItems: 'center' }}>
+          <CircularProgress size={28} />
+          <Typography variant="body2" color="text.secondary">
+            Redirigiendo al dashboard...
+          </Typography>
+        </Stack>
+      </Box>
+    );
+  }
+
+  if (!authReady) {
+    return (
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          py: 8,
+          px: 2,
+        }}
+      >
+        <CircularProgress size={28} />
+      </Box>
+    );
   }
 
   async function handleSignIn(devRole?: DevRole) {
@@ -125,7 +163,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signInWithGoogle(devRole);
-      router.push('/dashboard/positions');
+      window.location.replace('/dashboard/positions');
     } catch (err) {
       if (err instanceof DomainNotAllowedError) {
         setError(

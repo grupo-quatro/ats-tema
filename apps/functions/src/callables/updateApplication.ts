@@ -1,15 +1,21 @@
 import { logger } from 'firebase-functions';
 import { onRequest } from 'firebase-functions/v2/https';
-
 import type { UpdateApplicationStagePayload } from '@ats/shared-types';
-
+import { OAuth2Client } from 'google-auth-library';
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
 import { ApplicationsRepository } from '../repositories/applicationRepository';
+import { EmailLogRepository } from '../repositories/emailLogRepository';
+import { EmailTemplateRepository } from '../repositories/emailTemplateRepository';
+import { OrgConfigRepository } from '../repositories/orgConfigRepository';
+import { UserRepository } from '../repositories/userRepository';
 import {
   ApplicationNotFoundError,
   ApplicationStageTransitionError,
   UpdateApplicationStageService,
 } from '../services/updateApplicationService';
+import { GmailSenderService } from '../services/gmailSenderService';
+import { StageEmailService } from '../services/stageEmailService';
+import { TemplateResolverService } from '../services/templateResolverService';
 import {
   validateUpdateApplicationStagePayload,
   UpdateApplicationValidationError,
@@ -20,8 +26,27 @@ interface UpdateApplicationPayload {
   fortalezas: string[];
 }
 
+const oauth2Client = new OAuth2Client(
+  process.env.GOOGLE_OAUTH_CLIENT_ID,
+  process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+);
+
+//TODO: this coudl be a factory method
 const applicationsRepository = new ApplicationsRepository();
-const updateApplicationStageService = new UpdateApplicationStageService();
+const updateApplicationStageService = new UpdateApplicationStageService(
+  undefined,
+  undefined,
+  undefined,
+  new StageEmailService(
+    new EmailTemplateRepository(),
+    new EmailLogRepository(),
+    new UserRepository(),
+    new OrgConfigRepository(),
+    new TemplateResolverService(),
+    new GmailSenderService(),
+    oauth2Client,
+  ),
+);
 
 export const updateApplication = onRequest(async (request, response) => {
   try {

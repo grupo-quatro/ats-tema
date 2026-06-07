@@ -17,7 +17,7 @@ export default function Navbar() {
     >
       <Toolbar sx={{ justifyContent: 'space-between', px: { xs: 2, md: 4 } }}>
         <Link href="/" style={{ textDecoration: 'none' }}>
-          <Image src={logo} alt="TEMA" height={40} />
+          <Image src={logo} alt="TEMA" height={40} priority />
         </Link>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Link href="/dashboard/positions" style={{ textDecoration: 'none' }}>

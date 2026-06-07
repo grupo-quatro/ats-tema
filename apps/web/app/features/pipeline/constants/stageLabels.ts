@@ -1,3 +1,4 @@
+import { STAGE_CONFIG } from '@ats/shared-types';
 import type { ApplicationStage } from '@ats/shared-types';
 
 export type VisibleApplicationStage = Exclude<
@@ -5,24 +6,15 @@ export type VisibleApplicationStage = Exclude<
   'profile_pending'
 >;
 
-export const VISIBLE_STAGE_LABELS: Record<VisibleApplicationStage, string> = {
-  applied: 'Postulacion recibida',
-  screening: 'En revision',
-  cv_submitted: 'CV presentado al area',
-  interview_1_scheduled: 'Entrevista 1 agendada',
-  interview_1_done: 'Entrevista 1 realizada / en evaluacion',
-  interview_2_scheduled: 'Entrevista 2 agendada',
-  interview_2_done: 'Entrevista 2 realizada / en evaluacion',
-  offer_sent: 'Oferta enviada',
-  hired: 'Contratado',
-  rejected: 'Descartado',
-  withdrawn: 'Retirado',
-};
+export const STAGE_LABELS = Object.fromEntries(
+  Object.entries(STAGE_CONFIG).map(([s, c]) => [s, c.label]),
+) as Record<ApplicationStage, string>;
 
-export const STAGE_LABELS: Record<ApplicationStage, string> = {
-  profile_pending: VISIBLE_STAGE_LABELS.applied,
-  ...VISIBLE_STAGE_LABELS,
-};
+export const VISIBLE_STAGE_LABELS = Object.fromEntries(
+  Object.entries(STAGE_CONFIG)
+    .filter(([s]) => s !== 'profile_pending')
+    .map(([s, c]) => [s, c.label]),
+) as Record<VisibleApplicationStage, string>;
 
 export function isVisibleApplicationStage(
   stage: ApplicationStage,

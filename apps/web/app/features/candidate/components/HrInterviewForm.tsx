@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Alert,
   Box,
   Button,
   CircularProgress,
@@ -10,19 +9,15 @@ import {
 } from '@mui/material';
 import { saveCandidacyNote } from '../../../shared/api/candidacyNotesApi';
 import { saveInterviewForm } from '../../../shared/api/interviewFormsApi';
+import AppSnackbar from '@/shared/components/AppSnackbar';
 
 interface Props {
   applicationId: string;
-  candidateName: string;
   onClose: () => void;
   onSave?: () => void | Promise<void>;
 }
 
-export function HrInterviewForm({
-  /* candidateName, */ applicationId,
-  onClose,
-  onSave,
-}: Props) {
+export function HrInterviewForm({ applicationId, onClose, onSave }: Props) {
   const [communication, setCommunication] = useState<number>(0);
   const [teamwork, setTeamwork] = useState<number>(0);
   const [salaryExpectation, setSalaryExpectation] = useState('');
@@ -131,7 +126,10 @@ export function HrInterviewForm({
       >
         <Box>
           <Typography sx={{ fontWeight: 600 }}>
-            Comunicación <Typography component="span" color="error.main">*</Typography>
+            Comunicación{' '}
+            <Typography component="span" color="error.main">
+              *
+            </Typography>
           </Typography>
           <Typography variant="caption" color="text.secondary">
             Claridad al expresarse, escucha activa
@@ -154,7 +152,10 @@ export function HrInterviewForm({
       >
         <Box>
           <Typography sx={{ fontWeight: 600 }}>
-            Trabajo en Equipo <Typography component="span" color="error.main">*</Typography>
+            Trabajo en Equipo{' '}
+            <Typography component="span" color="error.main">
+              *
+            </Typography>
           </Typography>
           <Typography variant="caption" color="text.secondary">
             Colaboración, adaptabilidad
@@ -219,12 +220,6 @@ export function HrInterviewForm({
         }
       />
 
-      {errorMessage && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {errorMessage}
-        </Alert>
-      )}
-
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
         <Button onClick={onClose} disabled={isSaving}>
           Cancelar
@@ -240,6 +235,12 @@ export function HrInterviewForm({
           {isSaving ? 'Enviando...' : 'Enviar Evaluación'}
         </Button>
       </Box>
+      <AppSnackbar
+        snackbar={
+          errorMessage ? { message: errorMessage, severity: 'error' } : null
+        }
+        onClose={() => setErrorMessage('')}
+      />
     </Box>
   );
 }

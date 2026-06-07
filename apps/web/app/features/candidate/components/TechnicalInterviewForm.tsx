@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Alert,
   Box,
   Button,
   Chip,
@@ -13,11 +12,11 @@ import {
 import type { Skill } from '@ats/shared-types';
 import { saveCandidacyNote } from '../../../shared/api/candidacyNotesApi';
 import { saveInterviewForm } from '../../../shared/api/interviewFormsApi';
+import AppSnackbar from '@/shared/components/AppSnackbar';
 
 interface Props {
   applicationId: string;
   skills: Skill[];
-  candidateName: string;
   onClose: () => void;
   onSave?: () => void | Promise<void>;
 }
@@ -25,7 +24,6 @@ interface Props {
 export function TechnicalInterviewForm({
   applicationId,
   skills,
-  // candidateName,
   onClose,
   onSave,
 }: Props) {
@@ -249,12 +247,6 @@ export function TechnicalInterviewForm({
         }
       />
 
-      {errorMessage && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {errorMessage}
-        </Alert>
-      )}
-
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
         <Button onClick={onClose} disabled={isSaving}>
           Cancelar
@@ -270,6 +262,12 @@ export function TechnicalInterviewForm({
           {isSaving ? 'Enviando...' : 'Enviar Evaluación'}
         </Button>
       </Box>
+      <AppSnackbar
+        snackbar={
+          errorMessage ? { message: errorMessage, severity: 'error' } : null
+        }
+        onClose={() => setErrorMessage('')}
+      />
     </Box>
   );
 }

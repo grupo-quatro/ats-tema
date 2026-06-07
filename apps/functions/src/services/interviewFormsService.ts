@@ -8,11 +8,15 @@ import type {
   SaveInterviewFormResponse,
 } from '@ats/shared-types';
 
+import { findNextStageForTrigger } from '@ats/shared-types';
 import type { AuthenticatedUser } from '../core/httpAuth';
 import { auth } from '../core/firebaseAdmin';
 import { ApplicationsRepository } from '../repositories/applicationRepository';
 import { InterviewFormsRepository } from '../repositories/interviewFormsRepository';
-import { ApplicationNotFoundError } from './updateApplicationService';
+import {
+  ApplicationNotFoundError,
+  UpdateApplicationStageService,
+} from './updateApplicationService';
 
 export class InterviewFormForbiddenError extends Error {
   constructor() {
@@ -32,6 +36,7 @@ export class InterviewFormsService {
   constructor(
     private readonly applicationsRepository: ApplicationsRepository = new ApplicationsRepository(),
     private readonly interviewFormsRepository: InterviewFormsRepository = new InterviewFormsRepository(),
+    private readonly updateApplicationStageService: UpdateApplicationStageService = new UpdateApplicationStageService(),
   ) {}
 
   async saveInterviewForm(
@@ -78,6 +83,17 @@ export class InterviewFormsService {
         authorRole,
       },
     );
+
+    const nextStage = findNextStageForTrigger(
+      application.stage,
+      'on_interview_submision',
+    );
+    if (nextStage) {
+      await this.updateApplicationStageService.updateStage(
+        { applicationId, stage: nextStage },
+        caller.uid,
+      );
+    }
 
     return {
       id,

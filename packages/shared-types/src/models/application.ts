@@ -2,14 +2,23 @@
 import type { SkillMatchStats } from './skillMatch';
 
 export type ApplicationStage =
-  | 'profile_pending' // TODO: migrar a 'applied' cuando se consolide el flujo CV (candidateService)
+  | 'profile_pending'
   | 'applied'
   | 'screening'
   | 'cv_submitted'
-  | 'interview_1_scheduled'
-  | 'interview_1_done'
-  | 'interview_2_scheduled'
-  | 'interview_2_done'
+  | 'schedule_hr_1'
+  | 'hr_1_scheduled'
+  | 'hr_1_done'
+  | 'schedule_hr_2'
+  | 'hr_2_scheduled'
+  | 'hr_2_done'
+  | 'schedule_tech_1'
+  | 'tech_1_scheduled'
+  | 'tech_1_done'
+  | 'schedule_tech_2'
+  | 'tech_2_scheduled'
+  | 'tech_2_done'
+  | 'send_offer'
   | 'offer_sent'
   | 'hired'
   | 'rejected'

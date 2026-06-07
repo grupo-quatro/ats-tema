@@ -1,15 +1,38 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Application } from '@ats/shared-types';
+import type { Application, Candidate, Job } from '@ats/shared-types';
 import {
   UpdateApplicationStageService,
   ApplicationNotFoundError,
   ApplicationStageTransitionError,
 } from '../updateApplicationService';
+import type { StageEmailService } from '../stageEmailService';
 
-vi.mock('../../core/firebaseAdmin', () => ({
-  auth: {
-    getUser: vi.fn().mockResolvedValue({ email: 'test@example.com' }),
-  },
+vi.mock('../../core/firebaseAdmin', () => {
+  const collectionProxy: Record<string, ReturnType<typeof vi.fn>> = {
+    doc: vi.fn().mockReturnThis(),
+    get: vi.fn(),
+    where: vi.fn().mockReturnThis(),
+    orderBy: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockReturnThis(),
+    add: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    set: vi.fn(),
+    collection: vi.fn().mockReturnThis(),
+  };
+
+  return {
+    auth: {
+      getUser: vi.fn().mockResolvedValue({ email: 'test@example.com' }),
+    },
+    db: {
+      collection: vi.fn().mockReturnValue(collectionProxy),
+    },
+  };
+});
+
+vi.mock('firebase-functions', () => ({
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
 const makeApplication = (
@@ -26,6 +49,38 @@ const makeApplication = (
   ...overrides,
 });
 
+const makeCandidate = (overrides: Partial<Candidate> = {}): Candidate => ({
+  id: 'cand-1',
+  firstName: 'Ana',
+  lastName: 'García',
+  email: 'ana@example.com',
+  profileStatus: 'completed',
+  registrationType: 'specific',
+  registrationSource: 'manual',
+  cvParseStatus: 'not_required',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  ...overrides,
+});
+
+const makeJob = (overrides: Partial<Job> = {}): Job => ({
+  id: 'job-1',
+  title: 'Desarrollador Senior',
+  department: 'Tecnología',
+  seniority: 'Senior',
+  location: 'remote',
+  description: 'Descripción del puesto',
+  skills: [],
+  slug: 'desarrollador-senior',
+  status: 'open',
+  responsabilities: [],
+  benefits: [],
+  hiringManagerId: 'manager-1',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  ...overrides,
+});
+
 const mockRepo = {
   findById: vi.fn(),
   update: vi.fn(),
@@ -34,6 +89,18 @@ const mockRepo = {
   create: vi.fn(),
   addStageHistoryEntry: vi.fn(),
 };
+
+const mockCandidateRepo = {
+  findById: vi.fn(),
+};
+
+const mockJobRepo = {
+  findById: vi.fn(),
+};
+
+const mockStageEmailService: StageEmailService = {
+  sendIfTemplateExists: vi.fn(),
+} as unknown as StageEmailService;
 
 describe('UpdateApplicationStageService.updateStage', () => {
   let service: UpdateApplicationStageService;
@@ -217,5 +284,54 @@ describe('UpdateApplicationStageService.updateStage', () => {
         'uid-test',
       ),
     ).rejects.toThrow();
+  });
+
+  it('retorna { ok: true } y llama a stageEmailService.sendIfTemplateExists cuando el email se envía correctamente', async () => {
+    mockRepo.findById.mockResolvedValue(makeApplication());
+    mockRepo.update.mockResolvedValue(undefined);
+    mockCandidateRepo.findById.mockResolvedValue(makeCandidate());
+    mockJobRepo.findById.mockResolvedValue(makeJob());
+    vi.mocked(mockStageEmailService.sendIfTemplateExists).mockResolvedValue(
+      false,
+    );
+
+    const serviceWithEmail = new UpdateApplicationStageService(
+      mockRepo as any,
+      mockCandidateRepo as any,
+      mockJobRepo as any,
+      mockStageEmailService,
+    );
+
+    const result = await serviceWithEmail.updateStage(
+      { applicationId: 'app-1', stage: 'screening' },
+      'uid-test',
+    );
+
+    expect(result).toEqual({ ok: true });
+    expect(mockStageEmailService.sendIfTemplateExists).toHaveBeenCalledOnce();
+  });
+
+  it('retorna { ok: true } aunque stageEmailService.sendIfTemplateExists falle internamente', async () => {
+    mockRepo.findById.mockResolvedValue(makeApplication());
+    mockRepo.update.mockResolvedValue(undefined);
+    mockCandidateRepo.findById.mockResolvedValue(makeCandidate());
+    mockJobRepo.findById.mockResolvedValue(makeJob());
+    vi.mocked(mockStageEmailService.sendIfTemplateExists).mockRejectedValue(
+      new Error('Error inesperado en el servicio de email'),
+    );
+
+    const serviceWithEmail = new UpdateApplicationStageService(
+      mockRepo as any,
+      mockCandidateRepo as any,
+      mockJobRepo as any,
+      mockStageEmailService,
+    );
+
+    const result = await serviceWithEmail.updateStage(
+      { applicationId: 'app-1', stage: 'screening' },
+      'uid-test',
+    );
+
+    expect(result).toEqual({ ok: true });
   });
 });

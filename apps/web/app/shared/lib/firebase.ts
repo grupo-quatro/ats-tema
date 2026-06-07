@@ -10,6 +10,7 @@ import {
   connectAuthEmulator,
   GoogleAuthProvider,
 } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -19,7 +20,7 @@ const firebaseConfig = {
 };
 
 const isNew = getApps().length === 0;
-const app = isNew ? initializeApp(firebaseConfig) : getApps()[0];
+const app = isNew ? initializeApp(firebaseConfig) : getApps()[0]!;
 
 export const functions = getFunctions(
   app,
@@ -27,6 +28,7 @@ export const functions = getFunctions(
 );
 export const storage = getStorage(app);
 export const auth = getAuth(app);
+export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
 
 const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === 'true';
@@ -41,6 +43,7 @@ if (isNew && useEmulators) {
     Number(functionsEmulatorPort),
   );
   connectStorageEmulator(storage, '127.0.0.1', 9199);
+  connectFirestoreEmulator(db, '127.0.0.1', 8080);
 }
 
 /** @deprecated Usar los módulos en shared/api/ con fetch hacia onRequest en lugar de onCall */

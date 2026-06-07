@@ -33,6 +33,16 @@ service cloud.firestore {
       allow read, write: if hasRole('admin');
     }
 
+    match /emailTemplates/{templateId} {
+      allow read: if isAuth();
+      allow write: if isAdminOrHr();
+    }
+
+    match /emailLogs/{logId} {
+      allow read: if isAdminOrHr();
+      allow write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

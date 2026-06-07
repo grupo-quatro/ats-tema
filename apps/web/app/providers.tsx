@@ -7,6 +7,7 @@ import { useState } from 'react';
 import theme from './lib/theme';
 import ThemeRegistry from './theme-registry';
 import { AuthProvider } from './shared/lib/authContext';
+import GmailCodeHandler from './features/gmail/components/GmailCodeHandler';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -25,7 +26,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider theme={theme}>
           <CssBaseline />
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <GmailCodeHandler />
+            {children}
+          </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>
     </ThemeRegistry>

@@ -20,7 +20,7 @@ export default function EditEmailTemplateView({
 
   async function handleSubmit(payload: UpdateEmailTemplateDTO) {
     await updateMutation.mutateAsync(payload);
-    router.push('/dashboard/communication-templates');
+    router.push('/dashboard/communication-templates?toast=template-updated');
   }
 
   if (isLoading) {

@@ -19,7 +19,13 @@ import {
   updateApplicationStage,
 } from '@/shared/api/applicationsApi';
 import { CANDIDATE_STAGE_TO_APP_STAGE } from '../utils/candidateProfile.utils';
-import type { StageHistoryEntry } from '@ats/shared-types';
+import {
+  PIPELINE_ORDER,
+  STAGE_CONFIG,
+  isValidTransition,
+  type ApplicationStage,
+  type StageHistoryEntry,
+} from '@ats/shared-types';
 
 type SnackbarState = { message: string; severity: 'success' | 'error' } | null;
 
@@ -137,17 +143,52 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     }
   }, [candidate.applicationId]);
 
+  const refreshStageHistory = useCallback(async () => {
+    if (!candidate.applicationId) return;
+    const history = await getStageHistory(candidate.applicationId);
+    setRealStageHistory(toVisibleStageHistory(history));
+  }, [candidate.applicationId]);
+
   useEffect(() => {
     if (!candidate.applicationId) return;
-    getStageHistory(candidate.applicationId)
-      .then((history) => setRealStageHistory(toVisibleStageHistory(history)))
-      .catch(() => {});
+    refreshStageHistory().catch(() => {});
     loadCandidacyNotes();
-  }, [candidate.applicationId, loadCandidacyNotes]);
+  }, [candidate.applicationId, loadCandidacyNotes, refreshStageHistory]);
 
-  const pendingStages = stageHistory.filter(
-    (stage) => stage.status === 'pending' && stage.key !== 'descartado',
-  );
+  // ApplicationStage real del stage actual (para validar transiciones y calcular interviewNumber)
+  const currentApplicationStage: ApplicationStage | null = (() => {
+    const currentEntry = stageHistory.find((s) => s.status === 'current');
+    if (!currentEntry) return null;
+    return CANDIDATE_STAGE_TO_APP_STAGE[currentEntry.key] ?? null;
+  })();
+
+  // Filtra solo stages que el recruiter puede seleccionar manualmente:
+  // transitionMode === 'recruiter_action' y transición válida desde el stage actual
+  const pendingStages = stageHistory.filter((stage) => {
+    if (stage.status !== 'pending' || stage.key === 'descartado') return false;
+    const appStage = CANDIDATE_STAGE_TO_APP_STAGE[stage.key] as
+      | ApplicationStage
+      | undefined;
+    if (!appStage) return false;
+    if (STAGE_CONFIG[appStage]?.transitionMode !== 'recruiter_action')
+      return false;
+    if (!currentApplicationStage) return false;
+    return isValidTransition(currentApplicationStage, appStage);
+  });
+
+  // Determina el número de entrevista correcto según el tipo (hr o tech).
+  // Para RRHH: es la segunda si el stage actual ya superó hr_1_done en el pipeline.
+  // Para técnica: es la segunda si el stage actual ya superó tech_1_done en the pipeline.
+  // Se resuelve en tiempo de apertura del modal usando interviewType.
+  const interviewNumber: 1 | 2 = (() => {
+    if (!currentApplicationStage) return 1;
+    const pipelineIdx = PIPELINE_ORDER.indexOf(currentApplicationStage);
+    const threshold =
+      interviewType === 'hr'
+        ? PIPELINE_ORDER.indexOf('hr_1_done')
+        : PIPELINE_ORDER.indexOf('tech_1_done');
+    return pipelineIdx > threshold ? 2 : 1;
+  })();
 
   const openInterviewModal = useCallback((type: 'tech' | 'hr') => {
     setInterviewType(type);
@@ -207,9 +248,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     const previousNotes = candidacyNotes;
 
     setCandidacyNotes((current) =>
-      current.map((note) =>
-        note.id === noteId ? { ...note, text } : note,
-      ),
+      current.map((note) => (note.id === noteId ? { ...note, text } : note)),
     );
     setIsSavingEditNote(true);
 
@@ -238,12 +277,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     } finally {
       setIsSavingEditNote(false);
     }
-  }, [
-    editingText,
-    editingNoteId,
-    candidate.applicationId,
-    candidacyNotes,
-  ]);
+  }, [editingText, editingNoteId, candidate.applicationId, candidacyNotes]);
 
   const handleStageChange = useCallback(async () => {
     if (!selectedStageKey) return;
@@ -262,9 +296,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
         message: `Etapa actualizada a "${STAGE_LABELS[selectedStageKey]}"`,
         severity: 'success',
       });
-      getStageHistory(candidate.applicationId)
-        .then((history) => setRealStageHistory(toVisibleStageHistory(history)))
-        .catch(() => {});
+      refreshStageHistory().catch(() => {});
     } catch {
       setSnackbar({
         message: 'No se pudo cambiar la etapa',
@@ -273,7 +305,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     } finally {
       setIsUpdatingStage(false);
     }
-  }, [selectedStageKey, candidate.applicationId]);
+  }, [selectedStageKey, candidate.applicationId, refreshStageHistory]);
 
   const handleReject = useCallback(async () => {
     if (!rejectReason.trim()) return;
@@ -293,9 +325,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
       setRejectDialogOpen(false);
       setRejectReason('');
       setSnackbar({ message: 'Candidato rechazado', severity: 'success' });
-      getStageHistory(candidate.applicationId)
-        .then((history) => setRealStageHistory(toVisibleStageHistory(history)))
-        .catch(() => {});
+      refreshStageHistory().catch(() => {});
     } catch {
       setSnackbar({
         message: 'No se pudo rechazar al candidato',
@@ -304,7 +334,40 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     } finally {
       setIsUpdatingStage(false);
     }
-  }, [rejectReason, candidate.applicationId]);
+  }, [rejectReason, candidate.applicationId, refreshStageHistory]);
+
+  const handleOfferSent = useCallback(() => {
+    setStageHistory((current) => applyStageChange(current, 'oferta_enviada'));
+    setCurrentStage(STAGE_LABELS.oferta_enviada);
+    refreshStageHistory().catch(() => {});
+  }, [refreshStageHistory]);
+
+  const handleMarkAsHired = useCallback(async () => {
+    setIsUpdatingStage(true);
+    try {
+      await updateApplicationStage({
+        applicationId: candidate.applicationId,
+        stage: 'hired',
+        notes:
+          'Oferta aceptada por el candidato. Contratación confirmada por RR.HH.',
+      });
+
+      setStageHistory((current) => applyStageChange(current, 'contratado'));
+      setCurrentStage(STAGE_LABELS.contratado);
+      setSnackbar({
+        message: 'Candidato marcado como contratado',
+        severity: 'success',
+      });
+      refreshStageHistory().catch(() => {});
+    } catch {
+      setSnackbar({
+        message: 'No se pudo marcar al candidato como contratado',
+        severity: 'error',
+      });
+    } finally {
+      setIsUpdatingStage(false);
+    }
+  }, [candidate.applicationId, refreshStageHistory]);
 
   const handleInterviewSave = useCallback(async () => {
     setInterviewModalOpen(false);
@@ -356,7 +419,10 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     handleSaveEditedNote,
     handleStageChange,
     handleReject,
+    handleOfferSent,
+    handleMarkAsHired,
     handleInterviewSave,
     formatDateToSpanish,
+    interviewNumber,
   };
 }

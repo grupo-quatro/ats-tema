@@ -53,17 +53,13 @@ async function createAuthUser({ email, password, displayName, role }) {
 
   const signUpBody = await signUpRes.json();
 
-  // Si ya existe (EMAIL_EXISTS), buscar el localId via lookup
+  // Si ya existe (EMAIL_EXISTS), buscar via endpoint admin del emulator
   let localId = signUpBody.localId;
   if (!localId) {
-    const lookupUrl = `${AUTH_EMULATOR_URL}/identitytoolkit.googleapis.com/v1/accounts:lookup?key=fake-api-key`;
-    const lookupRes = await fetch(lookupUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
-    });
-    const lookupBody = await lookupRes.json();
-    localId = lookupBody.users?.[0]?.localId;
+    const listUrl = `${AUTH_EMULATOR_URL}/emulator/v1/projects/${PROJECT_ID}/accounts`;
+    const listRes = await fetch(listUrl);
+    const listBody = await listRes.json();
+    localId = listBody.userInfo?.find(u => u.email === email)?.localId;
   }
 
   if (!localId) throw new Error(`No se pudo obtener localId para ${email}`);
@@ -82,24 +78,32 @@ async function createAuthUser({ email, password, displayName, role }) {
 async function main() {
   console.log(`\n🌱 Seeding emulator (${BASE_URL})\n`);
 
-  console.log('0/3  Usuarios de dashboard...');
+  console.log('0/5  Usuarios de dashboard...');
   for (const user of DASHBOARD_USERS) {
     const uid = await createAuthUser(user);
     console.log(`     ✓ ${user.email} (${user.role}) — uid: ${uid}`);
   }
   console.log();
 
-  console.log('1/3  seedJobs...');
+  console.log('1/5  seedJobs...');
   const jobsResult = await callSeeder('seedJobs');
   console.log(`     ✓ Jobs procesados: ${jobsResult.processed} (creados: ${jobsResult.created}, actualizados: ${jobsResult.updated})`);
   console.log(`     IDs: ${jobsResult.jobIds?.join(', ')}\n`);
 
-  console.log('2/3  seedCandidates...');
+  console.log('2/5  seedCandidates...');
   const candidatesResult = await callSeeder('seedCandidates');
   console.log(`     ✓ Candidatos creados: ${candidatesResult.candidatesCreated}, actualizados: ${candidatesResult.candidatesUpdated}`);
   console.log(`     ✓ Postulaciones creadas: ${candidatesResult.applicationsCreated}, omitidas: ${candidatesResult.applicationsFailed}\n`);
 
-  console.log('3/3  ✅  Seed completo.\n');
+  console.log('3/5  seedEmailTemplates...');
+  const templatesResult = await callSeeder('seedEmailTemplates');
+  console.log(`     ✓ Templates procesados: ${templatesResult.processed} (creados: ${templatesResult.created}, omitidos: ${templatesResult.skipped})\n`);
+
+  console.log('4/5  seedEmailLogs...');
+  const emailLogsResult = await callSeeder('seedEmailLogs');
+  console.log(`     ✓ EmailLogs procesados: ${emailLogsResult.processed} (creados: ${emailLogsResult.created}, omitidos: ${emailLogsResult.skipped})\n`);
+
+  console.log('5/5  ✅  Seed completo.\n');
 }
 
 main().catch((err) => {

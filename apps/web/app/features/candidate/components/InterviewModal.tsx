@@ -71,14 +71,12 @@ export function InterviewModal({
           <TechnicalInterviewForm
             applicationId={applicationId}
             skills={skills}
-            candidateName={candidateName}
             onClose={onClose}
             onSave={onSave}
           />
         ) : (
           <HrInterviewForm
             applicationId={applicationId}
-            candidateName={candidateName}
             onClose={onClose}
             onSave={onSave}
           />

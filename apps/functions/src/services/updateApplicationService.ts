@@ -1,12 +1,18 @@
+import { logger } from 'firebase-functions';
+
 import type {
   ApplicationStage,
   ApplicationStatus,
   UpdateApplicationStagePayload,
   UpdateApplicationStageResponse,
 } from '@ats/shared-types';
+import { STAGE_CONFIG } from '@ats/shared-types';
 
 import { auth } from '../core/firebaseAdmin';
 import { ApplicationsRepository } from '../repositories/applicationRepository';
+import { CandidatesRepository } from '../repositories/candidateRepository';
+import { JobsRepository } from '../repositories/jobRepository';
+import type { StageEmailService } from './stageEmailService';
 
 export class ApplicationNotFoundError extends Error {
   constructor(applicationId: string) {
@@ -25,6 +31,9 @@ export class ApplicationStageTransitionError extends Error {
 export class UpdateApplicationStageService {
   constructor(
     private readonly applicationsRepository: ApplicationsRepository = new ApplicationsRepository(),
+    private readonly candidatesRepository: CandidatesRepository = new CandidatesRepository(),
+    private readonly jobsRepository: JobsRepository = new JobsRepository(),
+    private readonly stageEmailService?: StageEmailService,
   ) {}
 
   async updateStage(
@@ -73,6 +82,46 @@ export class UpdateApplicationStageService {
       ...(rejectionReason !== undefined && { rejectionReason }),
       ...(notes !== undefined && { notes }),
     });
+
+    // Enviar email de notificación al candidato — el fallo nunca bloquea el resultado
+    let emailSent = false;
+    if (this.stageEmailService) {
+      try {
+        const [candidate, job] = await Promise.all([
+          this.candidatesRepository.findById(application.candidateId),
+          this.jobsRepository.findById(application.jobId),
+        ]);
+
+        if (candidate && job) {
+          emailSent = await this.stageEmailService.sendIfTemplateExists(
+            application,
+            candidate,
+            job,
+            stage,
+            changedBy,
+            userRecord?.email ?? changedBy,
+          );
+        }
+      } catch (error) {
+        logger.error(
+          'UpdateApplicationStageService: error al intentar enviar email de stage',
+          { applicationId, stage, error },
+        );
+      }
+    }
+
+    // Encadenar transición automática si el stage tiene nextStage y el email fue enviado
+    const { nextStage } = STAGE_CONFIG[stage];
+    if (nextStage !== undefined && emailSent) {
+      try {
+        await this.updateStage({ applicationId, stage: nextStage }, changedBy);
+      } catch (error) {
+        logger.error(
+          'UpdateApplicationStageService: error al encadenar transición automática',
+          { applicationId, stage, nextStage, error },
+        );
+      }
+    }
 
     return { ok: true };
   }

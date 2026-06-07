@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Box,
   Button,
@@ -25,16 +26,23 @@ import {
 } from '../hooks/useEmailTemplates';
 import PaginationControls from '@/shared/components/PaginationControls';
 import { usePaginationParams } from '@/shared/lib/usePaginationParams';
+import AppSnackbar, {
+  type AppSnackbarState,
+} from '@/shared/components/AppSnackbar';
 
 const STAGE_COLORS: Record<
   EmailTemplateStage,
   { color: string; background: string }
 > = {
   application_received: { color: '#2563eb', background: '#dbeafe' },
-  screening: { color: '#334155', background: '#f1f5f9' },
-  interview_hr: { color: '#16a34a', background: '#dcfce7' },
-  interview_technical: { color: '#2563eb', background: '#dbeafe' },
-  interview_final: { color: '#334155', background: '#f1f5f9' },
+  sch_interview_hr_1: { color: '#334155', background: '#f1f5f9' },
+  interview_hr_1: { color: '#16a34a', background: '#dcfce7' },
+  sch_interview_hr_2: { color: '#334155', background: '#f1f5f9' },
+  interview_hr_2: { color: '#16a34a', background: '#dcfce7' },
+  sch_interview_tech_1: { color: '#334155', background: '#f1f5f9' },
+  interview_tech_1: { color: '#2563eb', background: '#dbeafe' },
+  sch_interview_tech_2: { color: '#334155', background: '#f1f5f9' },
+  interview_tech_2: { color: '#2563eb', background: '#dbeafe' },
   offer: { color: '#16a34a', background: '#dcfce7' },
   hired: { color: '#16a34a', background: '#dcfce7' },
   rejected: { color: '#64748b', background: '#f1f5f9' },
@@ -174,9 +182,12 @@ function TemplateCard({
 }
 
 export default function EmailTemplatesListView() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: templates = [], isLoading, isError } = useEmailTemplates();
   const deleteMutation = useDeleteEmailTemplate();
   const { page, setPage } = usePaginationParams();
+  const [snackbar, setSnackbar] = useState<AppSnackbarState>(null);
   const totalPages = Math.max(
     1,
     Math.ceil(templates.length / EMAIL_TEMPLATES_PAGE_SIZE),
@@ -190,11 +201,45 @@ export default function EmailTemplatesListView() {
     if (page > totalPages) setPage(totalPages);
   }, [page, setPage, totalPages]);
 
+  useEffect(() => {
+    const toast = searchParams.get('toast');
+    if (!toast) return;
+
+    const messages: Record<string, string> = {
+      'template-created': 'Plantilla creada correctamente',
+      'template-updated': 'Plantilla actualizada correctamente',
+    };
+
+    const message = messages[toast];
+    if (!message) return;
+
+    setSnackbar({ message, severity: 'success' });
+    router.replace('/dashboard/communication-templates', { scroll: false });
+  }, [router, searchParams]);
+
   function handleDelete(id: string) {
     const shouldDelete = window.confirm(
       '¿Querés eliminar esta plantilla de comunicación?',
     );
-    if (shouldDelete) deleteMutation.mutate(id);
+    if (!shouldDelete) return;
+
+    deleteMutation.mutate(id, {
+      onSuccess: () => {
+        setSnackbar({
+          message: 'Plantilla eliminada correctamente',
+          severity: 'success',
+        });
+      },
+      onError: (error) => {
+        setSnackbar({
+          message:
+            error instanceof Error
+              ? error.message
+              : 'No se pudo eliminar la plantilla.',
+          severity: 'error',
+        });
+      },
+    });
   }
 
   return (
@@ -340,6 +385,7 @@ export default function EmailTemplatesListView() {
           />
         ) : null}
       </Stack>
+      <AppSnackbar snackbar={snackbar} onClose={() => setSnackbar(null)} />
     </Container>
   );
 }

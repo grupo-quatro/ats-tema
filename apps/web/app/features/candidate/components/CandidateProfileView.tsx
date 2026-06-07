@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import {
-  Alert,
   Box,
   Button,
   Card,
@@ -21,7 +20,6 @@ import {
   MenuItem,
   Radio,
   RadioGroup,
-  Snackbar,
   Stack,
   TextField,
   Typography,
@@ -32,19 +30,26 @@ import {
   Clock,
   FileText,
   Info,
+  Mail,
+  CalendarDays,
   MoreVertical,
   Send,
   Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
+import { STAGE_CONFIG } from '@ats/shared-types';
 import { STAGE_LABELS, type CandidateMockProfile } from '../mock/candidateMock';
 import { getCandidateStageLabel } from '../utils/candidateProfile.utils';
 import { useCandidateProfile } from '../hooks/useCandidateProfile';
 import { CandidateInfoCard } from './CandidateInfoCard';
+import { CommunicationHistoryCard } from './CommunicationHistoryCard';
+import { FailedCommunicationsCard } from './FailedCommunicationsCard';
 import { CvViewerModal } from './CvViewerModal';
 import { InterviewModal } from './InterviewModal';
 import { InterviewFormsModal } from './InterviewFormsModal';
 import { useAuth } from '../../../shared/lib/authContext';
+import { OfferManagementCard } from './OfferManagementCard';
+import AppSnackbar from '@/shared/components/AppSnackbar';
 
 interface CandidateProfileViewProps {
   candidate: CandidateMockProfile;
@@ -58,6 +63,8 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
   const canDoHrInterview = role === 'hr' || role === 'admin';
   const canDoTechInterview =
     role === 'hiring_manager' || role === 'tech_lead' || role === 'admin';
+  const canManageOffer =
+    role === 'admin' || role === 'hr' || role === 'hiring_manager';
 
   const formatNoteDate = (iso: string) => {
     const parsed = new Date(iso);
@@ -307,8 +314,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                           <Box
                             sx={{
                               display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'baseline',
+                              alignItems: 'center',
                               gap: 0.5,
                             }}
                           >
@@ -327,28 +333,34 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                             >
                               {getCandidateStageLabel(entry.stage)}
                             </Typography>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                flexShrink: 0,
-                                fontSize: 11,
-                                color: 'text.secondary',
-                              }}
-                            >
-                              {changedAt.toLocaleDateString('es-AR')}{' '}
-                              {changedAt.toLocaleTimeString('es-AR', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </Typography>
+                            {STAGE_CONFIG[entry.stage]?.transitionMode ===
+                            'on_calendar_event' ? (
+                              <CalendarDays
+                                size={12}
+                                color="#64748b"
+                                aria-label="Evento del calendario"
+                                style={{ flexShrink: 0 }}
+                              />
+                            ) : STAGE_CONFIG[entry.stage]
+                                ?.emailTemplateStage !== null ? (
+                              <Mail
+                                size={12}
+                                color="#64748b"
+                                aria-label="Notificación por email"
+                                style={{ flexShrink: 0 }}
+                              />
+                            ) : null}
                           </Box>
                           <Typography
-                            sx={{
-                              fontSize: 11,
-                              color: '#94a3b8',
-                              lineHeight: 1.4,
-                            }}
+                            variant="caption"
+                            sx={{ fontSize: 11, color: 'text.secondary' }}
                           >
+                            {changedAt.toLocaleDateString('es-AR')}{' '}
+                            {changedAt.toLocaleTimeString('es-AR', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                            {' · '}
                             {entry.changedByEmail}
                           </Typography>
                           {entry.rejectionReason && (
@@ -514,6 +526,16 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
               </Card>
             ) : null}
 
+            {canManageOffer ? (
+              <OfferManagementCard
+                applicationId={candidate.applicationId}
+                disabled={isTerminalStage}
+                isMarkingHired={profile.isUpdatingStage}
+                onOfferSent={profile.handleOfferSent}
+                onMarkAsHired={profile.handleMarkAsHired}
+              />
+            ) : null}
+
             <Card>
               <Box
                 sx={{
@@ -541,7 +563,9 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                 }}
               >
                 {profile.isLoadingNotes ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                  <Box
+                    sx={{ display: 'flex', justifyContent: 'center', py: 2 }}
+                  >
                     <CircularProgress size={24} />
                   </Box>
                 ) : profile.candidacyNotes.length === 0 ? (
@@ -741,9 +765,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                   multiline
                   minRows={2}
                   maxRows={6}
-                  disabled={
-                    profile.isSavingNewNote || profile.isSavingEditNote
-                  }
+                  disabled={profile.isSavingNewNote || profile.isSavingEditNote}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
                       e.preventDefault();
@@ -770,6 +792,10 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                 </IconButton>
               </Box>
             </Card>
+
+            <CommunicationHistoryCard candidateId={candidate.id} />
+
+            <FailedCommunicationsCard applicationId={candidate.applicationId} />
 
             <Box
               sx={{
@@ -933,21 +959,10 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={Boolean(profile.snackbar)}
-        autoHideDuration={3000}
+      <AppSnackbar
+        snackbar={profile.snackbar}
         onClose={() => profile.setSnackbar(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        {profile.snackbar ? (
-          <Alert
-            severity={profile.snackbar.severity}
-            onClose={() => profile.setSnackbar(null)}
-          >
-            {profile.snackbar.message}
-          </Alert>
-        ) : undefined}
-      </Snackbar>
+      />
     </Box>
   );
 }

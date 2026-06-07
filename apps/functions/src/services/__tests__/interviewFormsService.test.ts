@@ -13,6 +13,9 @@ vi.mock('../../core/firebaseAdmin', () => ({
       email: 'laura@example.com',
     }),
   },
+  db: {
+    collection: vi.fn().mockReturnValue({}),
+  },
 }));
 
 const makeApplication = (): Application => ({
@@ -48,6 +51,10 @@ const mockFormsRepo = {
   findByApplicationId: vi.fn(),
 };
 
+const mockUpdateStageService = {
+  updateStage: vi.fn(),
+};
+
 describe('InterviewFormsService.saveInterviewForm', () => {
   let service: InterviewFormsService;
 
@@ -61,6 +68,7 @@ describe('InterviewFormsService.saveInterviewForm', () => {
     service = new InterviewFormsService(
       mockAppsRepo as never,
       mockFormsRepo as never,
+      mockUpdateStageService as never,
     );
   });
 
@@ -177,6 +185,7 @@ describe('InterviewFormsService.getInterviewForms', () => {
     service = new InterviewFormsService(
       mockAppsRepo as never,
       mockFormsRepo as never,
+      mockUpdateStageService as never,
     );
   });
 

@@ -77,7 +77,9 @@ export function InterviewFormsModal({
       })
       .catch(() => {
         if (cancelled) return;
-        setErrorMessage('No se pudieron obtener las respuestas de los formularios.');
+        setErrorMessage(
+          'No se pudieron obtener las respuestas de los formularios.',
+        );
       })
       .finally(() => {
         if (!cancelled) setIsLoading(false);
@@ -188,7 +190,9 @@ export function InterviewFormsModal({
             </Typography>
           </Box>
         ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 3 }}>
+          <Box
+            sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, p: 3 }}
+          >
             {forms.map((form) => {
               const isOpen = expandedIds.has(form.id);
               const chip = typeChipProps(form.type);
@@ -313,10 +317,7 @@ export function InterviewFormsModal({
                           >
                             Decisión recomendada
                           </Typography>
-                          <Typography
-                            variant="body2"
-                            sx={{ fontWeight: 500 }}
-                          >
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
                             {form.decision}
                           </Typography>
                         </Box>
