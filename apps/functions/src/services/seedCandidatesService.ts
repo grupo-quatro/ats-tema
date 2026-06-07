@@ -21,7 +21,6 @@ type SeedApplicationDefinition = {
   stage: ApplicationStage;
   status: ApplicationStatus;
   fitScore?: number;
-  fitSummary?: string;
   notes?: string;
   rejectionReason?: string;
 };
@@ -397,8 +396,6 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'interview_2_done',
     status: 'active',
     fitScore: 91,
-    fitSummary:
-      'Perfil muy alineado. Domina Next.js con SSR y tiene experiencia en Firebase.',
     notes: 'Segunda entrevista excelente. Recomendar oferta.',
   },
   {
@@ -407,7 +404,6 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'interview_1_done',
     status: 'active',
     fitScore: 74,
-    fitSummary: 'Buen manejo de React y TypeScript. SSR con menos profundidad.',
     notes: 'Pasar a segunda entrevista técnica.',
   },
   {
@@ -416,7 +412,6 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'cv_submitted',
     status: 'active',
     fitScore: 58,
-    fitSummary: 'Perfil junior con base sólida. Falta experiencia en SSR.',
   },
   {
     candidateId: 'seed-candidate-04',
@@ -424,7 +419,6 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'rejected',
     status: 'rejected',
     fitScore: 32,
-    fitSummary: 'Perfil backend, no aplica para esta posición.',
     rejectionReason: 'Stack no alineado con el rol frontend.',
   },
 
@@ -435,8 +429,6 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'offer_sent',
     status: 'active',
     fitScore: 95,
-    fitSummary:
-      'Perfil ideal. Senior con experiencia directa en Firebase Functions y OpenAI.',
     notes: 'Oferta enviada. Esperando respuesta.',
   },
   {
@@ -445,8 +437,6 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'interview_1_scheduled',
     status: 'active',
     fitScore: 80,
-    fitSummary:
-      'Sólido en Node.js y Firestore. No tiene experiencia con OpenAI API.',
   },
   {
     candidateId: 'seed-candidate-08',
@@ -454,8 +444,6 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'screening',
     status: 'active',
     fitScore: 88,
-    fitSummary:
-      'Senior con amplia trayectoria. Referente en arquitectura serverless con Firebase.',
   },
 
   // technical-recruiter — candidatos en distintas etapas
@@ -465,7 +453,6 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'hired',
     status: 'hired',
     fitScore: 87,
-    fitSummary: 'Experiencia exacta para el rol. Proceso exitoso.',
     notes: 'Incorporación acordada para el 01/06.',
   },
   {
@@ -474,7 +461,6 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'withdrawn',
     status: 'withdrawn',
     fitScore: 45,
-    fitSummary: 'Perfil más técnico que de RRHH.',
     rejectionReason: 'Candidata retiró su postulación.',
   },
 
@@ -485,8 +471,6 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'interview_2_scheduled',
     status: 'active',
     fitScore: 83,
-    fitSummary:
-      'Buen perfil QA con Playwright y Cypress. Experiencia en fintech.',
   },
   {
     candidateId: 'seed-candidate-02',
@@ -494,7 +478,6 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     stage: 'applied',
     status: 'active',
     fitScore: 51,
-    fitSummary: 'Perfil frontend con algo de testing. No es QA de carrera.',
   },
 ];
 
@@ -552,9 +535,6 @@ export class SeedCandidatesService {
             status: appSeed.status,
             ...(appSeed.fitScore !== undefined && {
               fitScore: appSeed.fitScore,
-            }),
-            ...(appSeed.fitSummary !== undefined && {
-              fitSummary: appSeed.fitSummary,
             }),
             ...(appSeed.notes !== undefined && { notes: appSeed.notes }),
             ...(appSeed.rejectionReason !== undefined && {

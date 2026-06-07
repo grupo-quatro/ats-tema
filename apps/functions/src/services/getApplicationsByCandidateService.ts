@@ -48,7 +48,6 @@ export class GetApplicationsByCandidateService {
       stage: application.stage,
       status: application.status,
       fitScore: application.fitScore,
-      fitSummary: application.fitSummary,
       coverLetter: application.coverLetter,
       skillMatchStats: application.skillMatchStats,
       candidateName: application.candidateName,

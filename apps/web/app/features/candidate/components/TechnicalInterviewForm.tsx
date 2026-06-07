@@ -45,19 +45,19 @@ export function TechnicalInterviewForm({
 
   const trimmedComments = comments.trim();
   const trimmedDecision = decision.trim();
-  const unratedMandatory = mandatory.filter(
+  const unratedSkills = skills.filter(
     (skill) => (ratings[skill.name] ?? 0) < 1,
   );
   const isFormValid =
     overall >= 1 &&
     trimmedDecision.length > 0 &&
     trimmedComments.length > 0 &&
-    unratedMandatory.length === 0;
+    unratedSkills.length === 0;
 
   const handleSave = async () => {
-    if (unratedMandatory.length > 0) {
+    if (unratedSkills.length > 0) {
       setErrorMessage(
-        `Calificá todas las skills obligatorias: ${unratedMandatory.map((s) => s.name).join(', ')}.`,
+        `Calificá todas las skills: ${unratedSkills.map((s) => s.name).join(', ')}.`,
       );
       return;
     }
@@ -84,7 +84,7 @@ export function TechnicalInterviewForm({
       const skillQuestions = skills.map((skill) => ({
         question: skill.name,
         answer: 'Evaluación registrada en entrevista.',
-        rating: ratings[skill.name] || undefined,
+        rating: ratings[skill.name],
       }));
 
       await saveInterviewForm({
@@ -113,7 +113,8 @@ export function TechnicalInterviewForm({
 
       await saveCandidacyNote({
         applicationId,
-        text: `[Entrevista técnica] ${trimmedComments}`,
+        text: trimmedComments,
+        source: 'interview',
       });
 
       await onSave?.();
@@ -194,7 +195,7 @@ export function TechnicalInterviewForm({
             />
           </Box>
           <Stack spacing={2} sx={{ mb: 2.5 }}>
-            {desirable.map((skill) => renderSkillRow(skill, false))}
+            {desirable.map((skill) => renderSkillRow(skill, true))}
           </Stack>
         </>
       )}

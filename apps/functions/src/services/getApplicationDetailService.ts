@@ -84,7 +84,6 @@ export class GetApplicationDetailService {
       stage: application.stage,
       status: application.status,
       fitScore: application.fitScore,
-      fitSummary: application.fitSummary,
       skillMatchStats: application.skillMatchStats,
       notes: application.notes,
       coverLetter: application.coverLetter,

@@ -9,7 +9,6 @@ const makeDetail = (
   stage: 'screening',
   status: 'active',
   fitScore: 88,
-  fitSummary: 'Perfil muy alineado.',
   notes: 'Candidato proactivo.',
   createdAt: new Date('2026-05-01'),
   updatedAt: new Date('2026-05-10'),
@@ -49,20 +48,15 @@ describe('mapDetailToProfile', () => {
     expect(profile.title).toBe('Frontend Developer');
   });
 
-  it('mapea fitScore y strengths desde fitSummary', () => {
+  it('mapea fitScore y retorna strengths vacío', () => {
     const profile = mapDetailToProfile(makeDetail());
     expect(profile.fitScore).toBe(88);
-    expect(profile.strengths).toEqual(['Perfil muy alineado.']);
+    expect(profile.strengths).toEqual([]);
   });
 
   it('retorna fitScore 0 cuando no está definido', () => {
     const profile = mapDetailToProfile(makeDetail({ fitScore: undefined }));
     expect(profile.fitScore).toBe(0);
-  });
-
-  it('retorna strengths vacío cuando fitSummary no está definido', () => {
-    const profile = mapDetailToProfile(makeDetail({ fitSummary: undefined }));
-    expect(profile.strengths).toEqual([]);
   });
 
   it('retorna interviewNotes vacío (se cargan desde el backend en el perfil)', () => {

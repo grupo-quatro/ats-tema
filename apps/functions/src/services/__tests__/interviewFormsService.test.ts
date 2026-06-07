@@ -70,6 +70,8 @@ describe('InterviewFormsService.saveInterviewForm', () => {
         applicationId: 'app-1',
         type: 'hr',
         title: 'Evaluación RRHH',
+        overallRating: 4,
+        decision: 'Avanzar',
         questions: [{ question: 'Comunicación', answer: 'Buena', rating: 4 }],
       },
       { uid: 'uid-hr', role: 'hr' },
@@ -81,7 +83,9 @@ describe('InterviewFormsService.saveInterviewForm', () => {
       expect.objectContaining({
         type: 'hr',
         authorUid: 'uid-hr',
-        questions: [{ id: 'q1', question: 'Comunicación', answer: 'Buena', rating: 4 }],
+        questions: [
+          { id: 'q1', question: 'Comunicación', answer: 'Buena', rating: 4 },
+        ],
       }),
     );
   });
@@ -92,6 +96,8 @@ describe('InterviewFormsService.saveInterviewForm', () => {
         applicationId: 'app-1',
         type: 'tech',
         title: 'Evaluación técnica',
+        overallRating: 5,
+        decision: 'Avanzar',
         questions: [{ question: 'React', answer: 'Sólido', rating: 5 }],
       },
       { uid: 'uid-tech', role: 'tech_lead' },
@@ -112,6 +118,8 @@ describe('InterviewFormsService.saveInterviewForm', () => {
           applicationId: 'missing',
           type: 'hr',
           title: 'Evaluación',
+          overallRating: 4,
+          decision: 'Avanzar',
           questions: [{ question: 'Q', answer: 'A' }],
         },
         { uid: 'uid-hr', role: 'hr' },
@@ -126,6 +134,8 @@ describe('InterviewFormsService.saveInterviewForm', () => {
           applicationId: 'app-1',
           type: 'tech',
           title: 'Evaluación técnica',
+          overallRating: 4,
+          decision: 'Avanzar',
           questions: [{ question: 'React', answer: 'Sólido' }],
         },
         { uid: 'uid-hr', role: 'hr' },
@@ -140,6 +150,8 @@ describe('InterviewFormsService.saveInterviewForm', () => {
           applicationId: 'app-1',
           type: 'hr',
           title: 'Evaluación RRHH',
+          overallRating: 4,
+          decision: 'Avanzar',
           questions: [{ question: 'Comunicación', answer: 'Buena' }],
         },
         { uid: 'uid-tech', role: 'tech_lead' },
@@ -177,24 +189,22 @@ describe('InterviewFormsService.getInterviewForms', () => {
     expect(result).toHaveLength(2);
   });
 
-  it('hr solo ve formularios hr', async () => {
+  it('hr ve todos los formularios', async () => {
     const result = await service.getInterviewForms('app-1', {
       uid: 'uid-hr',
       role: 'hr',
     });
 
-    expect(result).toHaveLength(1);
-    expect(result[0]?.type).toBe('hr');
+    expect(result).toHaveLength(2);
   });
 
-  it('tech_lead solo ve formularios tech', async () => {
+  it('tech_lead ve todos los formularios', async () => {
     const result = await service.getInterviewForms('app-1', {
       uid: 'uid-tech',
       role: 'tech_lead',
     });
 
-    expect(result).toHaveLength(1);
-    expect(result[0]?.type).toBe('tech');
+    expect(result).toHaveLength(2);
   });
 
   it('retorna submittedAt como ISO string', async () => {

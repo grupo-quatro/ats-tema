@@ -70,19 +70,7 @@ describe('validateSaveInterviewFormPayload', () => {
     ).toThrow(InterviewFormsValidationError);
   });
 
-  it('acepta pregunta solo con rating si incluye comentarios', () => {
-    expect(() =>
-      validateSaveInterviewFormPayload({
-        ...validSavePayload,
-        questions: [
-          { question: 'Comunicación', answer: '', rating: 3 },
-          { question: 'Comentarios y observaciones', answer: 'Observación.' },
-        ],
-      }),
-    ).not.toThrow();
-  });
-
-  it('lanza cuando pregunta no tiene respuesta ni rating', () => {
+  it('lanza cuando una pregunta no tiene respuesta', () => {
     expect(() =>
       validateSaveInterviewFormPayload({
         ...validSavePayload,

@@ -28,9 +28,6 @@ import {
 } from '@mui/material';
 import {
   ArrowLeft,
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
   ClipboardList,
   Clock,
   FileText,
@@ -73,6 +70,12 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
 
   const canEditNote = (authorUid: string) =>
     Boolean(callerUid && callerUid === authorUid) || role === 'admin';
+  const getInterviewNoteLabel = (text: string) => {
+    const match = text.match(/^\[(Entrevista[^\]]+)\]\s*/i);
+    return match?.[1] ?? 'Entrevista';
+  };
+  const getNoteDisplayText = (text: string) =>
+    text.replace(/^\[Entrevista[^\]]+\]\s*/i, '');
   const isTerminalStage =
     profile.currentStage === STAGE_LABELS.descartado ||
     profile.currentStage === STAGE_LABELS.contratado;
@@ -524,62 +527,9 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                   variant="body2"
                   sx={{ fontWeight: 600, color: 'text.secondary' }}
                 >
-                  Fortalezas de la candidatura
+                  Notas de la candidatura
                 </Typography>
-                {candidate.strengths.length > 2 && (
-                  <Button
-                    size="small"
-                    onClick={() =>
-                      profile.setShowAllStrengths((current) => !current)
-                    }
-                    endIcon={
-                      profile.showAllStrengths ? (
-                        <ChevronUp size={16} />
-                      ) : (
-                        <ChevronDown size={16} />
-                      )
-                    }
-                    sx={{ textTransform: 'none' }}
-                  >
-                    {profile.showAllStrengths ? 'Ver menos' : 'Ver más'}
-                  </Button>
-                )}
               </Box>
-
-              {candidate.strengths.length > 0 && (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 1.5,
-                    mb: 2.5,
-                  }}
-                >
-                  {profile.visibleStrengths.map((strength, i) => (
-                    <Box
-                      key={i}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: 1.5,
-                      }}
-                    >
-                      <CheckCircle2
-                        size={18}
-                        color="#16a34a"
-                        style={{ marginTop: 1, flexShrink: 0 }}
-                      />
-                      <Typography variant="body2" color="text.secondary">
-                        {strength}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-              )}
-
-              {candidate.strengths.length > 0 && (
-                <Divider sx={{ mb: 2.5 }} />
-              )}
 
               <Box
                 sx={{
@@ -601,6 +551,10 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                 ) : (
                   profile.candidacyNotes.map((note) => {
                     const isEditing = profile.editingNoteId === note.id;
+                    const isInterviewNote =
+                      note.source === 'interview' ||
+                      note.text.startsWith('[Entrevista');
+                    const displayText = getNoteDisplayText(note.text);
 
                     return (
                       <Box
@@ -667,25 +621,28 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                                 {note.createdAt !== note.updatedAt && (
                                   <>
                                     {' '}
-                                    · Editado: {formatNoteDate(note.updatedAt)}
+                                    · Ultima Edición:{' '}
+                                    {formatNoteDate(note.updatedAt)}
                                   </>
                                 )}
                               </Typography>
                             </Box>
                           </Box>
-                          {canEditNote(note.authorUid) && !isEditing && (
-                            <Button
-                              size="small"
-                              onClick={() => profile.startEditingNote(note)}
-                              disabled={
-                                profile.isSavingEditNote ||
-                                profile.isSavingNewNote
-                              }
-                              sx={{ textTransform: 'none', flexShrink: 0 }}
-                            >
-                              Editar
-                            </Button>
-                          )}
+                          {canEditNote(note.authorUid) &&
+                            !isInterviewNote &&
+                            !isEditing && (
+                              <Button
+                                size="small"
+                                onClick={() => profile.startEditingNote(note)}
+                                disabled={
+                                  profile.isSavingEditNote ||
+                                  profile.isSavingNewNote
+                                }
+                                sx={{ textTransform: 'none', flexShrink: 0 }}
+                              >
+                                Editar
+                              </Button>
+                            )}
                         </Box>
 
                         {isEditing ? (
@@ -739,13 +696,29 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                             </Box>
                           </Stack>
                         ) : (
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ fontSize: 13, lineHeight: 1.55 }}
-                          >
-                            {note.text}
-                          </Typography>
+                          <Stack spacing={1}>
+                            {isInterviewNote && (
+                              <Chip
+                                label={getInterviewNoteLabel(note.text)}
+                                size="small"
+                                icon={<ClipboardList size={14} />}
+                                sx={{
+                                  alignSelf: 'flex-start',
+                                  bgcolor: 'primary.light',
+                                  color: 'primary.main',
+                                  fontWeight: 600,
+                                  borderRadius: '6px',
+                                }}
+                              />
+                            )}
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ fontSize: 13, lineHeight: 1.55 }}
+                            >
+                              {displayText}
+                            </Typography>
+                          </Stack>
                         )}
                       </Box>
                     );
@@ -758,9 +731,6 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                   display: 'flex',
                   alignItems: 'flex-end',
                   gap: 1,
-                  pt: 1,
-                  borderTop: 1,
-                  borderColor: 'divider',
                 }}
               >
                 <TextField

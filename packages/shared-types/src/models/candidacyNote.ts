@@ -1,7 +1,10 @@
+export type CandidacyNoteSource = 'manual' | 'interview';
+
 export interface CandidacyNote {
   id: string;
   applicationId: string;
   text: string;
+  source: CandidacyNoteSource;
   authorUid: string;
   authorName: string;
   authorRole: string;

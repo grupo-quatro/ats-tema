@@ -11,6 +11,11 @@ export class CandidacyNotesValidationError extends Error {
   }
 }
 
+const VALID_SOURCES: NonNullable<SaveCandidacyNotePayload['source']>[] = [
+  'manual',
+  'interview',
+];
+
 export function validateSaveCandidacyNotePayload(
   payload: Partial<SaveCandidacyNotePayload>,
 ): asserts payload is SaveCandidacyNotePayload {
@@ -23,6 +28,12 @@ export function validateSaveCandidacyNotePayload(
   if (!payload.text || payload.text.trim().length === 0) {
     throw new CandidacyNotesValidationError(
       'El texto de la nota es obligatorio.',
+    );
+  }
+
+  if (payload.source !== undefined && !VALID_SOURCES.includes(payload.source)) {
+    throw new CandidacyNotesValidationError(
+      'El origen de la nota debe ser "manual" o "interview".',
     );
   }
 }

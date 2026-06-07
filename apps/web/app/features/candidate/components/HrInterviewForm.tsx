@@ -33,15 +33,22 @@ export function HrInterviewForm({
 
   const trimmedComments = comments.trim();
   const trimmedDecision = decision.trim();
+  const trimmedSalaryExpectation = salaryExpectation.trim();
   const isFormValid =
     communication >= 1 &&
     teamwork >= 1 &&
+    trimmedSalaryExpectation.length > 0 &&
     trimmedDecision.length > 0 &&
     trimmedComments.length > 0;
 
   const handleSave = async () => {
     if (!communication || !teamwork) {
       setErrorMessage('Calificá comunicación y trabajo en equipo (1 a 5).');
+      return;
+    }
+
+    if (!trimmedSalaryExpectation) {
+      setErrorMessage('La expectativa salarial es obligatoria.');
       return;
     }
 
@@ -80,7 +87,7 @@ export function HrInterviewForm({
           },
           {
             question: 'Expectativa salarial',
-            answer: salaryExpectation.trim() || 'No indicada',
+            answer: trimmedSalaryExpectation,
           },
           {
             question: 'Decisión recomendada',
@@ -95,7 +102,8 @@ export function HrInterviewForm({
 
       await saveCandidacyNote({
         applicationId,
-        text: `[Entrevista RRHH] ${trimmedComments}`,
+        text: trimmedComments,
+        source: 'interview',
       });
 
       await onSave?.();
@@ -168,8 +176,15 @@ export function HrInterviewForm({
         value={salaryExpectation}
         onChange={(e) => setSalaryExpectation(e.target.value)}
         fullWidth
+        required
         sx={{ mb: 2 }}
         disabled={isSaving}
+        error={Boolean(salaryExpectation && !trimmedSalaryExpectation)}
+        helperText={
+          salaryExpectation && !trimmedSalaryExpectation
+            ? 'La expectativa salarial no puede estar vacía'
+            : ''
+        }
       />
 
       <TextField

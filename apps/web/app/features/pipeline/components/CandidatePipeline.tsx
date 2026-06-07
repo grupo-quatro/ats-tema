@@ -172,8 +172,7 @@ export default function CandidatePipeline({
         const matchesSearch =
           !normalizedSearch ||
           candidate.candidateName?.toLowerCase().includes(normalizedSearch) ||
-          candidate.candidateEmail?.toLowerCase().includes(normalizedSearch) ||
-          candidate.fitSummary?.toLowerCase().includes(normalizedSearch);
+          candidate.candidateEmail?.toLowerCase().includes(normalizedSearch);
 
         const matchesStatus =
           selectedStatus === ALL_STAGES ||

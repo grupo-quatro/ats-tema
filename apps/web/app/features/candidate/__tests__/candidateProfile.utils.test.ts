@@ -18,7 +18,6 @@ const makeApplication = (
   stage: 'screening',
   status: 'active',
   fitScore: 85,
-  fitSummary: 'Perfil muy alineado con el puesto.',
   notes: 'Buen perfil técnico.',
   createdAt: new Date('2026-05-01'),
   updatedAt: new Date('2026-05-10'),
@@ -120,17 +119,8 @@ describe('mapApplicationToProfile', () => {
     expect(profile.fitScore).toBe(0);
   });
 
-  it('mapea fitSummary como primer elemento de strengths', () => {
-    const profile = mapApplicationToProfile(
-      makeApplication({ fitSummary: 'Excelente perfil técnico.' }),
-    );
-    expect(profile.strengths).toEqual(['Excelente perfil técnico.']);
-  });
-
-  it('retorna strengths vacío cuando fitSummary no está definido', () => {
-    const profile = mapApplicationToProfile(
-      makeApplication({ fitSummary: undefined }),
-    );
+  it('retorna strengths vacío', () => {
+    const profile = mapApplicationToProfile(makeApplication());
     expect(profile.strengths).toEqual([]);
   });
 

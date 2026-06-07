@@ -31,6 +31,7 @@ const makeNote = (overrides: Partial<CandidacyNote> = {}): CandidacyNote => ({
   id: 'note-1',
   applicationId: 'app-1',
   text: 'Nota original',
+  source: 'manual',
   authorUid: 'uid-hr',
   authorName: 'Laura',
   authorRole: 'Recursos Humanos',
@@ -67,7 +68,10 @@ describe('CandidacyNotesService.saveCandidacyNote', () => {
     );
 
     expect(result.id).toBe('note-new');
-    expect(mockNotesRepo.create).toHaveBeenCalled();
+    expect(mockNotesRepo.create).toHaveBeenCalledWith(
+      'app-1',
+      expect.objectContaining({ source: 'manual' }),
+    );
     expect(mockNotesRepo.update).not.toHaveBeenCalled();
   });
 
@@ -145,6 +149,17 @@ describe('CandidacyNotesService.updateCandidacyNote', () => {
     );
 
     expect(mockNotesRepo.update).toHaveBeenCalled();
+  });
+
+  it('no permite editar notas generadas por entrevistas', async () => {
+    mockNotesRepo.findById.mockResolvedValue(makeNote({ source: 'interview' }));
+
+    await expect(
+      service.updateCandidacyNote(
+        { applicationId: 'app-1', id: 'note-1', text: 'Edit' },
+        { uid: 'uid-hr', role: 'hr' },
+      ),
+    ).rejects.toThrow(CandidacyNoteForbiddenError);
   });
 });
 

@@ -21,7 +21,6 @@ export interface ApplicationWithCandidateDTO {
   stage: ApplicationStage;
   status: ApplicationStatus;
   fitScore?: number;
-  fitSummary?: string;
   coverLetter?: string;
   /**
    * Estadísticas de match ponderado de skills.

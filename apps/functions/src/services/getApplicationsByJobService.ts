@@ -72,7 +72,6 @@ export class GetApplicationsByJobService {
       stage: application.stage,
       status: application.status,
       fitScore: application.fitScore,
-      fitSummary: application.fitSummary,
       coverLetter: application.coverLetter,
       candidateName: application.candidateName,
       candidateEmail: application.candidateEmail,

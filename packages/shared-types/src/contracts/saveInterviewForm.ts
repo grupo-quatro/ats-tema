@@ -10,8 +10,8 @@ export interface SaveInterviewFormPayload {
   applicationId: string;
   type: InterviewFormType;
   title: string;
-  overallRating?: number;
-  decision?: string;
+  overallRating: number;
+  decision: string;
   questions: SaveInterviewFormQuestionInput[];
 }
 

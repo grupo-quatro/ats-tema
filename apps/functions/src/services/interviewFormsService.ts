@@ -98,7 +98,9 @@ export class InterviewFormsService {
     const forms =
       await this.interviewFormsRepository.findByApplicationId(applicationId);
 
-    return this.filterByRole(forms, caller.role).map(this.toInterviewFormDTO);
+    return this.assertCanViewForms(caller.role)
+      ? forms.map(this.toInterviewFormDTO)
+      : [];
   }
 
   private assertCanSubmitForm(
@@ -127,17 +129,13 @@ export class InterviewFormsService {
     throw new InterviewFormForbiddenError();
   }
 
-  private filterByRole(
-    forms: InterviewForm[],
-    role: EmployeeRole | null,
-  ): InterviewForm[] {
-    if (!role) return [];
-    if (role === 'admin') return forms;
-    if (role === 'hr') return forms.filter((f) => f.type === 'hr');
-    if (role === 'tech_lead' || role === 'hiring_manager') {
-      return forms.filter((f) => f.type === 'tech');
-    }
-    return [];
+  private assertCanViewForms(role: EmployeeRole | null): boolean {
+    return (
+      role === 'admin' ||
+      role === 'hr' ||
+      role === 'tech_lead' ||
+      role === 'hiring_manager'
+    );
   }
 
   private toInterviewFormDTO(form: InterviewForm): InterviewFormDTO {

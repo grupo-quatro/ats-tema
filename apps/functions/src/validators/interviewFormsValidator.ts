@@ -72,12 +72,10 @@ export function validateSaveInterviewFormPayload(
     }
 
     const hasAnswer = Boolean(item.answer && item.answer.trim().length > 0);
-    const hasRating =
-      item.rating !== undefined && isValidRating(item.rating);
 
-    if (!hasAnswer && !hasRating) {
+    if (!hasAnswer) {
       throw new InterviewFormsValidationError(
-        `La pregunta ${index + 1} debe tener respuesta o calificación.`,
+        `La pregunta ${index + 1} debe tener respuesta.`,
       );
     }
 

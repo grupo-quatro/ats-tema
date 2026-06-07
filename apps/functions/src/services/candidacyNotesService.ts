@@ -23,8 +23,8 @@ export class CandidacyNoteNotFoundError extends Error {
 }
 
 export class CandidacyNoteForbiddenError extends Error {
-  constructor() {
-    super('No tenés permiso para modificar esta nota.');
+  constructor(message = 'No tenés permiso para modificar esta nota.') {
+    super(message);
     this.name = 'CandidacyNoteForbiddenError';
   }
 }
@@ -48,6 +48,7 @@ export class CandidacyNotesService {
   ): Promise<SaveCandidacyNoteResponse> {
     const applicationId = payload.applicationId.trim();
     const text = payload.text.trim();
+    const source = payload.source ?? 'manual';
 
     const application =
       await this.applicationsRepository.findById(applicationId);
@@ -55,7 +56,7 @@ export class CandidacyNotesService {
       throw new ApplicationNotFoundError(applicationId);
     }
 
-    return this.createNote(applicationId, text, caller);
+    return this.createNote(applicationId, text, source, caller);
   }
 
   async updateCandidacyNote(
@@ -94,6 +95,7 @@ export class CandidacyNotesService {
   private async createNote(
     applicationId: string,
     text: string,
+    source: CandidacyNote['source'],
     caller: AuthenticatedUser,
   ): Promise<SaveCandidacyNoteResponse> {
     const { authorName, authorRole } = await this.resolveAuthor(caller);
@@ -101,6 +103,7 @@ export class CandidacyNotesService {
     const note = await this.candidacyNotesRepository.create(applicationId, {
       applicationId,
       text,
+      source,
       authorUid: caller.uid,
       authorName,
       authorRole,
@@ -122,6 +125,12 @@ export class CandidacyNotesService {
 
     if (!existing) {
       throw new CandidacyNoteNotFoundError(noteId);
+    }
+
+    if (existing.source === 'interview') {
+      throw new CandidacyNoteForbiddenError(
+        'Las notas generadas por entrevistas no se pueden editar.',
+      );
     }
 
     if (existing.authorUid !== caller.uid && caller.role !== 'admin') {

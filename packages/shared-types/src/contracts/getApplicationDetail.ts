@@ -50,7 +50,6 @@ export interface ApplicationDetailDTO {
   stage: ApplicationStage;
   status: ApplicationStatus;
   fitScore?: number;
-  fitSummary?: string;
   skillMatchStats?: SkillMatchStats;
   notes?: string;
   coverLetter?: string;
