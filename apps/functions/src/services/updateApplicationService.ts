@@ -92,10 +92,7 @@ export class UpdateApplicationStageService {
     const { nextStage } = STAGE_CONFIG[stage];
     if (nextStage !== undefined && emailSent) {
       try {
-        await this.updateStage(
-          { applicationId, stage: nextStage },
-          changedBy,
-        );
+        await this.updateStage({ applicationId, stage: nextStage }, changedBy);
       } catch (error) {
         logger.error(
           'UpdateApplicationStageService: error al encadenar transición automática',

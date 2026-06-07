@@ -25,8 +25,7 @@ const failedEmailLogsQueryKey = (applicationId: string) => [
 export function useFailedEmailLogs(applicationId: string) {
   return useQuery({
     queryKey: failedEmailLogsQueryKey(applicationId),
-    queryFn: () =>
-      getFailedEmailLogs(applicationId).then((res) => res.logs),
+    queryFn: () => getFailedEmailLogs(applicationId).then((res) => res.logs),
     enabled: Boolean(applicationId),
   });
 }

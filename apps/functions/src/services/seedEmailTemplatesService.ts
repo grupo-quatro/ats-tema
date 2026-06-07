@@ -45,7 +45,8 @@ const TEMPLATE_SEEDS: TemplateDefinition[] = [
     id: 'invitacion-entrevista-rrhh-1',
     name: 'Invitación 1ª Entrevista RRHH',
     stage: 'sch_interview_hr_1',
-    subject: 'Te invitamos a agendar tu 1ª entrevista con RRHH — [Nombre de la Posición]',
+    subject:
+      'Te invitamos a agendar tu 1ª entrevista con RRHH — [Nombre de la Posición]',
     body: `<p>Estimado/a [Nombre del Candidato],</p>
 <p>Nos alegra informarte que has avanzado en el proceso de selección para el puesto de <strong>[Nombre de la Posición]</strong> en <strong>[Nombre de la Empresa]</strong>.</p>
 <p>Te invitamos a agendar tu entrevista con nuestro equipo de RRHH a través del siguiente enlace: <a href="[Link de Agenda]">[Link de Agenda]</a></p>
@@ -56,7 +57,8 @@ const TEMPLATE_SEEDS: TemplateDefinition[] = [
     id: 'entrevista-rrhh-1-agendada',
     name: '1ª Entrevista RRHH Agendada',
     stage: 'interview_hr_1',
-    subject: 'Tu 1ª entrevista con RRHH está confirmada — [Nombre de la Posición]',
+    subject:
+      'Tu 1ª entrevista con RRHH está confirmada — [Nombre de la Posición]',
     body: `<p>Estimado/a [Nombre del Candidato],</p>
 <p>¡Perfecto! Tu entrevista con el equipo de RRHH para el puesto de <strong>[Nombre de la Posición]</strong> ha quedado agendada.</p>
 <p>Te esperamos en el horario que seleccionaste. Ante cualquier consulta, escribinos a [Email del Reclutador].</p>
@@ -67,7 +69,8 @@ const TEMPLATE_SEEDS: TemplateDefinition[] = [
     id: 'invitacion-entrevista-rrhh-2',
     name: 'Invitación 2ª Entrevista RRHH',
     stage: 'sch_interview_hr_2',
-    subject: 'Te invitamos a agendar tu 2ª entrevista con RRHH — [Nombre de la Posición]',
+    subject:
+      'Te invitamos a agendar tu 2ª entrevista con RRHH — [Nombre de la Posición]',
     body: `<p>Estimado/a [Nombre del Candidato],</p>
 <p>Queremos avanzar con una segunda instancia de entrevista con nuestro equipo de RRHH para el puesto de <strong>[Nombre de la Posición]</strong>.</p>
 <p>Podés agendar tu espacio en: <a href="[Link de Agenda]">[Link de Agenda]</a></p>
@@ -78,7 +81,8 @@ const TEMPLATE_SEEDS: TemplateDefinition[] = [
     id: 'entrevista-rrhh-2-agendada',
     name: '2ª Entrevista RRHH Agendada',
     stage: 'interview_hr_2',
-    subject: 'Tu 2ª entrevista con RRHH está confirmada — [Nombre de la Posición]',
+    subject:
+      'Tu 2ª entrevista con RRHH está confirmada — [Nombre de la Posición]',
     body: `<p>Estimado/a [Nombre del Candidato],</p>
 <p>Tu segunda entrevista con el equipo de RRHH para el puesto de <strong>[Nombre de la Posición]</strong> ha quedado agendada.</p>
 <p>Te esperamos. Ante cualquier consulta, escribinos a [Email del Reclutador].</p>
@@ -89,7 +93,8 @@ const TEMPLATE_SEEDS: TemplateDefinition[] = [
     id: 'invitacion-entrevista-tecnica-1',
     name: 'Invitación 1ª Entrevista Técnica',
     stage: 'sch_interview_tech_1',
-    subject: 'Te invitamos a agendar tu 1ª entrevista técnica — [Nombre de la Posición]',
+    subject:
+      'Te invitamos a agendar tu 1ª entrevista técnica — [Nombre de la Posición]',
     body: `<p>Estimado/a [Nombre del Candidato],</p>
 <p>Has avanzado a la instancia de evaluación técnica para el puesto de <strong>[Nombre de la Posición]</strong> en <strong>[Nombre de la Empresa]</strong>.</p>
 <p>Podés agendar tu entrevista técnica en: <a href="[Link de Agenda]">[Link de Agenda]</a></p>
@@ -100,7 +105,8 @@ const TEMPLATE_SEEDS: TemplateDefinition[] = [
     id: 'entrevista-tecnica-1-agendada',
     name: '1ª Entrevista Técnica Agendada',
     stage: 'interview_tech_1',
-    subject: 'Tu 1ª entrevista técnica está confirmada — [Nombre de la Posición]',
+    subject:
+      'Tu 1ª entrevista técnica está confirmada — [Nombre de la Posición]',
     body: `<p>Estimado/a [Nombre del Candidato],</p>
 <p>¡Excelente! Tu primera entrevista técnica para el puesto de <strong>[Nombre de la Posición]</strong> ha quedado agendada.</p>
 <p>Te esperamos. Ante cualquier consulta, escribinos a [Email del Reclutador].</p>
@@ -111,7 +117,8 @@ const TEMPLATE_SEEDS: TemplateDefinition[] = [
     id: 'invitacion-entrevista-tecnica-2',
     name: 'Invitación 2ª Entrevista Técnica',
     stage: 'sch_interview_tech_2',
-    subject: 'Te invitamos a agendar tu 2ª entrevista técnica — [Nombre de la Posición]',
+    subject:
+      'Te invitamos a agendar tu 2ª entrevista técnica — [Nombre de la Posición]',
     body: `<p>Estimado/a [Nombre del Candidato],</p>
 <p>Queremos avanzar con una segunda instancia técnica para el puesto de <strong>[Nombre de la Posición]</strong>.</p>
 <p>Podés agendar en: <a href="[Link de Agenda]">[Link de Agenda]</a></p>
@@ -122,7 +129,8 @@ const TEMPLATE_SEEDS: TemplateDefinition[] = [
     id: 'entrevista-tecnica-2-agendada',
     name: '2ª Entrevista Técnica Agendada',
     stage: 'interview_tech_2',
-    subject: 'Tu 2ª entrevista técnica está confirmada — [Nombre de la Posición]',
+    subject:
+      'Tu 2ª entrevista técnica está confirmada — [Nombre de la Posición]',
     body: `<p>Estimado/a [Nombre del Candidato],</p>
 <p>Tu segunda entrevista técnica para el puesto de <strong>[Nombre de la Posición]</strong> ha quedado agendada.</p>
 <p>Te esperamos. Ante cualquier consulta, escribinos a [Email del Reclutador].</p>

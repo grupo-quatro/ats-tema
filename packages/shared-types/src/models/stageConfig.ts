@@ -2,12 +2,12 @@ import type { ApplicationStage } from './application';
 import type { EmailTemplateStage } from './emailTemplate';
 
 export type TransitionMode =
-  | 'recruiter_action'         // recruiter autenticado actúa en la UI → changedBy = recruiter uid
+  | 'recruiter_action' // recruiter autenticado actúa en la UI → changedBy = recruiter uid
   | 'on_application_submitted' // candidato completa y envía su postulación
-  | 'on_cv_uploaded'           // CV upload completado → encadena a applied
-  | 'on_calendar_event'        // candidato agenda via link de calendario
-  | 'on_interview_submision'   // entrevistador envía evaluación post-entrevista
-  | 'on_offer_sent';           // email de oferta confirmado como enviado exitosamente
+  | 'on_cv_uploaded' // CV upload completado → encadena a applied
+  | 'on_calendar_event' // candidato agenda via link de calendario
+  | 'on_interview_submision' // entrevistador envía evaluación post-entrevista
+  | 'on_offer_sent'; // email de oferta confirmado como enviado exitosamente
 
 export interface StageConfig {
   label: string;
@@ -20,43 +20,145 @@ export interface StageConfig {
 // schedule_hr_2 está al final porque es opcional y posterior a técnicas,
 // pero isValidTransition lo permite desde cualquier punto >= cv_submitted.
 export const PIPELINE_ORDER: ApplicationStage[] = [
-  'profile_pending', 'applied', 'screening',
-  'schedule_hr_1', 'hr_1_scheduled', 'hr_1_done',
+  'profile_pending',
+  'applied',
+  'screening',
+  'schedule_hr_1',
+  'hr_1_scheduled',
+  'hr_1_done',
   'cv_submitted',
-  'schedule_tech_1', 'tech_1_scheduled', 'tech_1_done',
-  'schedule_tech_2', 'tech_2_scheduled', 'tech_2_done',
-  'schedule_hr_2', 'hr_2_scheduled', 'hr_2_done',
-  'send_offer', 'offer_sent', 'hired',
+  'schedule_tech_1',
+  'tech_1_scheduled',
+  'tech_1_done',
+  'schedule_tech_2',
+  'tech_2_scheduled',
+  'tech_2_done',
+  'schedule_hr_2',
+  'hr_2_scheduled',
+  'hr_2_done',
+  'send_offer',
+  'offer_sent',
+  'hired',
 ];
 
 // Accesibles desde cualquier stage activo, sin respetar el orden lineal
-export const JUMP_STAGES: ApplicationStage[] = ['rejected', 'withdrawn', 'send_offer'];
+export const JUMP_STAGES: ApplicationStage[] = [
+  'rejected',
+  'withdrawn',
+  'send_offer',
+];
 
 // Solo el sistema puede llegar aquí (no el recruiter directamente)
 export const SYSTEM_ONLY_STAGES: ApplicationStage[] = ['offer_sent'];
 
 export const STAGE_CONFIG: Record<ApplicationStage, StageConfig> = {
-  profile_pending:  { label: 'En proceso de registro',          emailTemplateStage: null,                   transitionMode: 'on_cv_uploaded',         nextStage: 'applied' },
-  applied:          { label: 'Postulación recibida',             emailTemplateStage: 'application_received', transitionMode: 'on_application_submitted' },
-  screening:        { label: 'CV en revisión',                   emailTemplateStage: null,                   transitionMode: 'recruiter_action' },
-  cv_submitted:     { label: 'CV presentado al área técnica',    emailTemplateStage: null,                   transitionMode: 'recruiter_action' },
-  schedule_hr_1:    { label: 'Contactamos para agendar 1ª Entrevista RRHH', emailTemplateStage: 'sch_interview_hr_1',   transitionMode: 'recruiter_action' },
-  hr_1_scheduled:   { label: 'Evento del calendario — 1ª Entrevista RRHH',       emailTemplateStage: 'interview_hr_1',       transitionMode: 'on_calendar_event' },
-  hr_1_done:        { label: '1ª Entrevista RRHH Realizada',                     emailTemplateStage: null,                   transitionMode: 'on_interview_submision' },
-  schedule_hr_2:    { label: 'Contactamos para agendar 2ª Entrevista RRHH',      emailTemplateStage: 'sch_interview_hr_2',   transitionMode: 'recruiter_action' },
-  hr_2_scheduled:   { label: 'Evento del calendario — 2ª Entrevista RRHH',       emailTemplateStage: 'interview_hr_2',       transitionMode: 'on_calendar_event' },
-  hr_2_done:        { label: '2ª Entrevista RRHH Realizada',                     emailTemplateStage: null,                   transitionMode: 'on_interview_submision' },
-  schedule_tech_1:  { label: 'Contactamos para agendar 1ª Entrevista Técnica',   emailTemplateStage: 'sch_interview_tech_1', transitionMode: 'recruiter_action' },
-  tech_1_scheduled: { label: 'Evento del calendario — 1ª Entrevista Técnica',    emailTemplateStage: 'interview_tech_1',     transitionMode: 'on_calendar_event' },
-  tech_1_done:      { label: '1ª Entrevista Técnica Realizada',                  emailTemplateStage: null,                   transitionMode: 'on_interview_submision' },
-  schedule_tech_2:  { label: 'Contactamos para agendar 2ª Entrevista Técnica',   emailTemplateStage: 'sch_interview_tech_2', transitionMode: 'recruiter_action' },
-  tech_2_scheduled: { label: 'Evento del calendario — 2ª Entrevista Técnica',    emailTemplateStage: 'interview_tech_2',     transitionMode: 'on_calendar_event' },
-  tech_2_done:      { label: '2ª Entrevista Técnica Realizada',                  emailTemplateStage: null,                   transitionMode: 'on_interview_submision' },
-  send_offer:       { label: 'Enviamos oferta laboral',           emailTemplateStage: 'offer',                transitionMode: 'recruiter_action',       nextStage: 'offer_sent' },
-  offer_sent:       { label: 'Oferta laboral enviada',            emailTemplateStage: null,                   transitionMode: 'on_offer_sent' },
-  hired:            { label: 'Contratado',                       emailTemplateStage: 'hired',                transitionMode: 'recruiter_action' },
-  rejected:         { label: 'Rechazado',                        emailTemplateStage: 'rejected',             transitionMode: 'recruiter_action' },
-  withdrawn:        { label: 'Retirado',                         emailTemplateStage: 'withdrawn',            transitionMode: 'recruiter_action' },
+  profile_pending: {
+    label: 'En proceso de registro',
+    emailTemplateStage: null,
+    transitionMode: 'on_cv_uploaded',
+    nextStage: 'applied',
+  },
+  applied: {
+    label: 'Postulación recibida',
+    emailTemplateStage: 'application_received',
+    transitionMode: 'on_application_submitted',
+  },
+  screening: {
+    label: 'CV en revisión',
+    emailTemplateStage: null,
+    transitionMode: 'recruiter_action',
+  },
+  cv_submitted: {
+    label: 'CV presentado al área técnica',
+    emailTemplateStage: null,
+    transitionMode: 'recruiter_action',
+  },
+  schedule_hr_1: {
+    label: 'Contactamos para agendar 1ª Entrevista RRHH',
+    emailTemplateStage: 'sch_interview_hr_1',
+    transitionMode: 'recruiter_action',
+  },
+  hr_1_scheduled: {
+    label: 'Evento del calendario — 1ª Entrevista RRHH',
+    emailTemplateStage: 'interview_hr_1',
+    transitionMode: 'on_calendar_event',
+  },
+  hr_1_done: {
+    label: '1ª Entrevista RRHH Realizada',
+    emailTemplateStage: null,
+    transitionMode: 'on_interview_submision',
+  },
+  schedule_hr_2: {
+    label: 'Contactamos para agendar 2ª Entrevista RRHH',
+    emailTemplateStage: 'sch_interview_hr_2',
+    transitionMode: 'recruiter_action',
+  },
+  hr_2_scheduled: {
+    label: 'Evento del calendario — 2ª Entrevista RRHH',
+    emailTemplateStage: 'interview_hr_2',
+    transitionMode: 'on_calendar_event',
+  },
+  hr_2_done: {
+    label: '2ª Entrevista RRHH Realizada',
+    emailTemplateStage: null,
+    transitionMode: 'on_interview_submision',
+  },
+  schedule_tech_1: {
+    label: 'Contactamos para agendar 1ª Entrevista Técnica',
+    emailTemplateStage: 'sch_interview_tech_1',
+    transitionMode: 'recruiter_action',
+  },
+  tech_1_scheduled: {
+    label: 'Evento del calendario — 1ª Entrevista Técnica',
+    emailTemplateStage: 'interview_tech_1',
+    transitionMode: 'on_calendar_event',
+  },
+  tech_1_done: {
+    label: '1ª Entrevista Técnica Realizada',
+    emailTemplateStage: null,
+    transitionMode: 'on_interview_submision',
+  },
+  schedule_tech_2: {
+    label: 'Contactamos para agendar 2ª Entrevista Técnica',
+    emailTemplateStage: 'sch_interview_tech_2',
+    transitionMode: 'recruiter_action',
+  },
+  tech_2_scheduled: {
+    label: 'Evento del calendario — 2ª Entrevista Técnica',
+    emailTemplateStage: 'interview_tech_2',
+    transitionMode: 'on_calendar_event',
+  },
+  tech_2_done: {
+    label: '2ª Entrevista Técnica Realizada',
+    emailTemplateStage: null,
+    transitionMode: 'on_interview_submision',
+  },
+  send_offer: {
+    label: 'Enviamos oferta laboral',
+    emailTemplateStage: 'offer',
+    transitionMode: 'recruiter_action',
+    nextStage: 'offer_sent',
+  },
+  offer_sent: {
+    label: 'Oferta laboral enviada',
+    emailTemplateStage: null,
+    transitionMode: 'on_offer_sent',
+  },
+  hired: {
+    label: 'Contratado',
+    emailTemplateStage: 'hired',
+    transitionMode: 'recruiter_action',
+  },
+  rejected: {
+    label: 'Rechazado',
+    emailTemplateStage: 'rejected',
+    transitionMode: 'recruiter_action',
+  },
+  withdrawn: {
+    label: 'Retirado',
+    emailTemplateStage: 'withdrawn',
+    transitionMode: 'recruiter_action',
+  },
 };
 
 /**

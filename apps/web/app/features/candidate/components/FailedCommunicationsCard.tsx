@@ -11,10 +11,7 @@ import {
 } from '@mui/material';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { STAGE_LABELS } from '../../pipeline/constants/stageLabels';
-import {
-  useFailedEmailLogs,
-  useRetryFailedEmail,
-} from '../hooks/useEmailLogs';
+import { useFailedEmailLogs, useRetryFailedEmail } from '../hooks/useEmailLogs';
 
 interface FailedCommunicationsCardProps {
   applicationId: string;
@@ -50,8 +47,16 @@ export function FailedCommunicationsCard({
 
       {isLoading ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-          <Skeleton variant="rectangular" height={52} sx={{ borderRadius: 1 }} />
-          <Skeleton variant="rectangular" height={52} sx={{ borderRadius: 1 }} />
+          <Skeleton
+            variant="rectangular"
+            height={52}
+            sx={{ borderRadius: 1 }}
+          />
+          <Skeleton
+            variant="rectangular"
+            height={52}
+            sx={{ borderRadius: 1 }}
+          />
         </Box>
       ) : (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>

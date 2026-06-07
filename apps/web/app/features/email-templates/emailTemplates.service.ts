@@ -13,19 +13,19 @@ export const EMAIL_TEMPLATE_VARIABLES = [
 ] as const;
 
 export const EMAIL_TEMPLATE_STAGE_LABELS: Record<EmailTemplateStage, string> = {
-  application_received:  'Recibido',
-  sch_interview_hr_1:    'Agendar Entrevista RRHH R1',
-  interview_hr_1:        'Entrevista RRHH R1',
-  sch_interview_hr_2:    'Agendar Entrevista RRHH R2',
-  interview_hr_2:        'Entrevista RRHH R2',
-  sch_interview_tech_1:  'Agendar Entrevista Técnica R1',
-  interview_tech_1:      'Entrevista Técnica R1',
-  sch_interview_tech_2:  'Agendar Entrevista Técnica R2',
-  interview_tech_2:      'Entrevista Técnica R2',
-  offer:                 'Oferta',
-  hired:                 'Contratado',
-  rejected:              'Rechazado',
-  withdrawn:             'Retirado',
+  application_received: 'Recibido',
+  sch_interview_hr_1: 'Agendar Entrevista RRHH R1',
+  interview_hr_1: 'Entrevista RRHH R1',
+  sch_interview_hr_2: 'Agendar Entrevista RRHH R2',
+  interview_hr_2: 'Entrevista RRHH R2',
+  sch_interview_tech_1: 'Agendar Entrevista Técnica R1',
+  interview_tech_1: 'Entrevista Técnica R1',
+  sch_interview_tech_2: 'Agendar Entrevista Técnica R2',
+  interview_tech_2: 'Entrevista Técnica R2',
+  offer: 'Oferta',
+  hired: 'Contratado',
+  rejected: 'Rechazado',
+  withdrawn: 'Retirado',
 };
 
 export const EMAIL_TEMPLATE_STAGES: EmailTemplateStage[] = [

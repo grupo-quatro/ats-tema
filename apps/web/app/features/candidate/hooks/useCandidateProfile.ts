@@ -138,9 +138,12 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
   // transitionMode === 'recruiter_action' y transición válida desde el stage actual
   const pendingStages = stageHistory.filter((stage) => {
     if (stage.status !== 'pending' || stage.key === 'descartado') return false;
-    const appStage = CANDIDATE_STAGE_TO_APP_STAGE[stage.key] as ApplicationStage | undefined;
+    const appStage = CANDIDATE_STAGE_TO_APP_STAGE[stage.key] as
+      | ApplicationStage
+      | undefined;
     if (!appStage) return false;
-    if (STAGE_CONFIG[appStage]?.transitionMode !== 'recruiter_action') return false;
+    if (STAGE_CONFIG[appStage]?.transitionMode !== 'recruiter_action')
+      return false;
     if (!currentApplicationStage) return false;
     return isValidTransition(currentApplicationStage, appStage);
   });

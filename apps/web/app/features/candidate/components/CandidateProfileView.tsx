@@ -288,7 +288,13 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                         </Box>
 
                         <Box sx={{ pb: isLast ? 0 : 2, flex: 1, minWidth: 0 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.5,
+                            }}
+                          >
                             <Typography
                               sx={{
                                 fontSize: 13,
@@ -307,15 +313,35 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                                 return key ? STAGE_LABELS[key] : entry.stage;
                               })()}
                             </Typography>
-                            {STAGE_CONFIG[entry.stage]?.transitionMode === 'on_calendar_event' ? (
-                              <CalendarDays size={12} color="#64748b" aria-label="Evento del calendario" style={{ flexShrink: 0 }} />
-                            ) : STAGE_CONFIG[entry.stage]?.emailTemplateStage !== null ? (
-                              <Mail size={12} color="#64748b" aria-label="Notificación por email" style={{ flexShrink: 0 }} />
+                            {STAGE_CONFIG[entry.stage]?.transitionMode ===
+                            'on_calendar_event' ? (
+                              <CalendarDays
+                                size={12}
+                                color="#64748b"
+                                aria-label="Evento del calendario"
+                                style={{ flexShrink: 0 }}
+                              />
+                            ) : STAGE_CONFIG[entry.stage]
+                                ?.emailTemplateStage !== null ? (
+                              <Mail
+                                size={12}
+                                color="#64748b"
+                                aria-label="Notificación por email"
+                                style={{ flexShrink: 0 }}
+                              />
                             ) : null}
                           </Box>
-                          <Typography variant="caption" sx={{ fontSize: 11, color: 'text.secondary' }}>
+                          <Typography
+                            variant="caption"
+                            sx={{ fontSize: 11, color: 'text.secondary' }}
+                          >
                             {changedAt.toLocaleDateString('es-AR')}{' '}
-                            {changedAt.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}{' · '}{entry.changedByEmail}
+                            {changedAt.toLocaleTimeString('es-AR', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                            {' · '}
+                            {entry.changedByEmail}
                           </Typography>
                           {entry.rejectionReason && (
                             <Typography

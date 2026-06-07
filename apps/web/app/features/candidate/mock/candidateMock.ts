@@ -64,25 +64,27 @@ export const STAGE_ORDER: CandidateStageKey[] = [
 ];
 
 export const STAGE_LABELS: Record<CandidateStageKey, string> = {
-  postulacion_recibida:          'Postulación recibida',
-  en_revision:                   'CV en revisión',
-  contacto_entrevista_rrhh_1:    'Contactamos para agendar 1ª Entrevista RRHH',
-  entrevista_rrhh_1_agendada:    '1ª Entrevista RRHH Agendada',
-  entrevista_rrhh_1_realizada:   '1ª Entrevista RRHH Realizada',
-  contacto_entrevista_rrhh_2:    'Contactamos para agendar 2ª Entrevista RRHH',
-  entrevista_rrhh_2_agendada:    '2ª Entrevista RRHH Agendada',
-  entrevista_rrhh_2_realizada:   '2ª Entrevista RRHH Realizada',
-  cv_presentado_area:            'CV presentado al área técnica',
-  contacto_entrevista_tecnica_1: 'Contactamos para agendar 1ª Entrevista Técnica',
+  postulacion_recibida: 'Postulación recibida',
+  en_revision: 'CV en revisión',
+  contacto_entrevista_rrhh_1: 'Contactamos para agendar 1ª Entrevista RRHH',
+  entrevista_rrhh_1_agendada: '1ª Entrevista RRHH Agendada',
+  entrevista_rrhh_1_realizada: '1ª Entrevista RRHH Realizada',
+  contacto_entrevista_rrhh_2: 'Contactamos para agendar 2ª Entrevista RRHH',
+  entrevista_rrhh_2_agendada: '2ª Entrevista RRHH Agendada',
+  entrevista_rrhh_2_realizada: '2ª Entrevista RRHH Realizada',
+  cv_presentado_area: 'CV presentado al área técnica',
+  contacto_entrevista_tecnica_1:
+    'Contactamos para agendar 1ª Entrevista Técnica',
   entrevista_tecnica_1_agendada: '1ª Entrevista Técnica Agendada',
-  entrevista_tecnica_1_realizada:'1ª Entrevista Técnica Realizada',
-  contacto_entrevista_tecnica_2: 'Contactamos para agendar 2ª Entrevista Técnica',
+  entrevista_tecnica_1_realizada: '1ª Entrevista Técnica Realizada',
+  contacto_entrevista_tecnica_2:
+    'Contactamos para agendar 2ª Entrevista Técnica',
   entrevista_tecnica_2_agendada: '2ª Entrevista Técnica Agendada',
-  entrevista_tecnica_2_realizada:'2ª Entrevista Técnica Realizada',
-  enviar_oferta:                 'Enviar Oferta',
-  oferta_enviada:                'Oferta enviada',
-  contratado:                    'Contratado',
-  descartado:                    'Descartado',
+  entrevista_tecnica_2_realizada: '2ª Entrevista Técnica Realizada',
+  enviar_oferta: 'Enviar Oferta',
+  oferta_enviada: 'Oferta enviada',
+  contratado: 'Contratado',
+  descartado: 'Descartado',
 };
 
 export interface CandidateStageEntry {
@@ -189,7 +191,8 @@ export const CANDIDATES_MOCK: CandidateMockProfile[] = [
         key: 'contacto_entrevista_rrhh_1',
         date: '19/03/2026',
         status: 'completed',
-        description: 'Se contactó al candidato para agendar la 1ª entrevista RRHH.',
+        description:
+          'Se contactó al candidato para agendar la 1ª entrevista RRHH.',
       },
       {
         key: 'entrevista_rrhh_1_agendada',

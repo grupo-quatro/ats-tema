@@ -1,4 +1,7 @@
-import type { ApplicationStage, UpdateApplicationStagePayload } from '@ats/shared-types';
+import type {
+  ApplicationStage,
+  UpdateApplicationStagePayload,
+} from '@ats/shared-types';
 import {
   JUMP_STAGES,
   PIPELINE_ORDER,

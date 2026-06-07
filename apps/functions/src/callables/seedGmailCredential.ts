@@ -8,12 +8,23 @@ export const seedGmailCredential = onRequest(async (request, response) => {
   }
   const { uid, accessToken, refreshToken, expiresAt } = request.body;
   if (!uid || !accessToken || !refreshToken) {
-    response.status(400).json({ error: 'uid, accessToken y refreshToken son requeridos' });
+    response
+      .status(400)
+      .json({ error: 'uid, accessToken y refreshToken son requeridos' });
     return;
   }
-  await db.collection('users').doc(uid).set(
-    { gmailCredential: { accessToken, refreshToken, expiresAt: expiresAt ?? Date.now() + 3_599_000 } },
-    { merge: true },
-  );
+  await db
+    .collection('users')
+    .doc(uid)
+    .set(
+      {
+        gmailCredential: {
+          accessToken,
+          refreshToken,
+          expiresAt: expiresAt ?? Date.now() + 3_599_000,
+        },
+      },
+      { merge: true },
+    );
   response.status(200).json({ ok: true, uid });
 });

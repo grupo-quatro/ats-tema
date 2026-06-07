@@ -96,7 +96,10 @@ export class EmailLogRepository implements IEmailLogRepository {
         .get();
 
       return snapshot.docs.map((doc) =>
-        this.mapToEmailLog({ ...(doc.data() as FirestoreEmailLog), id: doc.id }),
+        this.mapToEmailLog({
+          ...(doc.data() as FirestoreEmailLog),
+          id: doc.id,
+        }),
       );
     } catch (error) {
       throw new EmailLogRepositoryError(
@@ -114,7 +117,10 @@ export class EmailLogRepository implements IEmailLogRepository {
         .get();
 
       return snapshot.docs.map((doc) =>
-        this.mapToEmailLog({ ...(doc.data() as FirestoreEmailLog), id: doc.id }),
+        this.mapToEmailLog({
+          ...(doc.data() as FirestoreEmailLog),
+          id: doc.id,
+        }),
       );
     } catch (error) {
       throw new EmailLogRepositoryError(
@@ -133,7 +139,10 @@ export class EmailLogRepository implements IEmailLogRepository {
         .get();
 
       return snapshot.docs.map((doc) =>
-        this.mapToEmailLog({ ...(doc.data() as FirestoreEmailLog), id: doc.id }),
+        this.mapToEmailLog({
+          ...(doc.data() as FirestoreEmailLog),
+          id: doc.id,
+        }),
       );
     } catch (error) {
       throw new EmailLogRepositoryError(

@@ -76,7 +76,8 @@ export function useGmailConnect(): UseGmailConnectReturn {
         cleanUrl();
       })
       .catch((err: unknown) => {
-        const message = err instanceof Error ? err.message : 'Error desconocido';
+        const message =
+          err instanceof Error ? err.message : 'Error desconocido';
         console.error('[GmailConnect] exchange FAILED', message);
         setErrorMessage(message);
         setStatus('error');

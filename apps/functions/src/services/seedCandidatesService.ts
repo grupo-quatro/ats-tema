@@ -512,10 +512,14 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
  *
  * profile_pending se omite del historial (es el estado pre-postulación).
  */
-function buildStageHistoryPath(targetStage: ApplicationStage): ApplicationStage[] {
+function buildStageHistoryPath(
+  targetStage: ApplicationStage,
+): ApplicationStage[] {
   const JUMP_STAGES: ApplicationStage[] = ['rejected', 'withdrawn'];
 
-  const linearStages: ApplicationStage[] = PIPELINE_ORDER.filter((s) => s !== 'profile_pending');
+  const linearStages: ApplicationStage[] = PIPELINE_ORDER.filter(
+    (s) => s !== 'profile_pending',
+  );
 
   if (JUMP_STAGES.includes(targetStage)) {
     // Para jump stages, el historial lineal llega hasta 'applied' y luego el jump

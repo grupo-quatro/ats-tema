@@ -60,14 +60,18 @@ function getScoreColor(score: number): string {
 
 function getStatusChipSx(stage: ApplicationStage) {
   if (
-    stage === 'hr_1_done' || stage === 'hr_2_done' ||
-    stage === 'tech_1_done' || stage === 'tech_2_done'
+    stage === 'hr_1_done' ||
+    stage === 'hr_2_done' ||
+    stage === 'tech_1_done' ||
+    stage === 'tech_2_done'
   ) {
     return { bgcolor: '#fef3c7', color: '#b45309' };
   }
   if (
-    stage === 'hr_1_scheduled' || stage === 'hr_2_scheduled' ||
-    stage === 'tech_1_scheduled' || stage === 'tech_2_scheduled'
+    stage === 'hr_1_scheduled' ||
+    stage === 'hr_2_scheduled' ||
+    stage === 'tech_1_scheduled' ||
+    stage === 'tech_2_scheduled'
   ) {
     return { bgcolor: '#cffafe', color: '#0891b2' };
   }

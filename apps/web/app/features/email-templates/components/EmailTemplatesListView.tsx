@@ -28,18 +28,18 @@ const STAGE_COLORS: Record<
   { color: string; background: string }
 > = {
   application_received: { color: '#2563eb', background: '#dbeafe' },
-  sch_interview_hr_1:   { color: '#334155', background: '#f1f5f9' },
-  interview_hr_1:       { color: '#16a34a', background: '#dcfce7' },
-  sch_interview_hr_2:   { color: '#334155', background: '#f1f5f9' },
-  interview_hr_2:       { color: '#16a34a', background: '#dcfce7' },
+  sch_interview_hr_1: { color: '#334155', background: '#f1f5f9' },
+  interview_hr_1: { color: '#16a34a', background: '#dcfce7' },
+  sch_interview_hr_2: { color: '#334155', background: '#f1f5f9' },
+  interview_hr_2: { color: '#16a34a', background: '#dcfce7' },
   sch_interview_tech_1: { color: '#334155', background: '#f1f5f9' },
-  interview_tech_1:     { color: '#2563eb', background: '#dbeafe' },
+  interview_tech_1: { color: '#2563eb', background: '#dbeafe' },
   sch_interview_tech_2: { color: '#334155', background: '#f1f5f9' },
-  interview_tech_2:     { color: '#2563eb', background: '#dbeafe' },
-  offer:                { color: '#16a34a', background: '#dcfce7' },
-  hired:                { color: '#16a34a', background: '#dcfce7' },
-  rejected:             { color: '#64748b', background: '#f1f5f9' },
-  withdrawn:            { color: '#64748b', background: '#f1f5f9' },
+  interview_tech_2: { color: '#2563eb', background: '#dbeafe' },
+  offer: { color: '#16a34a', background: '#dcfce7' },
+  hired: { color: '#16a34a', background: '#dcfce7' },
+  rejected: { color: '#64748b', background: '#f1f5f9' },
+  withdrawn: { color: '#64748b', background: '#f1f5f9' },
 };
 
 function formatDate(date: Date): string {

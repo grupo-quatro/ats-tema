@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { exchangeGmailCode } from '../../../shared/api/gmailApi';
 
 const GMAIL_CONNECTED_KEY = 'ats-gmail-connected';
-const GMAIL_REDIRECT_URI = process.env.NEXT_PUBLIC_GMAIL_REDIRECT_URI ?? 'http://localhost:3000';
+const GMAIL_REDIRECT_URI =
+  process.env.NEXT_PUBLIC_GMAIL_REDIRECT_URI ?? 'http://localhost:3000';
 
 export default function GmailCodeHandler() {
   const router = useRouter();
@@ -16,7 +17,9 @@ export default function GmailCodeHandler() {
 
     const cleanUrl = () => {
       const url = new URL(window.location.href);
-      ['code', 'scope', 'authuser', 'prompt'].forEach(p => url.searchParams.delete(p));
+      ['code', 'scope', 'authuser', 'prompt'].forEach((p) =>
+        url.searchParams.delete(p),
+      );
       router.replace(url.pathname + (url.search || ''));
     };
 

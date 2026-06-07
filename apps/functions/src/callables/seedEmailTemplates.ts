@@ -31,8 +31,8 @@ export const seedEmailTemplates = onRequest(async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     logger.error('Error cargando semillas de email templates', error);
-    res
-      .status(500)
-      .json({ error: 'No se pudieron cargar las semillas de email templates.' });
+    res.status(500).json({
+      error: 'No se pudieron cargar las semillas de email templates.',
+    });
   }
 });
