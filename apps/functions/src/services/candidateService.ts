@@ -375,6 +375,21 @@ export class CandidateRegistrationService {
         candidateName: fullName,
         candidateEmail: profile.email,
       });
+
+      const stageHistory =
+        await this.applicationRepository.getStageHistory(applicationId);
+      const hasAppliedHistory = stageHistory.some(
+        (entry) => entry.stage === 'applied',
+      );
+
+      if (!hasAppliedHistory) {
+        await this.applicationRepository.addStageHistoryEntry(applicationId, {
+          stage: 'applied',
+          changedBy: candidateId,
+          changedByEmail: profile.email,
+          notes: 'Perfil confirmado por el candidato.',
+        });
+      }
     }
 
     return {

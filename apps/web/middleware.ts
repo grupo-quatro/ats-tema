@@ -44,9 +44,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(INTERNAL_HOME, request.url));
   }
 
-  if (pathname === '/login' && session) {
-    return NextResponse.redirect(new URL(INTERNAL_HOME, request.url));
-  }
+  // No redirigir /login → dashboard aquí: el cliente valida Firebase y evita
+  // loop con el layout del dashboard (cookie presente pero user aún null).
 
   return NextResponse.next();
 }

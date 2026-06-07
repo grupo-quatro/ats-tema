@@ -15,7 +15,6 @@ import {
   Paper,
   Select,
   MenuItem,
-  Snackbar,
   Stack,
   TextField,
   Typography,
@@ -50,6 +49,9 @@ import {
   updatePositionStatus,
 } from '@/shared/api/positionsApi';
 import { getJobStatusStyle } from '@/shared/lib/jobStatus';
+import AppSnackbar, {
+  type AppSnackbarState,
+} from '@/shared/components/AppSnackbar';
 
 type EditableSkill = Skill & {
   years: number;
@@ -57,7 +59,6 @@ type EditableSkill = Skill & {
 
 type SkillDraft = {
   name: string;
-  years: string;
   weight: string;
 };
 
@@ -303,14 +304,13 @@ function SkillEditor({
   function startEditingSkill(skill: EditableSkill, index: number) {
     setDraft({
       name: skill.name,
-      years: String(skill.years),
       weight: String(skill.weight),
     });
     setEditingIndex(index);
   }
 
   function cancelEditingSkill() {
-    setDraft({ name: '', years: '0', weight: '' });
+    setDraft({ name: '', weight: '' });
     setEditingIndex(null);
   }
 
@@ -359,29 +359,6 @@ function SkillEditor({
               value={draft.name}
               onChange={(event) =>
                 setDraft({ ...draft, name: event.target.value })
-              }
-              sx={inputSx}
-            />
-          </Grid>
-          <Grid size={{ xs: 6, md: 2 }}>
-            <Typography
-              sx={{
-                fontSize: '0.72rem',
-                color: '#64748b',
-                fontWeight: 700,
-                mb: 0.7,
-              }}
-            >
-              Años Exp.
-            </Typography>
-            <TextField
-              fullWidth
-              size="small"
-              type="number"
-              slotProps={{ htmlInput: { min: 0 } }}
-              value={draft.years}
-              onChange={(event) =>
-                setDraft({ ...draft, years: event.target.value })
               }
               sx={inputSx}
             />
@@ -474,17 +451,6 @@ function SkillEditor({
                 >
                   {skill.name}
                 </Typography>
-                <Chip
-                  label={`${skill.years} años`}
-                  size="small"
-                  sx={{
-                    bgcolor: '#dbfce7',
-                    color: '#16a34a',
-                    height: 24,
-                    fontSize: '0.7rem',
-                    fontWeight: 700,
-                  }}
-                />
               </Stack>
               <Stack direction="row" spacing={0.5} sx={{ flexShrink: 0 }}>
                 <Button
@@ -528,7 +494,7 @@ function SkillEditor({
 export default function PositionEditView({ job, onSave }: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [message, setMessage] = useState('');
+  const [snackbar, setSnackbar] = useState<AppSnackbarState>(null);
   const [status, setStatus] = useState<JobStatus>(job.status);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const statusStyle = getJobStatusStyle(status);
@@ -550,12 +516,10 @@ export default function PositionEditView({ job, onSave }: Props) {
   );
   const [mandatoryDraft, setMandatoryDraft] = useState<SkillDraft>({
     name: '',
-    years: '0',
     weight: '',
   });
   const [desirableDraft, setDesirableDraft] = useState<SkillDraft>({
     name: '',
-    years: '0',
     weight: '',
   });
   const defaultFormValues = {
@@ -624,10 +588,20 @@ export default function PositionEditView({ job, onSave }: Props) {
       );
       await queryClient.invalidateQueries({ queryKey: ['positions'] });
       await queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      setMessage('Estado actualizado correctamente');
+      setSnackbar({
+        message: 'Estado actualizado correctamente',
+        severity: 'success',
+      });
     } catch (error) {
       console.error('Error updating position status:', error);
       setStatus(previousStatus);
+      setSnackbar({
+        message:
+          error instanceof Error
+            ? error.message
+            : 'No se pudo actualizar el estado',
+        severity: 'error',
+      });
     } finally {
       setIsUpdatingStatus(false);
     }
@@ -661,21 +635,37 @@ export default function PositionEditView({ job, onSave }: Props) {
         ),
       };
 
-      if (onSave) {
-        await onSave(job.id, payload);
-      } else {
-        await updatePosition({
-          id: job.id,
-          ...payload,
-        } as UpdatePositionPayload);
-      }
+      try {
+        if (onSave) {
+          await onSave(job.id, payload);
+        } else {
+          await updatePosition({
+            id: job.id,
+            ...payload,
+          } as UpdatePositionPayload);
+        }
 
-      await queryClient.invalidateQueries({ queryKey: ['positions'] });
-      await queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      setMessage('Cambios guardados correctamente');
-      setTimeout(() => {
-        router.push('/dashboard/positions');
-      }, 900);
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['positions'] }),
+          queryClient.invalidateQueries({ queryKey: ['departments'] }),
+          queryClient.invalidateQueries({ queryKey: ['jobs'] }),
+        ]);
+        setSnackbar({
+          message: 'Cambios guardados correctamente',
+          severity: 'success',
+        });
+        setTimeout(() => {
+          router.push('/dashboard/positions');
+        }, 900);
+      } catch (error) {
+        setSnackbar({
+          message:
+            error instanceof Error
+              ? error.message
+              : 'No se pudieron guardar los cambios',
+          severity: 'error',
+        });
+      }
     },
   });
 
@@ -691,13 +681,13 @@ export default function PositionEditView({ job, onSave }: Props) {
       ...current,
       {
         name: draft.name.trim(),
-        years: Number(draft.years) || 0,
-        yearsOfExperience: Number(draft.years) || 0,
+        years: 0,
+        yearsOfExperience: 0,
         weight: Math.min(10, Math.max(1, Number(draft.weight) || 1)),
         type,
       },
     ]);
-    reset({ name: '', years: '0', weight: '' });
+    reset({ name: '', weight: '' });
   };
 
   const updateSkillFromDraft = (
@@ -710,20 +700,20 @@ export default function PositionEditView({ job, onSave }: Props) {
     if (!draft.name.trim()) return;
     if (!draft.weight.trim()) return;
 
-    const updatedSkill: EditableSkill = {
-      name: draft.name.trim(),
-      years: Number(draft.years) || 0,
-      yearsOfExperience: Number(draft.years) || 0,
-      weight: Math.min(10, Math.max(1, Number(draft.weight) || 1)),
-      type,
-    };
-
     update((current) =>
       current.map((skill, itemIndex) =>
-        itemIndex === index ? updatedSkill : skill,
+        itemIndex === index
+          ? {
+              name: draft.name.trim(),
+              years: skill.years,
+              yearsOfExperience: skill.yearsOfExperience,
+              weight: Math.min(10, Math.max(1, Number(draft.weight) || 1)),
+              type,
+            }
+          : skill,
       ),
     );
-    reset({ name: '', years: '0', weight: '' });
+    reset({ name: '', weight: '' });
   };
 
   return (
@@ -1356,30 +1346,11 @@ export default function PositionEditView({ job, onSave }: Props) {
         </Box>
       </Container>
 
-      <Snackbar
-        open={!!message}
+      <AppSnackbar
+        snackbar={snackbar}
+        onClose={() => setSnackbar(null)}
         autoHideDuration={2200}
-        onClose={() => setMessage('')}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-      >
-        <Alert
-          severity="success"
-          variant="filled"
-          onClose={() => setMessage('')}
-          sx={{
-            minWidth: { xs: 'calc(100vw - 32px)', sm: 420 },
-            py: 1.5,
-            px: 2,
-            borderRadius: '12px',
-            boxShadow: '0 18px 40px rgba(15, 23, 42, 0.24)',
-            fontSize: '0.95rem',
-            fontWeight: 700,
-            alignItems: 'center',
-          }}
-        >
-          {message}
-        </Alert>
-      </Snackbar>
+      />
     </Box>
   );
 }

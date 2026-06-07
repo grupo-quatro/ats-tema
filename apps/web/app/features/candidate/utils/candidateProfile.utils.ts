@@ -81,6 +81,11 @@ export const CANDIDATE_STAGE_TO_APP_STAGE: Record<
   descartado: 'rejected',
 };
 
+export function getCandidateStageLabel(stage: ApplicationStage): string {
+  const stageKey = STAGE_KEY_MAP[stage];
+  return stageKey ? STAGE_LABELS[stageKey] : STAGE_LABELS.postulacion_recibida;
+}
+
 export function getInitials(name?: string): string {
   if (!name) return '?';
   return name
@@ -144,8 +149,6 @@ function mapEducation(
 export function mapApplicationToProfile(
   application: ApplicationWithCandidateDTO,
 ): CandidateMockProfile {
-  const stageKey = STAGE_KEY_MAP[application.stage];
-
   return {
     id: application.candidateId,
     applicationId: application.id,
@@ -164,20 +167,9 @@ export function mapApplicationToProfile(
     gapSkills: [],
     jobSkills: [],
     strengths: application.fitSummary ? [application.fitSummary] : [],
-    interviewNotes: application.notes
-      ? [
-          {
-            authorName: 'Reclutador',
-            date: new Date(application.updatedAt).toLocaleDateString('es-AR'),
-            rating: 0,
-            note: application.notes,
-          },
-        ]
-      : [],
+    interviewNotes: [],
     stageHistory: buildStageHistory(application.stage),
-    currentStage: stageKey
-      ? (STAGE_LABELS[stageKey] ?? application.stage)
-      : application.stage,
+    currentStage: getCandidateStageLabel(application.stage),
     cvMockUrl: null,
   };
 }
@@ -186,7 +178,6 @@ export function mapDetailToProfile(
   detail: ApplicationDetailDTO,
 ): CandidateMockProfile {
   const { candidate, skillMatchStats } = detail;
-  const stageKey = STAGE_KEY_MAP[detail.stage];
 
   return {
     id: candidate.id,
@@ -211,20 +202,9 @@ export function mapDetailToProfile(
     gapSkills: skillMatchStats?.skillsFaltantes.map((s) => s.name) ?? [],
     jobSkills: detail.job.skills,
     strengths: detail.fitSummary ? [detail.fitSummary] : [],
-    interviewNotes: detail.notes
-      ? [
-          {
-            authorName: 'Reclutador',
-            date: new Date(detail.updatedAt).toLocaleDateString('es-AR'),
-            rating: 0,
-            note: detail.notes,
-          },
-        ]
-      : [],
+    interviewNotes: [],
     stageHistory: buildStageHistory(detail.stage),
-    currentStage: stageKey
-      ? (STAGE_LABELS[stageKey] ?? detail.stage)
-      : detail.stage,
+    currentStage: getCandidateStageLabel(detail.stage),
     cvMockUrl: null,
   };
 }

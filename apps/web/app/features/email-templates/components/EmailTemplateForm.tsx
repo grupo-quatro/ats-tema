@@ -29,6 +29,9 @@ import {
   EMAIL_TEMPLATE_STAGES,
   EMAIL_TEMPLATE_VARIABLES,
 } from '../emailTemplates.service';
+import AppSnackbar, {
+  type AppSnackbarState,
+} from '@/shared/components/AppSnackbar';
 
 interface EmailTemplateFormProps {
   mode: 'create' | 'edit';
@@ -55,7 +58,7 @@ export default function EmailTemplateForm({
   onSubmit,
 }: EmailTemplateFormProps) {
   const router = useRouter();
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [snackbar, setSnackbar] = useState<AppSnackbarState>(null);
   const initialValues: EmailTemplateFormValues = {
     name: template?.name ?? '',
     stage: template?.stage ?? '',
@@ -72,7 +75,7 @@ export default function EmailTemplateForm({
   const form = useForm({
     defaultValues: initialValues,
     onSubmit: async ({ value }) => {
-      setSubmitError(null);
+      setSnackbar(null);
 
       if (
         !value.name.trim() ||
@@ -80,17 +83,30 @@ export default function EmailTemplateForm({
         !value.subject.trim() ||
         !value.body.trim()
       ) {
-        setSubmitError('Completá todos los campos requeridos.');
+        setSnackbar({
+          message: 'Completá todos los campos requeridos.',
+          severity: 'error',
+        });
         return;
       }
 
-      await onSubmit({
-        name: value.name.trim(),
-        stage: value.stage,
-        subject: value.subject.trim(),
-        body: value.body.trim(),
-        isDefault: template?.isDefault ?? false,
-      });
+      try {
+        await onSubmit({
+          name: value.name.trim(),
+          stage: value.stage,
+          subject: value.subject.trim(),
+          body: value.body.trim(),
+          isDefault: template?.isDefault ?? false,
+        });
+      } catch (error) {
+        setSnackbar({
+          message:
+            error instanceof Error
+              ? error.message
+              : 'No se pudo guardar la plantilla.',
+          severity: 'error',
+        });
+      }
     },
   });
 
@@ -452,12 +468,6 @@ export default function EmailTemplateForm({
             </Stack>
           </Paper>
 
-          {submitError && (
-            <Typography sx={{ color: '#ef4444', textAlign: 'center' }}>
-              {submitError}
-            </Typography>
-          )}
-
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             spacing={2}
@@ -506,6 +516,7 @@ export default function EmailTemplateForm({
           </Stack>
         </Stack>
       </Box>
+      <AppSnackbar snackbar={snackbar} onClose={() => setSnackbar(null)} />
     </Box>
   );
 }

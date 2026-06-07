@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import {
   Table,
@@ -11,7 +12,13 @@ import {
   TableSortLabel,
   Paper,
   Box,
+  Button,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
 } from '@mui/material';
 import {
@@ -28,13 +35,26 @@ import type {
   ListPositionsOrderDir,
 } from '../hooks/usePositions';
 import { useUpdatePositionStatus } from '../hooks/useUpdatePositionStatus';
+import { useDeletePosition } from '../hooks/useDeletePosition';
 import { getJobStatusStyle } from '@/shared/lib/jobStatus';
+import AppSnackbar, {
+  type AppSnackbarState,
+} from '@/shared/components/AppSnackbar';
 
 type Props = {
   jobs: Job[];
   orderBy?: ListPositionsOrderBy;
   orderDir?: ListPositionsOrderDir;
   onSort?: (field: ListPositionsOrderBy) => void;
+};
+
+const actionButtonSx = {
+  width: 32,
+  height: 32,
+  p: 0,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 };
 
 export default function PositionsTable({
@@ -44,6 +64,74 @@ export default function PositionsTable({
   onSort,
 }: Props) {
   const { mutate: updateStatus } = useUpdatePositionStatus();
+  const deletePositionMutation = useDeletePosition();
+  const [positionToDelete, setPositionToDelete] = useState<Job | null>(null);
+  const [snackbar, setSnackbar] = useState<AppSnackbarState>(null);
+
+  const isDeletingPosition = deletePositionMutation.isPending;
+
+  function handleCloseDeleteDialog() {
+    if (isDeletingPosition) return;
+    setPositionToDelete(null);
+  }
+
+  function handleConfirmDeletePosition() {
+    if (!positionToDelete) return;
+
+    setSnackbar(null);
+    deletePositionMutation.mutate(
+      { id: positionToDelete.id },
+      {
+        onSuccess: () => {
+          setSnackbar({
+            message: 'Posicion eliminada correctamente',
+            severity: 'success',
+          });
+          setPositionToDelete(null);
+        },
+        onError: (error) => {
+          setSnackbar({
+            message:
+              error instanceof Error
+                ? error.message
+                : 'No se pudo eliminar la posicion.',
+            severity: 'error',
+          });
+        },
+      },
+    );
+  }
+
+  function handleToggleStatus(job: Job) {
+    const nextStatus = job.status === 'open' ? 'closed' : 'open';
+
+    updateStatus(
+      {
+        id: job.id,
+        status: nextStatus,
+      },
+      {
+        onSuccess: () => {
+          setSnackbar({
+            message:
+              nextStatus === 'open'
+                ? 'Posicion abierta correctamente'
+                : 'Posicion cerrada correctamente',
+            severity: 'success',
+          });
+        },
+        onError: (error) => {
+          setSnackbar({
+            message:
+              error instanceof Error
+                ? error.message
+                : 'No se pudo actualizar el estado de la posicion.',
+            severity: 'error',
+          });
+        },
+      },
+    );
+  }
 
   function headerCell(field: ListPositionsOrderBy, label: string) {
     return (
@@ -146,52 +234,107 @@ export default function PositionsTable({
                     ? new Date(job.createdAt).toLocaleDateString('es-AR')
                     : '-'}
                 </TableCell>
-                <TableCell align="right">
-                  <Link
-                    href={`/dashboard/positions/${job.id}`}
-                    style={{ display: 'inline-flex' }}
+                <TableCell align="right" sx={{ minWidth: 148 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'flex-end',
+                      gap: 0.5,
+                    }}
                   >
-                    <IconButton size="small">
-                      <Eye size={16} />
+                    <Link
+                      href={`/dashboard/positions/${job.id}`}
+                      style={{ display: 'inline-flex', lineHeight: 0 }}
+                    >
+                      <IconButton
+                        size="small"
+                        aria-label={`Ver ${job.title}`}
+                        sx={actionButtonSx}
+                      >
+                        <Eye size={16} />
+                      </IconButton>
+                    </Link>
+                    <Link
+                      href={`/dashboard/positions/${job.id}/edit`}
+                      style={{ display: 'inline-flex', lineHeight: 0 }}
+                    >
+                      <IconButton
+                        size="small"
+                        aria-label={`Editar ${job.title}`}
+                        sx={actionButtonSx}
+                      >
+                        <Edit2 size={16} />
+                      </IconButton>
+                    </Link>
+                    <IconButton
+                      size="small"
+                      aria-label={
+                        job.status === 'open'
+                          ? `Cerrar ${job.title}`
+                          : `Abrir ${job.title}`
+                      }
+                      title={
+                        job.status === 'open'
+                          ? 'Cerrar posición'
+                          : 'Abrir posición'
+                      }
+                      onClick={() => handleToggleStatus(job)}
+                      sx={actionButtonSx}
+                    >
+                      {job.status === 'open' ? (
+                        <ToggleRight size={16} color={statusStyle.color} />
+                      ) : (
+                        <ToggleLeft size={16} color={statusStyle.color} />
+                      )}
                     </IconButton>
-                  </Link>
-                  <Link
-                    href={`/dashboard/positions/${job.id}/edit`}
-                    style={{ display: 'inline-flex' }}
-                  >
-                    <IconButton size="small">
-                      <Edit2 size={16} />
+                    <IconButton
+                      size="small"
+                      aria-label={`Eliminar ${job.title}`}
+                      onClick={() => setPositionToDelete(job)}
+                      sx={actionButtonSx}
+                    >
+                      <Trash2 size={16} />
                     </IconButton>
-                  </Link>
-                  <IconButton
-                    size="small"
-                    title={
-                      job.status === 'open'
-                        ? 'Cerrar posición'
-                        : 'Abrir posición'
-                    }
-                    onClick={() =>
-                      updateStatus({
-                        id: job.id,
-                        status: job.status === 'open' ? 'closed' : 'open',
-                      })
-                    }
-                  >
-                    {job.status === 'open' ? (
-                      <ToggleRight size={16} color={statusStyle.color} />
-                    ) : (
-                      <ToggleLeft size={16} color={statusStyle.color} />
-                    )}
-                  </IconButton>
-                  <IconButton size="small">
-                    <Trash2 size={16} />
-                  </IconButton>
+                  </Box>
                 </TableCell>
               </TableRow>
             );
           })}
         </TableBody>
       </Table>
+      <Dialog
+        open={Boolean(positionToDelete)}
+        onClose={handleCloseDeleteDialog}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Eliminar posicion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Esta accion eliminara la posicion
+            {positionToDelete ? ` "${positionToDelete.title}"` : ''}. No
+            aparecera en el dashboard ni en el portal de empleos.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={handleCloseDeleteDialog}
+            disabled={isDeletingPosition}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleConfirmDeletePosition}
+            disabled={isDeletingPosition}
+          >
+            {isDeletingPosition ? 'Eliminando...' : 'Eliminar'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <AppSnackbar snackbar={snackbar} onClose={() => setSnackbar(null)} />
     </TableContainer>
   );
 }

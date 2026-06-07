@@ -49,7 +49,7 @@ export const JUMP_STAGES: ApplicationStage[] = [
 ];
 
 // Solo el sistema puede llegar aquí (no el recruiter directamente)
-export const SYSTEM_ONLY_STAGES: ApplicationStage[] = ['offer_sent'];
+export const SYSTEM_ONLY_STAGES: ApplicationStage[] = ['profile_pending', 'offer_sent'];
 
 export const STAGE_CONFIG: Record<ApplicationStage, StageConfig> = {
   profile_pending: {

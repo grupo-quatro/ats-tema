@@ -58,6 +58,8 @@ const mockAppRepo = {
   findById: vi.fn(),
   findByCandidateAndJob: vi.fn(),
   update: vi.fn(),
+  getStageHistory: vi.fn(),
+  addStageHistoryEntry: vi.fn(),
   delete: vi.fn(),
 };
 
@@ -518,6 +520,8 @@ describe('CandidateRegistrationService.confirmCandidateProfile', () => {
       stageUpdatedAt: new Date(),
     });
     mockAppRepo.update.mockResolvedValue(undefined);
+    mockAppRepo.getStageHistory.mockResolvedValue([]);
+    mockAppRepo.addStageHistoryEntry.mockResolvedValue(undefined);
 
     service = new CandidateRegistrationService(
       mockCandidatesRepo as any,
@@ -550,10 +554,18 @@ describe('CandidateRegistrationService.confirmCandidateProfile', () => {
     expect(mockAppRepo.update).toHaveBeenCalledWith(
       'app-1',
       expect.objectContaining({
+        stage: 'applied',
+        status: 'active',
         candidateName: 'Ana Loria',
         candidateEmail: 'ana@example.com',
       }),
     );
+    expect(mockAppRepo.addStageHistoryEntry).toHaveBeenCalledWith('app-1', {
+      stage: 'applied',
+      changedBy: 'cand-1',
+      changedByEmail: 'ana@example.com',
+      notes: 'Perfil confirmado por el candidato.',
+    });
   });
 
   it('bloquea la confirmación si el email ya tiene postulación para el mismo job', async () => {

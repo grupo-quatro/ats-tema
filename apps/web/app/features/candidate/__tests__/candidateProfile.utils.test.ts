@@ -134,12 +134,11 @@ describe('mapApplicationToProfile', () => {
     expect(profile.strengths).toEqual([]);
   });
 
-  it('mapea notes como interviewNote cuando está presente', () => {
+  it('retorna interviewNotes vacío (se cargan desde el backend en el perfil)', () => {
     const profile = mapApplicationToProfile(
       makeApplication({ notes: 'Candidato muy comunicativo.' }),
     );
-    expect(profile.interviewNotes).toHaveLength(1);
-    expect(profile.interviewNotes[0]!.note).toBe('Candidato muy comunicativo.');
+    expect(profile.interviewNotes).toEqual([]);
   });
 
   it('retorna interviewNotes vacío cuando notes no está definido', () => {

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Alert,
   Box,
   Button,
   Chip,
@@ -10,24 +9,21 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import type { ApplicationStage, Skill } from '@ats/shared-types';
-import { updateApplicationStage } from '@/shared/api/applicationsApi';
-import type { CandidateInterviewNote } from '../mock/candidateMock';
+import type { Skill } from '@ats/shared-types';
+import { saveCandidacyNote } from '../../../shared/api/candidacyNotesApi';
+import { saveInterviewForm } from '../../../shared/api/interviewFormsApi';
+import AppSnackbar from '@/shared/components/AppSnackbar';
 
 interface Props {
-  skills: Skill[];
-  candidateName: string;
   applicationId: string;
-  interviewNumber: 1 | 2;
+  skills: Skill[];
   onClose: () => void;
-  onSave?: (note: CandidateInterviewNote) => void | Promise<void>;
+  onSave?: () => void | Promise<void>;
 }
 
 export function TechnicalInterviewForm({
-  skills,
-  // candidateName,
   applicationId,
-  interviewNumber,
+  skills,
   onClose,
   onSave,
 }: Props) {
@@ -42,11 +38,40 @@ export function TechnicalInterviewForm({
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const mandatory = skills.filter((s) => s.type === 'mandatory');
+  const desirable = skills.filter((s) => s.type === 'desirable');
+
+  const trimmedComments = comments.trim();
+  const trimmedDecision = decision.trim();
+  const unratedMandatory = mandatory.filter(
+    (skill) => (ratings[skill.name] ?? 0) < 1,
+  );
+  const isFormValid =
+    overall >= 1 &&
+    trimmedDecision.length > 0 &&
+    trimmedComments.length > 0 &&
+    unratedMandatory.length === 0;
+
   const handleSave = async () => {
-    if (!overall || !decision.trim()) {
+    if (unratedMandatory.length > 0) {
       setErrorMessage(
-        'Completá la calificación general y la decisión recomendada.',
+        `Calificá todas las skills obligatorias: ${unratedMandatory.map((s) => s.name).join(', ')}.`,
       );
+      return;
+    }
+
+    if (!overall) {
+      setErrorMessage('La calificación general es obligatoria.');
+      return;
+    }
+
+    if (!trimmedDecision) {
+      setErrorMessage('La decisión recomendada es obligatoria.');
+      return;
+    }
+
+    if (!trimmedComments) {
+      setErrorMessage('Los comentarios y observaciones son obligatorios.');
       return;
     }
 
@@ -54,27 +79,42 @@ export function TechnicalInterviewForm({
     setIsSaving(true);
 
     try {
-      const note: CandidateInterviewNote = {
-        authorName: 'Evaluación técnica',
-        date: new Date().toLocaleDateString('es-ES'),
-        rating: overall,
-        note: [
-          `Decisión: ${decision.trim()}.`,
-          comments.trim(),
-          `Skills evaluadas: ${skills
-            .map((skill) => `${skill.name} (${ratings[skill.name] || 0}/5)`)
-            .join(', ')}.`,
-        ]
-          .filter(Boolean)
-          .join(' '),
-      };
+      const skillQuestions = skills.map((skill) => ({
+        question: skill.name,
+        answer: 'Evaluación registrada en entrevista.',
+        rating: ratings[skill.name] || undefined,
+      }));
 
-      const targetStage: ApplicationStage =
-        interviewNumber === 1 ? 'tech_1_done' : 'tech_2_done';
+      await saveInterviewForm({
+        applicationId,
+        type: 'tech',
+        title: 'Evaluación técnica – Entrevista',
+        overallRating: overall,
+        decision: trimmedDecision,
+        questions: [
+          ...skillQuestions,
+          {
+            question: 'Nivel técnico general',
+            answer: 'Evaluación registrada en entrevista.',
+            rating: overall,
+          },
+          {
+            question: 'Decisión recomendada',
+            answer: trimmedDecision,
+          },
+          {
+            question: 'Comentarios y observaciones',
+            answer: trimmedComments,
+          },
+        ],
+      });
 
-      await updateApplicationStage({ applicationId, stage: targetStage });
+      await saveCandidacyNote({
+        applicationId,
+        text: `[Entrevista técnica] ${trimmedComments}`,
+      });
 
-      await onSave?.(note);
+      await onSave?.();
       onClose();
     } catch {
       setErrorMessage('No se pudo guardar la evaluación.');
@@ -83,10 +123,7 @@ export function TechnicalInterviewForm({
     }
   };
 
-  const mandatory = skills.filter((s) => s.type === 'mandatory');
-  const desirable = skills.filter((s) => s.type === 'desirable');
-
-  const renderSkillRow = (skill: Skill) => (
+  const renderSkillRow = (skill: Skill, required: boolean) => (
     <Box
       key={skill.name}
       sx={{
@@ -98,6 +135,12 @@ export function TechnicalInterviewForm({
     >
       <Typography sx={{ fontWeight: 600, minWidth: 160 }}>
         {skill.name}
+        {required && (
+          <Typography component="span" color="error.main">
+            {' '}
+            *
+          </Typography>
+        )}
       </Typography>
       <Rating
         value={ratings[skill.name] || 0}
@@ -133,7 +176,7 @@ export function TechnicalInterviewForm({
             />
           </Box>
           <Stack spacing={2} sx={{ mb: 2.5 }}>
-            {mandatory.map(renderSkillRow)}
+            {mandatory.map((skill) => renderSkillRow(skill, true))}
           </Stack>
         </>
       )}
@@ -149,7 +192,7 @@ export function TechnicalInterviewForm({
             />
           </Box>
           <Stack spacing={2} sx={{ mb: 2.5 }}>
-            {desirable.map(renderSkillRow)}
+            {desirable.map((skill) => renderSkillRow(skill, false))}
           </Stack>
         </>
       )}
@@ -158,7 +201,12 @@ export function TechnicalInterviewForm({
         Evaluación General
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-        <Typography sx={{ fontWeight: 600 }}>Nivel Técnico General</Typography>
+        <Typography sx={{ fontWeight: 600 }}>
+          Nivel Técnico General{' '}
+          <Typography component="span" color="error.main">
+            *
+          </Typography>
+        </Typography>
         <Rating
           value={overall}
           onChange={(_, value) => setOverall(value || 0)}
@@ -171,8 +219,13 @@ export function TechnicalInterviewForm({
         value={decision}
         onChange={(e) => setDecision(e.target.value)}
         fullWidth
+        required
         sx={{ mb: 2 }}
         disabled={isSaving}
+        error={Boolean(decision && !trimmedDecision)}
+        helperText={
+          decision && !trimmedDecision ? 'La decisión no puede estar vacía' : ''
+        }
       />
 
       <TextField
@@ -180,17 +233,18 @@ export function TechnicalInterviewForm({
         value={comments}
         onChange={(e) => setComments(e.target.value)}
         fullWidth
+        required
         multiline
         minRows={4}
         sx={{ mb: 2 }}
         disabled={isSaving}
+        error={Boolean(comments && !trimmedComments)}
+        helperText={
+          comments && !trimmedComments
+            ? 'Los comentarios no pueden estar vacíos'
+            : ''
+        }
       />
-
-      {errorMessage && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {errorMessage}
-        </Alert>
-      )}
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
         <Button onClick={onClose} disabled={isSaving}>
@@ -199,7 +253,7 @@ export function TechnicalInterviewForm({
         <Button
           variant="contained"
           onClick={handleSave}
-          disabled={isSaving || !overall || !decision.trim()}
+          disabled={isSaving || !isFormValid}
           startIcon={
             isSaving ? <CircularProgress size={16} color="inherit" /> : null
           }
@@ -207,6 +261,12 @@ export function TechnicalInterviewForm({
           {isSaving ? 'Enviando...' : 'Enviar Evaluación'}
         </Button>
       </Box>
+      <AppSnackbar
+        snackbar={
+          errorMessage ? { message: errorMessage, severity: 'error' } : null
+        }
+        onClose={() => setErrorMessage('')}
+      />
     </Box>
   );
 }

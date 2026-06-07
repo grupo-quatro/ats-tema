@@ -45,17 +45,18 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useAuth();
+  const { user, authReady, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (authReady && !loading && !user) {
       router.replace('/login');
     }
-  }, [user, loading, router]);
+  }, [authReady, user, loading, router]);
 
-  if (loading) return <DashboardSkeleton />;
-  if (!user) return null;
+  if (!authReady || loading || !user) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <Box

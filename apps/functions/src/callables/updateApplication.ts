@@ -10,12 +10,16 @@ import { OrgConfigRepository } from '../repositories/orgConfigRepository';
 import { UserRepository } from '../repositories/userRepository';
 import {
   ApplicationNotFoundError,
+  ApplicationStageTransitionError,
   UpdateApplicationStageService,
 } from '../services/updateApplicationService';
 import { GmailSenderService } from '../services/gmailSenderService';
 import { StageEmailService } from '../services/stageEmailService';
 import { TemplateResolverService } from '../services/templateResolverService';
-import { validateUpdateApplicationStagePayload } from '../validators/updateApplicationValidator';
+import {
+  validateUpdateApplicationStagePayload,
+  UpdateApplicationValidationError,
+} from '../validators/updateApplicationValidator';
 
 interface UpdateApplicationPayload {
   applicationId: string;
@@ -122,6 +126,16 @@ export const updateApplicationStage = onRequest(async (request, response) => {
 
     if (error instanceof ApplicationNotFoundError) {
       response.status(404).json({ error: error.message });
+      return;
+    }
+
+    if (error instanceof UpdateApplicationValidationError) {
+      response.status(400).json({ error: error.message });
+      return;
+    }
+
+    if (error instanceof ApplicationStageTransitionError) {
+      response.status(409).json({ error: error.message });
       return;
     }
 

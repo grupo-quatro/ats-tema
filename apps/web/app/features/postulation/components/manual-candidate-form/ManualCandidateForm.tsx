@@ -45,6 +45,19 @@ import {
   useRegisterCvFlow,
   useRegisterManual,
 } from '../../hooks/usePostulation';
+import {
+  calculateApproximateYearsOfExperience,
+  emptyDateRangeErrors,
+  filterFilledEducations,
+  filterFilledExperiences,
+  formatEducationSummary,
+  hasDateRangeErrors,
+  normalizeEducationDates,
+  normalizeExperienceDates,
+  normalizeTechnicalSkills,
+  validateProfileDateRanges,
+  type DateRangeErrors,
+} from './manualCandidateForm.utils';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -54,8 +67,6 @@ type ManualCandidateValues = {
   email: string;
   phone: string;
   location: string;
-  yearsOfExperience: string;
-  education: string;
   technicalSkills: string;
   professionalSummary: string;
 };
@@ -66,8 +77,6 @@ const defaultValues: ManualCandidateValues = {
   email: '',
   phone: '',
   location: '',
-  yearsOfExperience: '',
-  education: '',
   technicalSkills: '',
   professionalSummary: '',
 };
@@ -106,20 +115,6 @@ function validatePhone({ value }: { value: string }): string | undefined {
   return undefined;
 }
 
-function validateYearsOfExperience({
-  value,
-}: {
-  value: string;
-}): string | undefined {
-  const trimmed = value?.trim() ?? '';
-  if (!trimmed) return undefined;
-  const parsed = Number(trimmed);
-  if (!Number.isInteger(parsed) || parsed < 0 || parsed > 80) {
-    return 'Ingresá un número válido';
-  }
-  return undefined;
-}
-
 function scrollToFirstInvalidField() {
   window.setTimeout(() => {
     const invalidField = document.querySelector<HTMLElement>(
@@ -137,10 +132,6 @@ const v = {
   lastName: requiredTrim('Los apellidos son requeridos'),
   email: { onBlur: validateEmail, onSubmit: validateEmail },
   phone: { onBlur: validatePhone, onSubmit: validatePhone },
-  yearsOfExperience: {
-    onBlur: validateYearsOfExperience,
-    onSubmit: validateYearsOfExperience,
-  },
 };
 
 const PAGE_MAX_WIDTH = 900;
@@ -196,12 +187,12 @@ export function ManualCandidateForm({
     null,
   );
   const appliedProfileCandidateIdRef = useRef<string | null>(null);
-  const [experiences, setExperiences] = useState<ParsedExperience[]>([
-    emptyExperience(),
-  ]);
+  const [experiences, setExperiences] = useState<ParsedExperience[]>([]);
   const [educations, setEducations] = useState<ParsedEducation[]>([
     emptyEducation(),
   ]);
+  const [dateRangeErrors, setDateRangeErrors] =
+    useState<DateRangeErrors>(emptyDateRangeErrors);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
@@ -235,12 +226,11 @@ export function ManualCandidateForm({
     form.setFieldValue('email', '');
     form.setFieldValue('phone', '');
     form.setFieldValue('location', '');
-    form.setFieldValue('yearsOfExperience', '');
-    form.setFieldValue('education', '');
     form.setFieldValue('technicalSkills', '');
     form.setFieldValue('professionalSummary', '');
-    setExperiences([emptyExperience()]);
+    setExperiences([]);
     setEducations([emptyEducation()]);
+    setDateRangeErrors(emptyDateRangeErrors());
   };
 
   const clearCvSelection = ({ resetProfile }: { resetProfile: boolean }) => {
@@ -305,6 +295,7 @@ export function ManualCandidateForm({
     field: keyof ParsedExperience,
     value: string,
   ) => {
+    setDateRangeErrors(emptyDateRangeErrors());
     setExperiences((prev) =>
       prev.map((exp, i) => (i === index ? { ...exp, [field]: value } : exp)),
     );
@@ -315,6 +306,7 @@ export function ManualCandidateForm({
     field: keyof ParsedEducation,
     value: string,
   ) => {
+    setDateRangeErrors(emptyDateRangeErrors());
     setEducations((prev) =>
       prev.map((edu, i) => (i === index ? { ...edu, [field]: value } : edu)),
     );
@@ -324,12 +316,21 @@ export function ManualCandidateForm({
     defaultValues: { ...defaultValues, ...initialValues },
     onSubmit: async ({ value }) => {
       try {
-        const parsedExperience = experiences.filter(
-          (e) => e.role?.trim() || e.company?.trim(),
+        const nextDateRangeErrors = validateProfileDateRanges(
+          experiences,
+          educations,
         );
-        const parsedEducation = educations.filter(
-          (e) => e.degree?.trim() || e.institution?.trim(),
-        );
+        setDateRangeErrors(nextDateRangeErrors);
+        if (hasDateRangeErrors(nextDateRangeErrors)) {
+          scrollToFirstInvalidField();
+          return;
+        }
+
+        const parsedExperience = filterFilledExperiences(experiences);
+        const parsedEducation = filterFilledEducations(educations);
+        const yearsOfExperience =
+          calculateApproximateYearsOfExperience(parsedExperience);
+        const technicalSkills = normalizeTechnicalSkills(value.technicalSkills);
 
         const profilePayload = {
           firstName: value.firstName.trim(),
@@ -337,16 +338,9 @@ export function ManualCandidateForm({
           email: value.email.trim(),
           phone: value.phone.trim(),
           location: value.location.trim() || undefined,
-          yearsOfExperience: value.yearsOfExperience.trim()
-            ? Number(value.yearsOfExperience.trim())
-            : undefined,
-          education: value.education.trim() || undefined,
-          technicalSkills: value.technicalSkills
-            ? value.technicalSkills
-                .split(',')
-                .map((s) => s.trim())
-                .filter(Boolean)
-            : undefined,
+          yearsOfExperience,
+          education: formatEducationSummary(parsedEducation),
+          technicalSkills: technicalSkills.length ? technicalSkills : undefined,
           professionalSummary: value.professionalSummary.trim() || undefined,
           parsedExperience: parsedExperience.length
             ? parsedExperience
@@ -413,15 +407,10 @@ export function ManualCandidateForm({
     form.setFieldValue('phone', profile.phone ?? '');
     form.setFieldValue('location', profile.location ?? '');
     form.setFieldValue(
-      'yearsOfExperience',
-      profile.yearsOfExperience === undefined
-        ? ''
-        : String(profile.yearsOfExperience),
-    );
-    form.setFieldValue('education', profile.education ?? '');
-    form.setFieldValue(
       'technicalSkills',
-      profile.technicalSkills?.join(', ') ?? '',
+      normalizeTechnicalSkills(profile.technicalSkills?.join(', ') ?? '').join(
+        ', ',
+      ),
     );
     form.setFieldValue(
       'professionalSummary',
@@ -429,14 +418,17 @@ export function ManualCandidateForm({
     );
     setExperiences(
       profile.parsedExperience?.length
-        ? profile.parsedExperience
-        : [emptyExperience()],
+        ? normalizeExperienceDates(profile.parsedExperience)
+        : [],
     );
     setEducations(
       profile.parsedEducation?.length
-        ? profile.parsedEducation
-        : [emptyEducation()],
+        ? normalizeEducationDates(profile.parsedEducation)
+        : profile.education
+          ? [{ ...emptyEducation(), degree: profile.education }]
+          : [emptyEducation()],
     );
+    setDateRangeErrors(emptyDateRangeErrors());
     appliedProfileCandidateIdRef.current = data.candidateId;
     setProcessingDialogOpen(false);
   }, [form, profileQuery.data]);
@@ -714,22 +706,6 @@ export function ManualCandidateForm({
                   Icon={MapPin}
                   gridColumnFull
                 />
-                <ManualProfileFormField
-                  Field={Field}
-                  name="yearsOfExperience"
-                  label="Años de experiencia"
-                  Icon={Briefcase}
-                  validators={v.yearsOfExperience}
-                  fieldType="number"
-                  autoComplete="off"
-                />
-                <ManualProfileFormField
-                  Field={Field}
-                  name="education"
-                  label="Formación principal"
-                  Icon={GraduationCap}
-                  placeholder="Ej. Tecnicatura en Análisis de Sistemas"
-                />
               </Box>
             </Box>
 
@@ -741,6 +717,15 @@ export function ManualCandidateForm({
                 icon={<Briefcase size={16} />}
                 label="Experiencia Laboral"
               />
+              {experiences.length === 0 && (
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 1.5 }}
+                >
+                  Podés dejar esta sección vacía o agregar tu experiencia.
+                </Typography>
+              )}
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 {experiences.map((exp, index) => (
                   <Box
@@ -752,7 +737,7 @@ export function ManualCandidateForm({
                       borderRadius: 2,
                     }}
                   >
-                    {experiences.length > 1 && (
+                    {experiences.length > 0 && (
                       <Box
                         sx={{
                           display: 'flex',
@@ -762,11 +747,12 @@ export function ManualCandidateForm({
                       >
                         <IconButton
                           size="small"
-                          onClick={() =>
+                          onClick={() => {
+                            setDateRangeErrors(emptyDateRangeErrors());
                             setExperiences((prev) =>
                               prev.filter((_, i) => i !== index),
-                            )
-                          }
+                            );
+                          }}
                           aria-label="Eliminar experiencia"
                         >
                           <Trash2 size={15} />
@@ -803,23 +789,32 @@ export function ManualCandidateForm({
                       />
                       <TextField
                         label="Desde"
+                        type="date"
                         value={exp.startDate ?? ''}
                         onChange={(e) =>
                           updateExperience(index, 'startDate', e.target.value)
                         }
                         fullWidth
                         size="small"
-                        placeholder="Ej. Mar 2020"
+                        error={Boolean(dateRangeErrors.experiences[index])}
+                        helperText={dateRangeErrors.experiences[index]}
+                        slotProps={{ inputLabel: { shrink: true } }}
                       />
                       <TextField
                         label="Hasta"
+                        type="date"
                         value={exp.endDate ?? ''}
                         onChange={(e) =>
                           updateExperience(index, 'endDate', e.target.value)
                         }
                         fullWidth
                         size="small"
-                        placeholder="Ej. Actualidad"
+                        error={Boolean(dateRangeErrors.experiences[index])}
+                        helperText={
+                          dateRangeErrors.experiences[index] ??
+                          'Dejalo vacío si es tu trabajo actual.'
+                        }
+                        slotProps={{ inputLabel: { shrink: true } }}
                       />
                     </Box>
                   </Box>
@@ -827,9 +822,10 @@ export function ManualCandidateForm({
               </Box>
               <Button
                 startIcon={<Plus size={16} />}
-                onClick={() =>
-                  setExperiences((prev) => [...prev, emptyExperience()])
-                }
+                onClick={() => {
+                  setDateRangeErrors(emptyDateRangeErrors());
+                  setExperiences((prev) => [...prev, emptyExperience()]);
+                }}
                 sx={{ mt: 2, textTransform: 'none' }}
               >
                 Agregar experiencia
@@ -865,11 +861,12 @@ export function ManualCandidateForm({
                       >
                         <IconButton
                           size="small"
-                          onClick={() =>
+                          onClick={() => {
+                            setDateRangeErrors(emptyDateRangeErrors());
                             setEducations((prev) =>
                               prev.filter((_, i) => i !== index),
-                            )
-                          }
+                            );
+                          }}
                           aria-label="Eliminar educación"
                         >
                           <Trash2 size={15} />
@@ -906,23 +903,32 @@ export function ManualCandidateForm({
                       />
                       <TextField
                         label="Desde"
+                        type="date"
                         value={edu.startDate ?? ''}
                         onChange={(e) =>
                           updateEducation(index, 'startDate', e.target.value)
                         }
                         fullWidth
                         size="small"
-                        placeholder="Ej. 2016"
+                        error={Boolean(dateRangeErrors.educations[index])}
+                        helperText={dateRangeErrors.educations[index]}
+                        slotProps={{ inputLabel: { shrink: true } }}
                       />
                       <TextField
                         label="Hasta"
+                        type="date"
                         value={edu.endDate ?? ''}
                         onChange={(e) =>
                           updateEducation(index, 'endDate', e.target.value)
                         }
                         fullWidth
                         size="small"
-                        placeholder="Ej. 2020"
+                        error={Boolean(dateRangeErrors.educations[index])}
+                        helperText={
+                          dateRangeErrors.educations[index] ??
+                          'Dejalo vacío si está en curso.'
+                        }
+                        slotProps={{ inputLabel: { shrink: true } }}
                       />
                     </Box>
                   </Box>
@@ -930,9 +936,10 @@ export function ManualCandidateForm({
               </Box>
               <Button
                 startIcon={<Plus size={16} />}
-                onClick={() =>
-                  setEducations((prev) => [...prev, emptyEducation()])
-                }
+                onClick={() => {
+                  setDateRangeErrors(emptyDateRangeErrors());
+                  setEducations((prev) => [...prev, emptyEducation()]);
+                }}
                 sx={{ mt: 2, textTransform: 'none' }}
               >
                 Agregar educación

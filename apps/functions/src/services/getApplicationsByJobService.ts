@@ -47,7 +47,9 @@ export class GetApplicationsByJobService {
         options,
       );
 
-      return applications.map(this.toApplicationWithCandidateDTO);
+      return applications
+        .filter((application) => application.status !== 'draft')
+        .map(this.toApplicationWithCandidateDTO);
     } catch (error) {
       if (error instanceof JobNotFoundError) {
         throw error;

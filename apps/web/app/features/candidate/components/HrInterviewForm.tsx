@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Alert,
   Box,
   Button,
   CircularProgress,
@@ -8,25 +7,17 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import type { ApplicationStage } from '@ats/shared-types';
-import { updateApplicationStage } from '@/shared/api/applicationsApi';
-import type { CandidateInterviewNote } from '../mock/candidateMock';
+import { saveCandidacyNote } from '../../../shared/api/candidacyNotesApi';
+import { saveInterviewForm } from '../../../shared/api/interviewFormsApi';
+import AppSnackbar from '@/shared/components/AppSnackbar';
 
 interface Props {
-  candidateName: string;
   applicationId: string;
-  interviewNumber: 1 | 2;
   onClose: () => void;
-  onSave?: (note: CandidateInterviewNote) => void | Promise<void>;
+  onSave?: () => void | Promise<void>;
 }
 
-export function HrInterviewForm({
-  /* candidateName, */
-  applicationId,
-  interviewNumber,
-  onClose,
-  onSave,
-}: Props) {
+export function HrInterviewForm({ applicationId, onClose, onSave }: Props) {
   const [communication, setCommunication] = useState<number>(0);
   const [teamwork, setTeamwork] = useState<number>(0);
   const [salaryExpectation, setSalaryExpectation] = useState('');
@@ -35,11 +26,27 @@ export function HrInterviewForm({
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const trimmedComments = comments.trim();
+  const trimmedDecision = decision.trim();
+  const isFormValid =
+    communication >= 1 &&
+    teamwork >= 1 &&
+    trimmedDecision.length > 0 &&
+    trimmedComments.length > 0;
+
   const handleSave = async () => {
-    if (!communication || !teamwork || !decision.trim()) {
-      setErrorMessage(
-        'Completá las calificaciones de competencias y la decisión recomendada.',
-      );
+    if (!communication || !teamwork) {
+      setErrorMessage('Calificá comunicación y trabajo en equipo (1 a 5).');
+      return;
+    }
+
+    if (!trimmedDecision) {
+      setErrorMessage('La decisión recomendada es obligatoria.');
+      return;
+    }
+
+    if (!trimmedComments) {
+      setErrorMessage('Los comentarios y observaciones son obligatorios.');
       return;
     }
 
@@ -47,29 +54,46 @@ export function HrInterviewForm({
     setIsSaving(true);
 
     try {
-      const note: CandidateInterviewNote = {
-        authorName: 'Evaluación RRHH',
-        date: new Date().toLocaleDateString('es-ES'),
-        rating: Math.round((communication + teamwork) / 2),
-        note: [
-          `Comunicación: ${communication}/5.`,
-          `Trabajo en equipo: ${teamwork}/5.`,
-          salaryExpectation.trim()
-            ? `Expectativa salarial: ${salaryExpectation.trim()}.`
-            : '',
-          `Decisión: ${decision.trim()}.`,
-          comments.trim(),
-        ]
-          .filter(Boolean)
-          .join(' '),
-      };
+      const overallRating = Math.round((communication + teamwork) / 2);
 
-      const targetStage: ApplicationStage =
-        interviewNumber === 1 ? 'hr_1_done' : 'hr_2_done';
+      await saveInterviewForm({
+        applicationId,
+        type: 'hr',
+        title: 'Evaluación RRHH – Entrevista',
+        overallRating,
+        decision: trimmedDecision,
+        questions: [
+          {
+            question: 'Comunicación y claridad al expresarse',
+            answer: 'Evaluación registrada en entrevista.',
+            rating: communication,
+          },
+          {
+            question: 'Trabajo en equipo y adaptabilidad',
+            answer: 'Evaluación registrada en entrevista.',
+            rating: teamwork,
+          },
+          {
+            question: 'Expectativa salarial',
+            answer: salaryExpectation.trim() || 'No indicada',
+          },
+          {
+            question: 'Decisión recomendada',
+            answer: trimmedDecision,
+          },
+          {
+            question: 'Comentarios y observaciones',
+            answer: trimmedComments,
+          },
+        ],
+      });
 
-      await updateApplicationStage({ applicationId, stage: targetStage });
+      await saveCandidacyNote({
+        applicationId,
+        text: `[Entrevista RRHH] ${trimmedComments}`,
+      });
 
-      await onSave?.(note);
+      await onSave?.();
       onClose();
     } catch {
       setErrorMessage('No se pudo guardar la evaluación.');
@@ -93,7 +117,12 @@ export function HrInterviewForm({
         }}
       >
         <Box>
-          <Typography sx={{ fontWeight: 600 }}>Comunicación</Typography>
+          <Typography sx={{ fontWeight: 600 }}>
+            Comunicación{' '}
+            <Typography component="span" color="error.main">
+              *
+            </Typography>
+          </Typography>
           <Typography variant="caption" color="text.secondary">
             Claridad al expresarse, escucha activa
           </Typography>
@@ -114,7 +143,12 @@ export function HrInterviewForm({
         }}
       >
         <Box>
-          <Typography sx={{ fontWeight: 600 }}>Trabajo en Equipo</Typography>
+          <Typography sx={{ fontWeight: 600 }}>
+            Trabajo en Equipo{' '}
+            <Typography component="span" color="error.main">
+              *
+            </Typography>
+          </Typography>
           <Typography variant="caption" color="text.secondary">
             Colaboración, adaptabilidad
           </Typography>
@@ -144,8 +178,13 @@ export function HrInterviewForm({
         value={decision}
         onChange={(e) => setDecision(e.target.value)}
         fullWidth
+        required
         sx={{ mb: 2 }}
         disabled={isSaving}
+        error={Boolean(decision && !trimmedDecision)}
+        helperText={
+          decision && !trimmedDecision ? 'La decisión no puede estar vacía' : ''
+        }
       />
 
       <TextField
@@ -153,17 +192,18 @@ export function HrInterviewForm({
         value={comments}
         onChange={(e) => setComments(e.target.value)}
         fullWidth
+        required
         multiline
         minRows={4}
         sx={{ mb: 2 }}
         disabled={isSaving}
+        error={Boolean(comments && !trimmedComments)}
+        helperText={
+          comments && !trimmedComments
+            ? 'Los comentarios no pueden estar vacíos'
+            : ''
+        }
       />
-
-      {errorMessage && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {errorMessage}
-        </Alert>
-      )}
 
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
         <Button onClick={onClose} disabled={isSaving}>
@@ -172,7 +212,7 @@ export function HrInterviewForm({
         <Button
           variant="contained"
           onClick={handleSave}
-          disabled={isSaving || !communication || !teamwork || !decision.trim()}
+          disabled={isSaving || !isFormValid}
           startIcon={
             isSaving ? <CircularProgress size={16} color="inherit" /> : null
           }
@@ -180,6 +220,12 @@ export function HrInterviewForm({
           {isSaving ? 'Enviando...' : 'Enviar Evaluación'}
         </Button>
       </Box>
+      <AppSnackbar
+        snackbar={
+          errorMessage ? { message: errorMessage, severity: 'error' } : null
+        }
+        onClose={() => setErrorMessage('')}
+      />
     </Box>
   );
 }

@@ -3,6 +3,7 @@ import { HttpsError, onCall, onRequest } from 'firebase-functions/v2/https';
 
 import type {
   CreateJobPayload,
+  DeletePositionPayload,
   GetInternalJobDetailPayload,
   JobLocation,
   JobStatus,
@@ -27,6 +28,7 @@ import {
 } from '../services/jobService';
 import {
   validateCreateJobPayload,
+  validateDeletePositionPayload,
   validateGetInternalJobDetailPayload,
   validateUpdatePositionPayload,
   validateUpdatePositionStatusPayload,
@@ -304,6 +306,49 @@ export const updatePositionStatus = onRequest(async (request, response) => {
     response
       .status(500)
       .json({ error: 'No se pudo actualizar el estado de la posición.' });
+  }
+});
+
+export const deletePosition = onRequest(async (request, response) => {
+  try {
+    if (request.method !== 'DELETE') {
+      response.status(405).json({ error: 'Method Not Allowed.' });
+      return;
+    }
+
+    await requireAuthenticatedUser(request);
+
+    const payload = request.body as Partial<DeletePositionPayload>;
+
+    validateDeletePositionPayload(payload);
+
+    const result = await jobService.deletePosition(payload.id);
+
+    response.status(200).json(result);
+  } catch (error) {
+    if (error instanceof HttpAuthError) {
+      response.status(401).json({ error: error.message });
+      return;
+    }
+
+    if (error instanceof HttpsError) {
+      response.status(400).json({ error: error.message });
+      return;
+    }
+
+    if (error instanceof JobUpdateNotFoundError) {
+      response.status(404).json({ error: 'Posición no encontrada.' });
+      return;
+    }
+
+    if (error instanceof UpdateJobServiceError) {
+      logger.error('Error de negocio eliminando posición', error);
+      response.status(500).json({ error: error.message });
+      return;
+    }
+
+    logger.error('Error inesperado eliminando posición', error);
+    response.status(500).json({ error: 'No se pudo eliminar la posición.' });
   }
 });
 

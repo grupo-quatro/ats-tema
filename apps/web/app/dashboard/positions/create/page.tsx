@@ -1,40 +1,40 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import {
-  Container,
-  Box,
-  Button,
-  Alert,
-  Snackbar,
-  Typography,
-} from '@mui/material';
+import { Container, Box, Button, Typography } from '@mui/material';
 import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import PositionForm from '@/features/dashboard/positions/components/PositionForm';
 import { useCreatePosition } from '@/features/dashboard/positions/hooks/useCreatePosition';
 import type { CreateJobPayload } from '@ats/shared-types';
+import AppSnackbar, {
+  type AppSnackbarState,
+} from '@/shared/components/AppSnackbar';
 
 export default function CreateJobPage() {
   const router = useRouter();
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [snackbar, setSnackbar] = useState<AppSnackbarState>(null);
   const { mutateAsync: createJob, isPending } = useCreatePosition();
 
   const handleCreateJob = async (jobData: CreateJobPayload) => {
-    setErrorMessage('');
+    setSnackbar(null);
 
     try {
       await createJob(jobData);
-      setSuccessMessage('Posicion creada exitosamente');
+      setSnackbar({
+        message: 'Posicion creada exitosamente',
+        severity: 'success',
+      });
 
       setTimeout(() => {
         router.push('/dashboard/positions');
       }, 2000);
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : 'Error al crear la posicion',
-      );
+      setSnackbar({
+        message:
+          error instanceof Error ? error.message : 'Error al crear la posicion',
+        severity: 'error',
+      });
     }
   };
 
@@ -102,18 +102,10 @@ export default function CreateJobPage() {
           onSubmit={handleCreateJob}
           isLoading={isPending}
           onCancel={() => router.push('/dashboard/positions')}
-          submitError={errorMessage}
         />
       </Container>
 
-      <Snackbar
-        open={!!successMessage}
-        autoHideDuration={3000}
-        onClose={() => setSuccessMessage('')}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert severity="success">{successMessage}</Alert>
-      </Snackbar>
+      <AppSnackbar snackbar={snackbar} onClose={() => setSnackbar(null)} />
     </Box>
   );
 }

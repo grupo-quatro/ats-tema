@@ -57,13 +57,11 @@ export default function PositionForm({
 
   const [mandatorySkillForm, setMandatorySkillForm] = useState({
     name: '',
-    years: '0',
     weight: '',
   });
 
   const [desirableSkillForm, setDesirableSkillForm] = useState({
     name: '',
-    years: '0',
     weight: '',
   });
 
@@ -129,13 +127,12 @@ export default function PositionForm({
         name: mandatorySkillForm.name,
         weight: parseInt(mandatorySkillForm.weight),
         type: 'mandatory',
-        yearsOfExperience: Math.max(0, Number(mandatorySkillForm.years) || 0),
+        yearsOfExperience: 0,
       },
     ]);
 
     setMandatorySkillForm({
       name: '',
-      years: '0',
       weight: '',
     });
 
@@ -152,13 +149,12 @@ export default function PositionForm({
         name: desirableSkillForm.name,
         weight: parseInt(desirableSkillForm.weight),
         type: 'desirable',
-        yearsOfExperience: Math.max(0, Number(desirableSkillForm.years) || 0),
+        yearsOfExperience: 0,
       },
     ]);
 
     setDesirableSkillForm({
       name: '',
-      years: '0',
       weight: '',
     });
 
@@ -710,7 +706,7 @@ export default function PositionForm({
               sx={{ p: 2, borderRadius: '10px', borderColor: '#dbe2ea', mb: 4 }}
             >
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 7 }}>
                   <Typography sx={{ fontSize: '0.72rem', mb: 0.8 }}>
                     Nombre de la Skill
                   </Typography>
@@ -723,24 +719,6 @@ export default function PositionForm({
                       setMandatorySkillForm({
                         ...mandatorySkillForm,
                         name: e.target.value,
-                      })
-                    }
-                  />
-                </Grid>
-                <Grid size={{ xs: 6, md: 2 }}>
-                  <Typography sx={{ fontSize: '0.72rem', mb: 0.8 }}>
-                    Años Exp.
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    type="number"
-                    slotProps={{ htmlInput: { min: 0 } }}
-                    value={mandatorySkillForm.years}
-                    onChange={(e) =>
-                      setMandatorySkillForm({
-                        ...mandatorySkillForm,
-                        years: e.target.value,
                       })
                     }
                   />
@@ -842,15 +820,6 @@ export default function PositionForm({
                           >
                             {skill.name}
                           </Typography>
-                          <Typography
-                            sx={{
-                              fontSize: '0.75rem',
-                              color: '#6b7280',
-                              mt: 0.5,
-                            }}
-                          >
-                            {skill.yearsOfExperience} años de experiencia
-                          </Typography>
                         </Box>
                         <Button
                           size="small"
@@ -934,7 +903,7 @@ export default function PositionForm({
               sx={{ p: 2, borderRadius: '10px', borderColor: '#dbe2ea', mb: 4 }}
             >
               <Grid container spacing={2}>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 7 }}>
                   <Typography sx={{ fontSize: '0.72rem', mb: 0.8 }}>
                     Nombre de la Skill
                   </Typography>
@@ -947,24 +916,6 @@ export default function PositionForm({
                       setDesirableSkillForm({
                         ...desirableSkillForm,
                         name: e.target.value,
-                      })
-                    }
-                  />
-                </Grid>
-                <Grid size={{ xs: 6, md: 2 }}>
-                  <Typography sx={{ fontSize: '0.72rem', mb: 0.8 }}>
-                    Años Exp.
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    type="number"
-                    slotProps={{ htmlInput: { min: 0 } }}
-                    value={desirableSkillForm.years}
-                    onChange={(e) =>
-                      setDesirableSkillForm({
-                        ...desirableSkillForm,
-                        years: e.target.value,
                       })
                     }
                   />
@@ -1064,15 +1015,6 @@ export default function PositionForm({
                             }}
                           >
                             {skill.name}
-                          </Typography>
-                          <Typography
-                            sx={{
-                              fontSize: '0.75rem',
-                              color: '#6b7280',
-                              mt: 0.5,
-                            }}
-                          >
-                            {skill.yearsOfExperience} años de experiencia
                           </Typography>
                         </Box>
                         <Button

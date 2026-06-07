@@ -79,6 +79,15 @@ describe('validateUpdateApplicationStagePayload', () => {
     }
   });
 
+  it('rechaza profile_pending porque es un stage tecnico interno', () => {
+    expect(() =>
+      validateUpdateApplicationStagePayload({
+        applicationId: 'app-1',
+        stage: 'profile_pending',
+      }),
+    ).toThrow(UpdateApplicationValidationError);
+  });
+
   it('lanza UpdateApplicationValidationError cuando stage es rejected sin rejectionReason', () => {
     expect(() =>
       validateUpdateApplicationStagePayload({
