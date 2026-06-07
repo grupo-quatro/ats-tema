@@ -22,6 +22,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import type { EmployeeRole } from '@ats/shared-types';
 import { useAuth } from '../../shared/lib/authContext';
+import ConnectGmailButton from '../../features/gmail/components/ConnectGmailButton';
 
 const SIDEBAR_WIDTH = 240;
 const SIDEBAR_COLLAPSED_WIDTH = 64;
@@ -288,6 +289,7 @@ export default function Sidebar() {
                 </IconButton>
               </Tooltip>
             </Box>
+            <ConnectGmailButton />
             <Typography sx={{ fontSize: '0.7rem', color: '#94a3b8' }}>
               ATS · Tema Consulting
             </Typography>

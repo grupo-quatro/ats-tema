@@ -1,11 +1,9 @@
-import type { ApplicationStage } from './application';
-
 export type EmailTemplateStage =
   | 'application_received'
-  | 'screening'
-  | 'interview_hr'
-  | 'interview_technical'
-  | 'interview_final'
+  | 'sch_interview_hr_1'   | 'interview_hr_1'
+  | 'sch_interview_hr_2'   | 'interview_hr_2'
+  | 'sch_interview_tech_1' | 'interview_tech_1'
+  | 'sch_interview_tech_2' | 'interview_tech_2'
   | 'offer'
   | 'hired'
   | 'rejected'
@@ -29,24 +27,6 @@ export type CreateEmailTemplateDTO = Omit<
 export type UpdateEmailTemplateDTO = Partial<
   Omit<EmailTemplate, 'id' | 'createdAt'>
 >;
-
-export const APPLICATION_TO_EMAIL_STAGE_MAP: Record<
-  ApplicationStage,
-  EmailTemplateStage | null
-> = {
-  applied: 'application_received',
-  profile_pending: null,
-  screening: 'screening',
-  cv_submitted: null,
-  interview_1_scheduled: 'interview_hr',
-  interview_1_done: null,
-  interview_2_scheduled: 'interview_technical',
-  interview_2_done: null,
-  offer_sent: 'offer',
-  hired: 'hired',
-  rejected: 'rejected',
-  withdrawn: 'withdrawn',
-};
 
 export const TEMPLATE_VARIABLES = {
   CANDIDATE_NAME: {

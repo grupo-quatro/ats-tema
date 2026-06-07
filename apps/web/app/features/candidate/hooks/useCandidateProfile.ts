@@ -14,7 +14,13 @@ import {
   updateApplicationStage,
 } from '@/shared/api/applicationsApi';
 import { CANDIDATE_STAGE_TO_APP_STAGE } from '../utils/candidateProfile.utils';
-import type { StageHistoryEntry } from '@ats/shared-types';
+import {
+  PIPELINE_ORDER,
+  STAGE_CONFIG,
+  isValidTransition,
+  type ApplicationStage,
+  type StageHistoryEntry,
+} from '@ats/shared-types';
 
 type SnackbarState = { message: string; severity: 'success' | 'error' } | null;
 
@@ -121,9 +127,37 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
       .catch(() => {});
   }, [candidate.applicationId]);
 
-  const pendingStages = stageHistory.filter(
-    (stage) => stage.status === 'pending' && stage.key !== 'descartado',
-  );
+  // ApplicationStage real del stage actual (para validar transiciones y calcular interviewNumber)
+  const currentApplicationStage: ApplicationStage | null = (() => {
+    const currentEntry = stageHistory.find((s) => s.status === 'current');
+    if (!currentEntry) return null;
+    return CANDIDATE_STAGE_TO_APP_STAGE[currentEntry.key] ?? null;
+  })();
+
+  // Filtra solo stages que el recruiter puede seleccionar manualmente:
+  // transitionMode === 'recruiter_action' y transición válida desde el stage actual
+  const pendingStages = stageHistory.filter((stage) => {
+    if (stage.status !== 'pending' || stage.key === 'descartado') return false;
+    const appStage = CANDIDATE_STAGE_TO_APP_STAGE[stage.key] as ApplicationStage | undefined;
+    if (!appStage) return false;
+    if (STAGE_CONFIG[appStage]?.transitionMode !== 'recruiter_action') return false;
+    if (!currentApplicationStage) return false;
+    return isValidTransition(currentApplicationStage, appStage);
+  });
+
+  // Determina el número de entrevista correcto según el tipo (hr o tech).
+  // Para RRHH: es la segunda si el stage actual ya superó hr_1_done en el pipeline.
+  // Para técnica: es la segunda si el stage actual ya superó tech_1_done en the pipeline.
+  // Se resuelve en tiempo de apertura del modal usando interviewType.
+  const interviewNumber: 1 | 2 = (() => {
+    if (!currentApplicationStage) return 1;
+    const pipelineIdx = PIPELINE_ORDER.indexOf(currentApplicationStage);
+    const threshold =
+      interviewType === 'hr'
+        ? PIPELINE_ORDER.indexOf('hr_1_done')
+        : PIPELINE_ORDER.indexOf('tech_1_done');
+    return pipelineIdx > threshold ? 2 : 1;
+  })();
 
   const visibleStrengths = showAllStrengths
     ? candidate.strengths
@@ -269,8 +303,11 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
         message: 'Evaluación de entrevista registrada',
         severity: 'success',
       });
+      getStageHistory(candidate.applicationId)
+        .then(setRealStageHistory)
+        .catch(() => {});
     },
-    [],
+    [candidate.applicationId],
   );
 
   return {
@@ -320,5 +357,6 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     handleReject,
     handleInterviewSave,
     formatDateToSpanish,
+    interviewNumber,
   };
 }

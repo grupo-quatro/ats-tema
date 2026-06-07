@@ -10,7 +10,7 @@ import type {
   GmailCredential,
   Job,
 } from '@ats/shared-types';
-import { APPLICATION_TO_EMAIL_STAGE_MAP } from '@ats/shared-types';
+import { STAGE_CONFIG } from '@ats/shared-types';
 
 import type { IEmailLogRepository } from '../repositories/emailLogRepository';
 import type { IEmailTemplateRepository } from '../repositories/emailTemplateRepository';
@@ -40,30 +40,26 @@ export class StageEmailService {
     newStage: ApplicationStage,
     recruiterId: string,
     recruiterEmail: string,
-  ): Promise<void> {
-    // El try externo captura fallos de setup (template lookup, orgConfig, etc.)
-    // y garantiza que nunca se propague ningún error al caller.
+  ): Promise<boolean> {
     try {
-      // 1. Mapear newStage → emailTemplateStage; si no hay mapeo, salir
-      const emailTemplateStage = APPLICATION_TO_EMAIL_STAGE_MAP[newStage];
-      if (emailTemplateStage === null || emailTemplateStage === undefined) {
-        return;
+      //  Resolver emailTemplateStage si es null no hay comunicaciones para esa etapa
+      const { emailTemplateStage } = STAGE_CONFIG[newStage];
+      if (emailTemplateStage === null) {
+        return false;
       }
 
-      // 2. Buscar template; si no existe, salir sin crear log
+      // Busca templates para la etapa.
       const template =
         await this.emailTemplateRepository.findByStage(emailTemplateStage);
       if (!template) {
-        return;
+        return false;
       }
 
-      // 3. Obtener config de la organización y credencial del recruiter en paralelo
       const [orgConfig, credential] = await Promise.all([
         this.orgConfigRepository.get(),
         this.userRepository.getGmailCredential(recruiterId),
       ]);
 
-      // 4. Construir contexto y resolver variables del template
       const candidateName =
         [candidate.firstName, candidate.lastName].filter(Boolean).join(' ') ||
         candidate.fullName ||
@@ -75,7 +71,7 @@ export class StageEmailService {
         positionName: job.title,
         recruiterName: recruiterEmail,
         recruiterEmail,
-        calendarLink: '',
+        calendarLink: '', //TODO: add calenndar link variable from logged user
         companyName: orgConfig.companyName,
       };
 
@@ -84,7 +80,6 @@ export class StageEmailService {
         context,
       );
 
-      // 5. Crear EmailLog con status='pending'
       const candidateEmail = candidate.email ?? '';
       const logDto: CreateEmailLogDTO = {
         applicationId: application.id,
@@ -104,7 +99,7 @@ export class StageEmailService {
 
       const logId = await this.emailLogRepository.create(logDto);
 
-      // 6. Si el recruiter no tiene Gmail conectado, marcar log como failed y salir
+      // Si el recruiter no tiene Gmail conectado, marcar log como failed y salir
       if (!credential) {
         await this.emailLogRepository.updateStatus(logId, {
           status: 'failed',
@@ -112,7 +107,7 @@ export class StageEmailService {
             'El reclutador no tiene una cuenta de Gmail conectada. ' +
             'Conecta tu cuenta en Configuración → Gmail.',
         });
-        return;
+        return false;
       }
 
       // 7. Refrescar accessToken si está próximo a vencer
@@ -131,10 +126,9 @@ export class StageEmailService {
           status: 'failed',
           error: 'No se pudo refrescar el token de acceso de Gmail.',
         });
-        return;
+        return false;
       }
 
-      // 8. Enviar email y actualizar log según resultado
       try {
         await this.gmailSender.send({
           accessToken: freshCredential.accessToken,
@@ -144,6 +138,7 @@ export class StageEmailService {
         });
 
         await this.emailLogRepository.updateStatus(logId, { status: 'sent' });
+        return true;
       } catch (sendError) {
         const errorMessage =
           sendError instanceof Error
@@ -160,6 +155,7 @@ export class StageEmailService {
           status: 'failed',
           error: errorMessage,
         });
+        return false;
       }
     } catch (error) {
       logger.error(
@@ -170,7 +166,7 @@ export class StageEmailService {
           error,
         },
       );
-      // No relanzar: el cambio de etapa ya fue persistido exitosamente
+      return false;
     }
   }
 

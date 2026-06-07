@@ -6,6 +6,7 @@ import type {
   UpdateApplicationStagePayload,
   UpdateApplicationStageResponse,
 } from '@ats/shared-types';
+import { STAGE_CONFIG } from '@ats/shared-types';
 
 import { auth } from '../core/firebaseAdmin';
 import { ApplicationsRepository } from '../repositories/applicationRepository';
@@ -61,6 +62,7 @@ export class UpdateApplicationStageService {
     });
 
     // Enviar email de notificación al candidato — el fallo nunca bloquea el resultado
+    let emailSent = false;
     if (this.stageEmailService) {
       try {
         const [candidate, job] = await Promise.all([
@@ -69,7 +71,7 @@ export class UpdateApplicationStageService {
         ]);
 
         if (candidate && job) {
-          await this.stageEmailService.sendIfTemplateExists(
+          emailSent = await this.stageEmailService.sendIfTemplateExists(
             application,
             candidate,
             job,
@@ -82,6 +84,22 @@ export class UpdateApplicationStageService {
         logger.error(
           'UpdateApplicationStageService: error al intentar enviar email de stage',
           { applicationId, stage, error },
+        );
+      }
+    }
+
+    // Encadenar transición automática si el stage tiene nextStage y el email fue enviado
+    const { nextStage } = STAGE_CONFIG[stage];
+    if (nextStage !== undefined && emailSent) {
+      try {
+        await this.updateStage(
+          { applicationId, stage: nextStage },
+          changedBy,
+        );
+      } catch (error) {
+        logger.error(
+          'UpdateApplicationStageService: error al encadenar transición automática',
+          { applicationId, stage, nextStage, error },
         );
       }
     }

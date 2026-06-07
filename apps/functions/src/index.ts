@@ -12,6 +12,8 @@ export {
 } from './callables/jobCallable';
 export { seedJobs } from './callables/seedJobs';
 export { seedCandidates } from './callables/seedCandidates';
+export { seedEmailTemplates } from './callables/seedEmailTemplates';
+export { seedEmailLogs } from './callables/seedEmailLogs';
 export {
   registerCandidate,
   registerCandidateCV,
@@ -35,3 +37,4 @@ export { setUserRole } from './callables/setUserRole';
 export { ensureEmployee } from './callables/ensureEmployee';
 export { getEmailLogs } from './callables/getEmailLogs';
 export { retryEmailSend } from './callables/retryEmailSend';
+export { seedGmailCredential } from './callables/seedGmailCredential';

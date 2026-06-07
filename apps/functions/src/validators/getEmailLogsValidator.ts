@@ -5,10 +5,21 @@ export class GetEmailLogsValidationError extends Error {
   }
 }
 
+type GetEmailLogsQuery =
+  | { candidateId: string; applicationId?: never }
+  | { applicationId: string; candidateId?: never };
+
 export function validateGetEmailLogsPayload(
-  query: Partial<{ candidateId: string }>,
-): asserts query is { candidateId: string } {
-  if (!query.candidateId || typeof query.candidateId !== 'string') {
-    throw new GetEmailLogsValidationError('candidateId es requerido.');
+  query: Partial<{ candidateId: string; applicationId: string }>,
+): asserts query is GetEmailLogsQuery {
+  const hasCandidateId =
+    typeof query.candidateId === 'string' && query.candidateId.length > 0;
+  const hasApplicationId =
+    typeof query.applicationId === 'string' && query.applicationId.length > 0;
+
+  if (!hasCandidateId && !hasApplicationId) {
+    throw new GetEmailLogsValidationError(
+      'Se requiere candidateId o applicationId.',
+    );
   }
 }

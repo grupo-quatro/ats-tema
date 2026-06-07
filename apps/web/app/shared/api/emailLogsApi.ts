@@ -22,6 +22,23 @@ export async function getEmailLogs(
   return res.json();
 }
 
+export async function getFailedEmailLogs(
+  applicationId: string,
+): Promise<GetEmailLogsResponse> {
+  const token = await getToken();
+  const params = new URLSearchParams({ applicationId });
+  const res = await fetch(`${getFunctionUrl('getEmailLogs')}?${params}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(
+      error.error || 'Error al obtener las comunicaciones fallidas',
+    );
+  }
+  return res.json();
+}
+
 export async function retryEmailSend(
   logId: string,
 ): Promise<RetryEmailSendResponse> {

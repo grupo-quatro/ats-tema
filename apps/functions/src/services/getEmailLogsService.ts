@@ -11,4 +11,8 @@ export class GetEmailLogsService {
   async getByCandidate(candidateId: string): Promise<EmailLog[]> {
     return this.emailLogRepository.findByCandidate(candidateId);
   }
+
+  async getFailedByApplication(applicationId: string): Promise<EmailLog[]> {
+    return this.emailLogRepository.findFailedByApplication(applicationId);
+  }
 }

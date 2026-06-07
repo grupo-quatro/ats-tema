@@ -58,21 +58,21 @@ describe('getInitials', () => {
 
 describe('buildStageHistory', () => {
   it('marca como completed las etapas anteriores al stage actual', () => {
-    const history = buildStageHistory('interview_1_done');
+    const history = buildStageHistory('hr_1_done');
     const completedKeys = history
       .filter((s) => s.status === 'completed')
       .map((s) => s.key);
 
     expect(completedKeys).toContain('postulacion_recibida');
     expect(completedKeys).toContain('en_revision');
-    expect(completedKeys).toContain('cv_presentado_area');
-    expect(completedKeys).toContain('entrevista1_agendada');
+    expect(completedKeys).toContain('contacto_entrevista_rrhh_1');
+    expect(completedKeys).toContain('entrevista_rrhh_1_agendada');
   });
 
   it('marca como current el stage actual', () => {
-    const history = buildStageHistory('interview_1_done');
+    const history = buildStageHistory('hr_1_done');
     const current = history.find((s) => s.status === 'current');
-    expect(current?.key).toBe('entrevista1_evaluacion');
+    expect(current?.key).toBe('entrevista_rrhh_1_realizada');
   });
 
   it('marca como pending las etapas posteriores al stage actual', () => {

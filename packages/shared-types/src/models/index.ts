@@ -7,3 +7,4 @@ export * from './emailTemplate';
 export * from './emailLog';
 export * from './parsing';
 export * from './user';
+export * from './stageConfig';

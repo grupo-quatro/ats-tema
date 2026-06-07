@@ -30,6 +30,7 @@ const makeEmailLogRepo = (): IEmailLogRepository => ({
   findById: vi.fn(),
   findByCandidate: vi.fn(),
   findFailed: vi.fn(),
+  findFailedByApplication: vi.fn(),
 });
 
 describe('GetEmailLogsService.getByCandidate', () => {
@@ -67,6 +68,45 @@ describe('GetEmailLogsService.getByCandidate', () => {
 
     const service = new GetEmailLogsService(repo);
     await expect(service.getByCandidate('cand-1')).rejects.toThrow(
+      'Firestore no disponible',
+    );
+  });
+});
+
+describe('GetEmailLogsService.getFailedByApplication', () => {
+  it('delega a findFailedByApplication y retorna solo logs fallidos', async () => {
+    const repo = makeEmailLogRepo();
+    const failedLogs = [
+      makeEmailLog({ id: 'log-3', status: 'failed', applicationId: 'app-2' }),
+    ];
+    vi.mocked(repo.findFailedByApplication).mockResolvedValue(failedLogs);
+
+    const service = new GetEmailLogsService(repo);
+    const result = await service.getFailedByApplication('app-2');
+
+    expect(repo.findFailedByApplication).toHaveBeenCalledOnce();
+    expect(repo.findFailedByApplication).toHaveBeenCalledWith('app-2');
+    expect(result).toEqual(failedLogs);
+  });
+
+  it('retorna arreglo vacío cuando la postulación no tiene comunicaciones fallidas', async () => {
+    const repo = makeEmailLogRepo();
+    vi.mocked(repo.findFailedByApplication).mockResolvedValue([]);
+
+    const service = new GetEmailLogsService(repo);
+    const result = await service.getFailedByApplication('app-sin-fallos');
+
+    expect(result).toHaveLength(0);
+  });
+
+  it('propaga el error del repositorio al caller', async () => {
+    const repo = makeEmailLogRepo();
+    vi.mocked(repo.findFailedByApplication).mockRejectedValue(
+      new Error('Firestore no disponible'),
+    );
+
+    const service = new GetEmailLogsService(repo);
+    await expect(service.getFailedByApplication('app-2')).rejects.toThrow(
       'Firestore no disponible',
     );
   });

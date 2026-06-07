@@ -8,16 +8,23 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import type { ApplicationStage } from '@ats/shared-types';
+import { updateApplicationStage } from '@/shared/api/applicationsApi';
 import type { CandidateInterviewNote } from '../mock/candidateMock';
 
 interface Props {
   candidateName: string;
+  applicationId: string;
+  interviewNumber: 1 | 2;
   onClose: () => void;
   onSave?: (note: CandidateInterviewNote) => void | Promise<void>;
 }
 
 export function HrInterviewForm({
-  /* candidateName, */ onClose,
+  /* candidateName, */
+  applicationId,
+  interviewNumber,
+  onClose,
   onSave,
 }: Props) {
   const [communication, setCommunication] = useState<number>(0);
@@ -40,8 +47,6 @@ export function HrInterviewForm({
     setIsSaving(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 700));
-
       const note: CandidateInterviewNote = {
         authorName: 'Evaluación RRHH',
         date: new Date().toLocaleDateString('es-ES'),
@@ -58,6 +63,11 @@ export function HrInterviewForm({
           .filter(Boolean)
           .join(' '),
       };
+
+      const targetStage: ApplicationStage =
+        interviewNumber === 1 ? 'hr_1_done' : 'hr_2_done';
+
+      await updateApplicationStage({ applicationId, stage: targetStage });
 
       await onSave?.(note);
       onClose();

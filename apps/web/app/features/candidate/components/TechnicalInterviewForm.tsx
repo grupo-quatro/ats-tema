@@ -10,12 +10,15 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import type { Skill } from '@ats/shared-types';
+import type { ApplicationStage, Skill } from '@ats/shared-types';
+import { updateApplicationStage } from '@/shared/api/applicationsApi';
 import type { CandidateInterviewNote } from '../mock/candidateMock';
 
 interface Props {
   skills: Skill[];
   candidateName: string;
+  applicationId: string;
+  interviewNumber: 1 | 2;
   onClose: () => void;
   onSave?: (note: CandidateInterviewNote) => void | Promise<void>;
 }
@@ -23,6 +26,8 @@ interface Props {
 export function TechnicalInterviewForm({
   skills,
   // candidateName,
+  applicationId,
+  interviewNumber,
   onClose,
   onSave,
 }: Props) {
@@ -49,8 +54,6 @@ export function TechnicalInterviewForm({
     setIsSaving(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 700));
-
       const note: CandidateInterviewNote = {
         authorName: 'Evaluación técnica',
         date: new Date().toLocaleDateString('es-ES'),
@@ -65,6 +68,11 @@ export function TechnicalInterviewForm({
           .filter(Boolean)
           .join(' '),
       };
+
+      const targetStage: ApplicationStage =
+        interviewNumber === 1 ? 'tech_1_done' : 'tech_2_done';
+
+      await updateApplicationStage({ applicationId, stage: targetStage });
 
       await onSave?.(note);
       onClose();

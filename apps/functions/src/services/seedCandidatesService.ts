@@ -4,7 +4,9 @@ import type {
   Candidate,
   CreateApplicationDTO,
   CreateCandidateDTO,
+  CreateStageHistoryEntryDTO,
 } from '@ats/shared-types';
+import { PIPELINE_ORDER, STAGE_CONFIG } from '@ats/shared-types';
 
 import { ApplicationsRepository } from '../repositories/applicationRepository';
 import { CandidatesRepository } from '../repositories/candidateRepository';
@@ -394,21 +396,21 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
   {
     candidateId: 'seed-candidate-01',
     jobId: 'frontend-ssr-developer',
-    stage: 'interview_2_done',
+    stage: 'tech_1_done',
     status: 'active',
     fitScore: 91,
     fitSummary:
       'Perfil muy alineado. Domina Next.js con SSR y tiene experiencia en Firebase.',
-    notes: 'Segunda entrevista excelente. Recomendar oferta.',
+    notes: 'Entrevista técnica excelente. Recomendar oferta.',
   },
   {
     candidateId: 'seed-candidate-02',
     jobId: 'frontend-ssr-developer',
-    stage: 'interview_1_done',
+    stage: 'hr_1_done',
     status: 'active',
     fitScore: 74,
     fitSummary: 'Buen manejo de React y TypeScript. SSR con menos profundidad.',
-    notes: 'Pasar a segunda entrevista técnica.',
+    notes: 'Pasar a entrevista técnica.',
   },
   {
     candidateId: 'seed-candidate-07',
@@ -432,17 +434,17 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
   {
     candidateId: 'seed-candidate-04',
     jobId: 'backend-firebase-developer',
-    stage: 'offer_sent',
+    stage: 'send_offer',
     status: 'active',
     fitScore: 95,
     fitSummary:
       'Perfil ideal. Senior con experiencia directa en Firebase Functions y OpenAI.',
-    notes: 'Oferta enviada. Esperando respuesta.',
+    notes: 'Oferta en preparación.',
   },
   {
     candidateId: 'seed-candidate-03',
     jobId: 'backend-firebase-developer',
-    stage: 'interview_1_scheduled',
+    stage: 'schedule_hr_1',
     status: 'active',
     fitScore: 80,
     fitSummary:
@@ -482,7 +484,7 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
   {
     candidateId: 'seed-candidate-06',
     jobId: 'qa-automation-analyst',
-    stage: 'interview_2_scheduled',
+    stage: 'hr_2_done',
     status: 'active',
     fitScore: 83,
     fitSummary:
@@ -497,6 +499,36 @@ const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
     fitSummary: 'Perfil frontend con algo de testing. No es QA de carrera.',
   },
 ];
+
+/**
+ * Construye la lista de stages que representan el historial completo
+ * para llegar al targetStage dado.
+ *
+ * Para stages lineales: devuelve todos los stages desde 'applied'
+ * (inclusive) hasta targetStage (inclusive), siguiendo PIPELINE_ORDER.
+ *
+ * Para jump stages (rejected, withdrawn): devuelve los stages lineales
+ * hasta 'applied', más el jump stage al final (si es el target).
+ *
+ * profile_pending se omite del historial (es el estado pre-postulación).
+ */
+function buildStageHistoryPath(targetStage: ApplicationStage): ApplicationStage[] {
+  const JUMP_STAGES: ApplicationStage[] = ['rejected', 'withdrawn'];
+
+  const linearStages: ApplicationStage[] = PIPELINE_ORDER.filter((s) => s !== 'profile_pending');
+
+  if (JUMP_STAGES.includes(targetStage)) {
+    // Para jump stages, el historial lineal llega hasta 'applied' y luego el jump
+    return ['applied', targetStage];
+  }
+
+  const targetIdx = linearStages.indexOf(targetStage);
+  if (targetIdx === -1) {
+    return [targetStage];
+  }
+
+  return linearStages.slice(0, targetIdx + 1);
+}
 
 export class SeedCandidatesService {
   constructor(
@@ -562,8 +594,31 @@ export class SeedCandidatesService {
             }),
           };
 
-          await this.applicationsRepository.create(dto);
+          const applicationId = await this.applicationsRepository.create(dto);
           applicationsCreated += 1;
+
+          // Construir stageHistory completo para stages avanzados
+          const historyPath = buildStageHistoryPath(appSeed.stage);
+
+          // Solo crear historial si hay más de un stage (aplicaciones no en 'applied')
+          // o si el stage actual tiene alguna configuración que lo justifique
+          for (const historyStage of historyPath) {
+            const entry: CreateStageHistoryEntryDTO = {
+              stage: historyStage,
+              changedBy: 'recruiter-dev',
+              changedByEmail: 'recruiter@tema.dev',
+              ...(historyStage === appSeed.stage && appSeed.notes
+                ? { notes: appSeed.notes }
+                : {}),
+              ...(historyStage === appSeed.stage && appSeed.rejectionReason
+                ? { rejectionReason: appSeed.rejectionReason }
+                : {}),
+            };
+            await this.applicationsRepository.addStageHistoryEntry(
+              applicationId,
+              entry,
+            );
+          }
         } catch {
           applicationsFailed += 1;
         }

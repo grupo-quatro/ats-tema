@@ -17,6 +17,8 @@ interface InterviewModalProps {
   open: boolean;
   onClose: () => void;
   candidateName: string;
+  applicationId: string;
+  interviewNumber: 1 | 2;
   type?: 'tech' | 'hr';
   skills?: Skill[];
   onSave?: (note: CandidateInterviewNote) => void | Promise<void>;
@@ -26,6 +28,8 @@ export function InterviewModal({
   open,
   onClose,
   candidateName,
+  applicationId,
+  interviewNumber,
   type = 'tech',
   skills = [],
   onSave,
@@ -70,12 +74,16 @@ export function InterviewModal({
           <TechnicalInterviewForm
             skills={skills}
             candidateName={candidateName}
+            applicationId={applicationId}
+            interviewNumber={interviewNumber}
             onClose={onClose}
             onSave={onSave}
           />
         ) : (
           <HrInterviewForm
             candidateName={candidateName}
+            applicationId={applicationId}
+            interviewNumber={interviewNumber}
             onClose={onClose}
             onSave={onSave}
           />

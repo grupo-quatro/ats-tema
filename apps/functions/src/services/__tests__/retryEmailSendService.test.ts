@@ -50,6 +50,7 @@ const makeEmailLogRepo = (): IEmailLogRepository => ({
   findById: vi.fn(),
   findByCandidate: vi.fn(),
   findFailed: vi.fn(),
+  findFailedByApplication: vi.fn(),
 });
 
 const makeUserRepo = (): IUserRepository => ({

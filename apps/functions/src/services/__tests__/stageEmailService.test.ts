@@ -95,6 +95,7 @@ const makeEmailLogRepo = (): IEmailLogRepository => ({
   findById: vi.fn(),
   findByCandidate: vi.fn(),
   findFailed: vi.fn(),
+  findFailedByApplication: vi.fn(),
 });
 
 const makeUserRepo = (): IUserRepository => ({
@@ -290,7 +291,7 @@ describe('StageEmailService.sendIfTemplateExists', () => {
     vi.mocked(userRepo.getGmailCredential).mockResolvedValue(validCredential);
     vi.mocked(sender.send).mockRejectedValue(new Error('Gmail API error: 500'));
 
-    // No debe lanzar
+    // No debe lanzar — retorna false porque el envío falló
     await expect(
       service.sendIfTemplateExists(
         application,
@@ -300,7 +301,7 @@ describe('StageEmailService.sendIfTemplateExists', () => {
         'recruiter-1',
         'recruiter@example.com',
       ),
-    ).resolves.toBeUndefined();
+    ).resolves.toBe(false);
 
     expect(logRepo.create).toHaveBeenCalledOnce();
     expect(logRepo.updateStatus).toHaveBeenCalledWith(

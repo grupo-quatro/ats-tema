@@ -19,10 +19,15 @@ export const getEmailLogs = onRequest(async (request, response) => {
 
     await requireAuthenticatedUser(request);
 
-    const query = request.query as Partial<{ candidateId: string }>;
+    const query = request.query as Partial<{
+      candidateId: string;
+      applicationId: string;
+    }>;
     validateGetEmailLogsPayload(query);
 
-    const logs = await getEmailLogsService.getByCandidate(query.candidateId);
+    const logs = query.applicationId
+      ? await getEmailLogsService.getFailedByApplication(query.applicationId)
+      : await getEmailLogsService.getByCandidate(query.candidateId!);
 
     response.status(200).json({ logs });
   } catch (error) {

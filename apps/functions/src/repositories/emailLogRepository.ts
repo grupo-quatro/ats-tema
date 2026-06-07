@@ -21,6 +21,7 @@ export interface IEmailLogRepository {
   findById(id: string): Promise<EmailLog | null>;
   findByCandidate(candidateId: string): Promise<EmailLog[]>;
   findFailed(): Promise<EmailLog[]>;
+  findFailedByApplication(applicationId: string): Promise<EmailLog[]>;
 }
 
 export class EmailLogRepositoryError extends Error {
@@ -95,7 +96,7 @@ export class EmailLogRepository implements IEmailLogRepository {
         .get();
 
       return snapshot.docs.map((doc) =>
-        this.mapToEmailLog(doc.data() as FirestoreEmailLog),
+        this.mapToEmailLog({ ...(doc.data() as FirestoreEmailLog), id: doc.id }),
       );
     } catch (error) {
       throw new EmailLogRepositoryError(
@@ -113,11 +114,30 @@ export class EmailLogRepository implements IEmailLogRepository {
         .get();
 
       return snapshot.docs.map((doc) =>
-        this.mapToEmailLog(doc.data() as FirestoreEmailLog),
+        this.mapToEmailLog({ ...(doc.data() as FirestoreEmailLog), id: doc.id }),
       );
     } catch (error) {
       throw new EmailLogRepositoryError(
         'No se pudieron obtener los registros de email fallidos.',
+        error,
+      );
+    }
+  }
+
+  async findFailedByApplication(applicationId: string): Promise<EmailLog[]> {
+    try {
+      const snapshot = await this.collection
+        .where('applicationId', '==', applicationId)
+        .where('status', '==', 'failed')
+        .orderBy('attemptedAt', 'desc')
+        .get();
+
+      return snapshot.docs.map((doc) =>
+        this.mapToEmailLog({ ...(doc.data() as FirestoreEmailLog), id: doc.id }),
+      );
+    } catch (error) {
+      throw new EmailLogRepositoryError(
+        `No se pudieron obtener los registros fallidos para la postulación ${applicationId}.`,
         error,
       );
     }
