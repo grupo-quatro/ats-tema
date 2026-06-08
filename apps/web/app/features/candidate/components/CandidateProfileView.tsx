@@ -65,6 +65,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
     role === 'hiring_manager' || role === 'tech_lead' || role === 'admin';
   const canManageOffer =
     role === 'admin' || role === 'hr' || role === 'hiring_manager';
+  const canManageCandidateStage = role === 'hr';
 
   const formatNoteDate = (iso: string) => {
     const parsed = new Date(iso);
@@ -196,33 +197,39 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
               Ver formularios
             </Button>
 
-            <IconButton
-              onClick={(e) => profile.setMenuAnchor(e.currentTarget)}
-              aria-label="Más opciones"
-              size="small"
-            >
-              <MoreVertical size={20} />
-            </IconButton>
-            <Menu
-              anchorEl={profile.menuAnchor}
-              open={Boolean(profile.menuAnchor)}
-              onClose={() => profile.setMenuAnchor(null)}
-            >
-              <MenuItem
-                onClick={profile.openStageDialog}
-                disabled={profile.pendingStages.length === 0 || isTerminalStage}
-              >
-                Cambiar etapa
-              </MenuItem>
-              <Divider />
-              <MenuItem
-                onClick={profile.openRejectDialog}
-                disabled={isTerminalStage}
-                sx={{ color: 'error.main' }}
-              >
-                Rechazar candidato
-              </MenuItem>
-            </Menu>
+            {canManageCandidateStage && (
+              <>
+                <IconButton
+                  onClick={(e) => profile.setMenuAnchor(e.currentTarget)}
+                  aria-label="Más opciones"
+                  size="small"
+                >
+                  <MoreVertical size={20} />
+                </IconButton>
+                <Menu
+                  anchorEl={profile.menuAnchor}
+                  open={Boolean(profile.menuAnchor)}
+                  onClose={() => profile.setMenuAnchor(null)}
+                >
+                  <MenuItem
+                    onClick={profile.openStageDialog}
+                    disabled={
+                      profile.pendingStages.length === 0 || isTerminalStage
+                    }
+                  >
+                    Cambiar etapa
+                  </MenuItem>
+                  <Divider />
+                  <MenuItem
+                    onClick={profile.openRejectDialog}
+                    disabled={isTerminalStage}
+                    sx={{ color: 'error.main' }}
+                  >
+                    Rechazar candidato
+                  </MenuItem>
+                </Menu>
+              </>
+            )}
           </Box>
         </Box>
 
@@ -797,39 +804,41 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
 
             <FailedCommunicationsCard applicationId={candidate.applicationId} />
 
-            <Box
-              sx={{
-                bgcolor: '#eff6ff',
-                border: '1px solid #bfdbfe',
-                borderRadius: '12px',
-                p: 2.5,
-                display: 'flex',
-                gap: 1.5,
-              }}
-            >
-              <Info
-                size={18}
-                color="#2563eb"
-                style={{ marginTop: 2, flexShrink: 0 }}
-              />
-              <Box>
-                <Typography
-                  variant="body2"
-                  sx={{ fontWeight: 600, color: 'primary.main', mb: 0.5 }}
-                >
-                  Gestión de Etapa
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ fontSize: 13 }}
-                >
-                  Utilizá el menú de acciones (tres puntos en el header) para
-                  cambiar la etapa del candidato. Al cambiar a ciertas etapas se
-                  activarán flujos automáticos de comunicación.
-                </Typography>
+            {canManageCandidateStage && (
+              <Box
+                sx={{
+                  bgcolor: '#eff6ff',
+                  border: '1px solid #bfdbfe',
+                  borderRadius: '12px',
+                  p: 2.5,
+                  display: 'flex',
+                  gap: 1.5,
+                }}
+              >
+                <Info
+                  size={18}
+                  color="#2563eb"
+                  style={{ marginTop: 2, flexShrink: 0 }}
+                />
+                <Box>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 600, color: 'primary.main', mb: 0.5 }}
+                  >
+                    Gestión de Etapa
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontSize: 13 }}
+                  >
+                    Utilizá el menú de acciones (tres puntos en el header) para
+                    cambiar la etapa del candidato. Al cambiar a ciertas etapas
+                    se activarán flujos automáticos de comunicación.
+                  </Typography>
+                </Box>
               </Box>
-            </Box>
+            )}
           </Box>
         </Box>
       </Container>
@@ -860,7 +869,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
       />
 
       <Dialog
-        open={profile.stageDialogOpen}
+        open={canManageCandidateStage && profile.stageDialogOpen}
         onClose={() =>
           !profile.isUpdatingStage && profile.setStageDialogOpen(false)
         }
@@ -913,7 +922,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
       </Dialog>
 
       <Dialog
-        open={profile.rejectDialogOpen}
+        open={canManageCandidateStage && profile.rejectDialogOpen}
         onClose={() =>
           !profile.isUpdatingStage && profile.setRejectDialogOpen(false)
         }

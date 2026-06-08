@@ -1,6 +1,10 @@
 import { logger } from 'firebase-functions';
 import { onRequest } from 'firebase-functions/v2/https';
-import type { UpdateApplicationStagePayload } from '@ats/shared-types';
+import type {
+  EmployeeRole,
+  UpdateApplicationStagePayload,
+} from '@ats/shared-types';
+import { STAGE_CONFIG } from '@ats/shared-types';
 import { OAuth2Client } from 'google-auth-library';
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
 import { ApplicationsRepository } from '../repositories/applicationRepository';
@@ -25,6 +29,15 @@ interface UpdateApplicationPayload {
   applicationId: string;
   fortalezas: string[];
 }
+
+class ApplicationStageForbiddenError extends Error {
+  constructor() {
+    super('No tenés permisos para cambiar la etapa del candidato.');
+    this.name = 'ApplicationStageForbiddenError';
+  }
+}
+
+const OFFER_MANAGER_ROLES: EmployeeRole[] = ['admin', 'hr', 'hiring_manager'];
 
 const oauth2Client = new OAuth2Client(
   process.env.GOOGLE_OAUTH_CLIENT_ID,
@@ -107,10 +120,11 @@ export const updateApplicationStage = onRequest(async (request, response) => {
       return;
     }
 
-    const { uid } = await requireAuthenticatedUser(request);
+    const { uid, role } = await requireAuthenticatedUser(request);
 
     const payload = request.body as Partial<UpdateApplicationStagePayload>;
     validateUpdateApplicationStagePayload(payload);
+    assertCanUpdateApplicationStage(role, payload.stage);
 
     const result = await updateApplicationStageService.updateStage(
       payload,
@@ -134,6 +148,11 @@ export const updateApplicationStage = onRequest(async (request, response) => {
       return;
     }
 
+    if (error instanceof ApplicationStageForbiddenError) {
+      response.status(403).json({ error: error.message });
+      return;
+    }
+
     if (error instanceof ApplicationStageTransitionError) {
       response.status(409).json({ error: error.message });
       return;
@@ -145,3 +164,20 @@ export const updateApplicationStage = onRequest(async (request, response) => {
       .json({ error: 'No se pudo actualizar la postulación.' });
   }
 });
+
+function assertCanUpdateApplicationStage(
+  role: EmployeeRole | null,
+  stage: UpdateApplicationStagePayload['stage'],
+): void {
+  if (stage === 'hired' && role && OFFER_MANAGER_ROLES.includes(role)) {
+    return;
+  }
+
+  if (STAGE_CONFIG[stage].transitionMode !== 'recruiter_action') {
+    return;
+  }
+
+  if (role !== 'hr') {
+    throw new ApplicationStageForbiddenError();
+  }
+}
