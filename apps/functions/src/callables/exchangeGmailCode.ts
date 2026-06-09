@@ -22,6 +22,15 @@ const exchangeGmailCodeService = new ExchangeGmailCodeService(
 );
 
 export const exchangeGmailCode = onRequest(async (request, response) => {
+  response.set('Access-Control-Allow-Origin', '*');
+  response.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  response.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+  if (request.method === 'OPTIONS') {
+    response.status(204).send('');
+    return;
+  }
+
   try {
     if (request.method !== 'POST') {
       response.status(405).json({ error: 'Method Not Allowed.' });

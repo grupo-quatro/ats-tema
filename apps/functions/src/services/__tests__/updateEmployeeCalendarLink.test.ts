@@ -41,6 +41,8 @@ const makeResponse = () => {
   const res = {
     status: vi.fn(),
     json: vi.fn(),
+    set: vi.fn(),
+    send: vi.fn(),
   };
   res.status.mockReturnValue(res);
   return res as unknown as Parameters<typeof updateEmployeeCalendarLink>[1];

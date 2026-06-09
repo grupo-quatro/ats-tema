@@ -1,4 +1,3 @@
-import { getFunctionUrl } from '../lib/functionsUrl';
 import { getToken } from '../lib/auth';
 
 export interface ExchangeGmailCodePayload {
@@ -10,7 +9,7 @@ export async function exchangeGmailCode(
   payload: ExchangeGmailCodePayload,
 ): Promise<void> {
   const token = await getToken();
-  const res = await fetch(getFunctionUrl('exchangeGmailCode'), {
+  const res = await fetch('/api/gmail/exchange', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

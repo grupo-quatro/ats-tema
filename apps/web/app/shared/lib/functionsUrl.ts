@@ -5,7 +5,7 @@ export function getFunctionUrl(name: string): string {
   const port = process.env.NEXT_PUBLIC_FUNCTIONS_EMULATOR_PORT ?? '5001';
 
   if (useEmulators) {
-    return `http://127.0.0.1:${port}/${projectId}/${region}/${name}`;
+    return `http://localhost:${port}/${projectId}/${region}/${name}`;
   }
   return `https://${region}-${projectId}.cloudfunctions.net/${name}`;
 }

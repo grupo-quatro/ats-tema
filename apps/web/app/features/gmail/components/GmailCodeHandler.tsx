@@ -23,13 +23,18 @@ export default function GmailCodeHandler() {
       router.replace(url.pathname + (url.search || ''));
     };
 
+    console.log(
+      '[GmailCodeHandler] exchanging code, redirectUri:',
+      GMAIL_REDIRECT_URI,
+    );
     exchangeGmailCode({ code, redirectUri: GMAIL_REDIRECT_URI })
       .then(() => {
         localStorage.setItem(GMAIL_CONNECTED_KEY, 'true');
         cleanUrl();
         window.dispatchEvent(new Event('gmail-connected'));
       })
-      .catch(() => {
+      .catch((err: unknown) => {
+        console.error('[GmailCodeHandler] exchange failed:', err);
         cleanUrl();
       });
   }, [router]);
