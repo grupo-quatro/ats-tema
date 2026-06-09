@@ -10,8 +10,11 @@ import Stack from '@mui/material/Stack';
 import Divider from '@mui/material/Divider';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
-import Avatar from '@mui/material/Avatar';
-import { Clock, LogIn, LogOut } from 'lucide-react';
+import Collapse from '@mui/material/Collapse';
+import TextField from '@mui/material/TextField';
+import { LogIn, ShieldCheck, ChevronDown, ChevronUp } from 'lucide-react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../shared/lib/firebase';
 import { useAuth, DomainNotAllowedError } from '../shared/lib/authContext';
 
 const IS_DEV = process.env.NEXT_PUBLIC_USE_EMULATORS === 'true';
@@ -24,101 +27,25 @@ const DEV_ROLES: Array<{ role: DevRole; label: string }> = [
   { role: 'area_leader', label: 'Área Líder' },
 ];
 
-function PendingApprovalCard({
-  userName,
-  userEmail,
-  userPhoto,
-  onSignOut,
-}: {
-  userName: string | null;
-  userEmail: string | null;
-  userPhoto: string | null;
-  onSignOut: () => void;
-}) {
-  return (
-    <Stack spacing={3} sx={{ alignItems: 'center', textAlign: 'center' }}>
-      <Box
-        sx={{
-          width: 56,
-          height: 56,
-          borderRadius: '50%',
-          bgcolor: 'warning.light',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Clock size={28} color="#b45309" />
-      </Box>
-
-      <Box>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-          Acceso pendiente de aprobación
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Tu cuenta fue registrada correctamente. Un administrador debe
-          asignarte un rol antes de que puedas ingresar al sistema.
-        </Typography>
-      </Box>
-
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1.5,
-          bgcolor: 'grey.50',
-          border: '1px solid',
-          borderColor: 'divider',
-          borderRadius: 2,
-          px: 2,
-          py: 1.5,
-          width: '100%',
-        }}
-      >
-        <Avatar src={userPhoto ?? undefined} sx={{ width: 36, height: 36 }} />
-        <Box sx={{ textAlign: 'left', overflow: 'hidden' }}>
-          <Typography variant="body2" noWrap sx={{ fontWeight: 500 }}>
-            {userName ?? userEmail}
-          </Typography>
-          <Typography variant="caption" color="text.secondary" noWrap>
-            {userEmail}
-          </Typography>
-        </Box>
-      </Box>
-
-      <Button
-        variant="outlined"
-        size="small"
-        startIcon={<LogOut size={16} />}
-        onClick={onSignOut}
-        color="inherit"
-        sx={{ color: 'text.secondary' }}
-      >
-        Salir
-      </Button>
-    </Stack>
-  );
-}
-
 export default function LoginPage() {
-  const {
-    user,
-    role,
-    authReady,
-    isPendingApproval,
-    signInWithGoogle,
-    signOut,
-  } = useAuth();
+  const { user, role, authReady, isPendingApproval, signInWithGoogle } =
+    useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [adminOpen, setAdminOpen] = useState(false);
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminLoading, setAdminLoading] = useState(false);
 
   useEffect(() => {
     if (user && role) {
       window.location.replace('/dashboard/positions');
     }
-  }, [user, role]);
+    if (user && isPendingApproval) {
+      window.location.replace('/login/select-role');
+    }
+  }, [user, role, isPendingApproval]);
 
-  // Si ya tiene rol, redirigir al dashboard
   if (user && role) {
     return (
       <Box
@@ -135,6 +62,28 @@ export default function LoginPage() {
           <CircularProgress size={28} />
           <Typography variant="body2" color="text.secondary">
             Redirigiendo al dashboard...
+          </Typography>
+        </Stack>
+      </Box>
+    );
+  }
+
+  if (user && isPendingApproval) {
+    return (
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          py: 8,
+          px: 2,
+        }}
+      >
+        <Stack spacing={2} sx={{ alignItems: 'center' }}>
+          <CircularProgress size={28} />
+          <Typography variant="body2" color="text.secondary">
+            Redirigiendo...
           </Typography>
         </Stack>
       </Box>
@@ -163,7 +112,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signInWithGoogle(devRole);
-      window.location.replace('/dashboard/positions');
+      // El useEffect maneja el redirect según el estado (role vs isPendingApproval)
     } catch (err) {
       if (err instanceof DomainNotAllowedError) {
         setError(
@@ -175,6 +124,21 @@ export default function LoginPage() {
       }
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleAdminSignIn(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setAdminLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
+      window.location.replace('/dashboard/positions');
+    } catch (err) {
+      console.error('Admin sign in error:', err);
+      setError('Credenciales incorrectas. Verificá tu email y contraseña.');
+    } finally {
+      setAdminLoading(false);
     }
   }
 
@@ -200,78 +164,137 @@ export default function LoginPage() {
         }}
       >
         <CardContent sx={{ p: 4 }}>
-          {isPendingApproval && user ? (
-            <PendingApprovalCard
-              userName={user.displayName}
-              userEmail={user.email}
-              userPhoto={user.photoURL}
-              onSignOut={signOut}
-            />
-          ) : (
-            <Stack spacing={3}>
-              <Box>
-                <Typography
-                  variant="h5"
-                  sx={{ fontWeight: 700, color: 'text.primary', mb: 0.5 }}
-                >
-                  ATS · Tema Consulting
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Acceso para equipos internos
-                </Typography>
-              </Box>
+          <Stack spacing={3}>
+            <Box>
+              <Typography
+                variant="h5"
+                sx={{ fontWeight: 500, color: 'text.primary', mb: 0.5 }}
+              >
+                ATS · Tema Consulting
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Acceso para equipos internos
+              </Typography>
+            </Box>
 
-              <Divider />
+            <Divider />
 
-              {error && (
-                <Alert severity="error" onClose={() => setError(null)}>
-                  {error}
-                </Alert>
-              )}
+            {error && (
+              <Alert severity="error" onClose={() => setError(null)}>
+                {error}
+              </Alert>
+            )}
 
+            <Button
+              variant="contained"
+              size="large"
+              fullWidth
+              disabled={loading || adminLoading}
+              onClick={() => handleSignIn()}
+              startIcon={
+                loading ? (
+                  <CircularProgress size={18} color="inherit" />
+                ) : (
+                  <LogIn size={18} />
+                )
+              }
+              sx={{ py: 1.5 }}
+            >
+              {loading ? 'Iniciando sesión...' : 'Continuar con Google'}
+            </Button>
+
+            <Box>
               <Button
-                variant="contained"
-                size="large"
-                fullWidth
-                disabled={loading}
-                onClick={() => handleSignIn()}
-                startIcon={
-                  loading ? (
-                    <CircularProgress size={18} color="inherit" />
+                variant="text"
+                size="small"
+                color="inherit"
+                onClick={() => setAdminOpen((prev) => !prev)}
+                startIcon={<ShieldCheck size={16} />}
+                endIcon={
+                  adminOpen ? (
+                    <ChevronUp size={16} />
                   ) : (
-                    <LogIn size={18} />
+                    <ChevronDown size={16} />
                   )
                 }
-                sx={{ py: 1.5 }}
+                sx={{ color: 'text.secondary', fontSize: '0.8125rem' }}
               >
-                {loading ? 'Iniciando sesión...' : 'Continuar con Google'}
+                Acceso administrador
               </Button>
 
-              {IS_DEV && (
-                <>
-                  <Divider>
-                    <Typography variant="caption" color="text.secondary">
-                      Dev Mode
-                    </Typography>
-                  </Divider>
-                  <Stack direction="row" spacing={1}>
-                    {DEV_ROLES.map(({ role: devRole, label }) => (
-                      <Button
-                        key={devRole}
-                        variant="outlined"
-                        size="small"
-                        fullWidth
-                        disabled={loading}
-                        onClick={() => handleSignIn(devRole)}
-                      >
-                        {label}
-                      </Button>
-                    ))}
+              <Collapse in={adminOpen}>
+                <Box
+                  component="form"
+                  onSubmit={(e) => void handleAdminSignIn(e)}
+                  sx={{ mt: 2 }}
+                >
+                  <Stack spacing={2}>
+                    <TextField
+                      variant="outlined"
+                      fullWidth
+                      label="Email"
+                      type="email"
+                      size="small"
+                      value={adminEmail}
+                      onChange={(e) => setAdminEmail(e.target.value)}
+                      disabled={adminLoading}
+                      required
+                    />
+                    <TextField
+                      variant="outlined"
+                      fullWidth
+                      label="Contraseña"
+                      type="password"
+                      size="small"
+                      value={adminPassword}
+                      onChange={(e) => setAdminPassword(e.target.value)}
+                      disabled={adminLoading}
+                      required
+                    />
+                    <Button
+                      type="submit"
+                      variant="outlined"
+                      fullWidth
+                      disabled={adminLoading || loading}
+                      startIcon={
+                        adminLoading ? (
+                          <CircularProgress size={16} color="inherit" />
+                        ) : (
+                          <ShieldCheck size={16} />
+                        )
+                      }
+                    >
+                      {adminLoading ? 'Ingresando...' : 'Ingresar como admin'}
+                    </Button>
                   </Stack>
-                </>
-              )}
-            </Stack>
-          )}
+                </Box>
+              </Collapse>
+            </Box>
+
+            {IS_DEV && (
+              <>
+                <Divider>
+                  <Typography variant="caption" color="text.secondary">
+                    Dev Mode
+                  </Typography>
+                </Divider>
+                <Stack direction="row" spacing={1}>
+                  {DEV_ROLES.map(({ role: devRole, label }) => (
+                    <Button
+                      key={devRole}
+                      variant="outlined"
+                      size="small"
+                      fullWidth
+                      disabled={loading || adminLoading}
+                      onClick={() => handleSignIn(devRole)}
+                    >
+                      {label}
+                    </Button>
+                  ))}
+                </Stack>
+              </>
+            )}
+          </Stack>
         </CardContent>
       </Card>
     </Box>

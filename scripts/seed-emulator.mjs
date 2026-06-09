@@ -62,13 +62,14 @@ async function createAuthUser({ email, password, displayName, role, devUid }) {
     }
   }
 
-  // Asignar custom claims via emulador Admin REST
-  const claimsUrl = `${AUTH_EMULATOR_URL}/emulator/v1/projects/${PROJECT_ID}/accounts/${devUid}`;
-  await fetch(claimsUrl, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ customAttributes: JSON.stringify({ role }) }),
-  });
+  if (role) {
+    const claimsUrl = `${AUTH_EMULATOR_URL}/emulator/v1/projects/${PROJECT_ID}/accounts/${devUid}`;
+    await fetch(claimsUrl, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ customAttributes: JSON.stringify({ role }) }),
+    });
+  }
 }
 
 async function seedEmployees(employees) {
@@ -94,13 +95,15 @@ async function main() {
     console.log(`     ✓ auth: ${user.email} (${user.role}) — uid: ${user.devUid}`);
   }
   const employeesResult = await seedEmployees(
-    DASHBOARD_USERS.map(u => ({
-      uid: u.devUid,
-      email: u.email,
-      name: u.displayName,
-      role: u.role,
-      ...(u.calendarLink ? { calendarLink: u.calendarLink } : {}),
-    }))
+    DASHBOARD_USERS
+      .filter(u => u.role !== null)
+      .map(u => ({
+        uid: u.devUid,
+        email: u.email,
+        name: u.displayName,
+        role: u.role,
+        ...(u.calendarLink ? { calendarLink: u.calendarLink } : {}),
+      }))
   );
   console.log(`     ✓ employees en Firestore: ${employeesResult.processed}\n`);
 

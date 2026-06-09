@@ -59,3 +59,4 @@ export { seedEmployees } from './callables/seedEmployees';
 export { updateEmployeeCalendarLink } from './callables/updateEmployeeCalendarLink';
 export { exchangeGmailCode } from './callables/exchangeGmailCode';
 export { exchangeCalendarCode } from './callables/exchangeCalendarCode';
+export { setUserRoleOnboarding } from './callables/setUserRoleOnboarding';

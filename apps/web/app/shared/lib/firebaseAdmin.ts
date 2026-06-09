@@ -1,4 +1,9 @@
-import { getApps, initializeApp, cert, type App } from 'firebase-admin/app';
+import {
+  getApps,
+  initializeApp,
+  applicationDefault,
+  type App,
+} from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 
 function getAdminApp(): App {
@@ -13,12 +18,12 @@ function getAdminApp(): App {
     });
   }
 
+  // En producción: usa Application Default Credentials (ADC).
+  // En GCP (Cloud Run, App Engine) se resuelven automáticamente sin key file.
+  // En local sin emulador: requiere `gcloud auth application-default login`.
   return initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
+    credential: applicationDefault(),
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   });
 }
 

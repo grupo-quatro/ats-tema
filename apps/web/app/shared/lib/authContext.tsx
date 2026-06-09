@@ -37,11 +37,14 @@ interface AuthContextValue {
   /** UID que usa el backend (en emulador: recruiter-dev, admin-dev, etc.) */
   callerUid: string | null;
   isPendingApproval: boolean;
+  /** true cuando el usuario está autenticado pero aún no eligió un rol */
+  needsRoleSelection: boolean;
   /** true después del primer evento de onAuthStateChanged */
   authReady: boolean;
   loading: boolean;
   signInWithGoogle: (devRole?: DevRole) => Promise<void>;
   signOut: () => Promise<void>;
+  completeRoleOnboarding: (role: 'hr' | 'area_leader') => Promise<void>;
 }
 
 type DevRole = 'admin' | 'recruiter' | 'area_leader';
@@ -212,6 +215,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await clearSessionCookie();
   }, [useEmulators]);
 
+  const completeRoleOnboarding = useCallback(
+    async (selectedRole: 'hr' | 'area_leader') => {
+      if (!user) throw new Error('No hay usuario autenticado.');
+
+      const currentToken = await user.getIdToken();
+
+      const res = await fetch('/api/auth/set-role', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${currentToken}`,
+        },
+        body: JSON.stringify({ role: selectedRole }),
+      });
+
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        throw new Error(data.error ?? 'No se pudo asignar el rol.');
+      }
+
+      // Force Firebase to re-read custom claims
+      await user.getIdTokenResult(true);
+      const newToken = await user.getIdToken(true);
+
+      await setSessionCookie(newToken, selectedRole);
+
+      setRole(selectedRole as EmployeeRole);
+      setIsPendingApproval(false);
+    },
+    [user],
+  );
+
   return (
     <AuthContext.Provider
       value={{
@@ -219,10 +254,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         callerUid,
         role,
         isPendingApproval,
+        needsRoleSelection: isPendingApproval,
         authReady,
         loading,
         signInWithGoogle,
         signOut,
+        completeRoleOnboarding,
       }}
     >
       {children}

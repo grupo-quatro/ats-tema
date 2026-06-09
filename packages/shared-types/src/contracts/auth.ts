@@ -22,3 +22,11 @@ export interface EnsureEmployeeRequest {
 export interface EnsureEmployeeResponse {
   isNew: boolean;
 }
+
+export interface SetUserRoleOnboardingRequest {
+  role: 'hr' | 'area_leader';
+}
+
+export interface SetUserRoleOnboardingResponse {
+  success: boolean;
+}
