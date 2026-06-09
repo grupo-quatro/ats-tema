@@ -33,9 +33,7 @@ export default function CalendarLinkEditor() {
     } catch (err) {
       setSaveStatus('error');
       setErrorMessage(
-        err instanceof Error
-          ? err.message
-          : 'No se pudo guardar el link.',
+        err instanceof Error ? err.message : 'No se pudo guardar el link.',
       );
     }
   }

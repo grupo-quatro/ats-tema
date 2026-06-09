@@ -26,7 +26,11 @@ import {
 } from '../validators/offerValidator';
 
 const offerService = new OfferService();
-const OFFER_MANAGER_ROLES: EmployeeRole[] = [EMPLOYEE_ROLES.ADMIN, EMPLOYEE_ROLES.HR, EMPLOYEE_ROLES.AREA_LEADER];
+const OFFER_MANAGER_ROLES: EmployeeRole[] = [
+  EMPLOYEE_ROLES.ADMIN,
+  EMPLOYEE_ROLES.HR,
+  EMPLOYEE_ROLES.AREA_LEADER,
+];
 
 export const createOfferDraft = onRequest(async (request, response) => {
   try {

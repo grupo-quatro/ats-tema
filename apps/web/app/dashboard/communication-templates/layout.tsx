@@ -5,7 +5,10 @@ import { useRouter } from 'next/navigation';
 import { EMPLOYEE_ROLES, type EmployeeRole } from '@ats/shared-types';
 import { useAuth } from '../../shared/lib/authContext';
 
-const ALLOWED_ROLES: EmployeeRole[] = [EMPLOYEE_ROLES.HR, EMPLOYEE_ROLES.AREA_LEADER];
+const ALLOWED_ROLES: EmployeeRole[] = [
+  EMPLOYEE_ROLES.HR,
+  EMPLOYEE_ROLES.AREA_LEADER,
+];
 
 export default function CommunicationTemplatesLayout({
   children,

@@ -60,7 +60,8 @@ export class StageEmailService {
       const [orgConfig, credential, calendarLink] = await Promise.all([
         this.orgConfigRepository.get(),
         this.userRepository.getGmailCredential(recruiterId),
-        this.employeeRepository?.getCalendarLink(recruiterId) ?? Promise.resolve(null),
+        this.employeeRepository?.getCalendarLink(recruiterId) ??
+          Promise.resolve(null),
       ]);
 
       const candidateName =

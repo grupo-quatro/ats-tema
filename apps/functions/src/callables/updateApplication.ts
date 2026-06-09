@@ -39,7 +39,11 @@ class ApplicationStageForbiddenError extends Error {
   }
 }
 
-const OFFER_MANAGER_ROLES: EmployeeRole[] = [EMPLOYEE_ROLES.ADMIN, EMPLOYEE_ROLES.HR, EMPLOYEE_ROLES.AREA_LEADER];
+const OFFER_MANAGER_ROLES: EmployeeRole[] = [
+  EMPLOYEE_ROLES.ADMIN,
+  EMPLOYEE_ROLES.HR,
+  EMPLOYEE_ROLES.AREA_LEADER,
+];
 
 const oauth2Client = new OAuth2Client(
   process.env.GOOGLE_OAUTH_CLIENT_ID,

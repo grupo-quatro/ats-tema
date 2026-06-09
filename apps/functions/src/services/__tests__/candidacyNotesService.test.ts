@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { EMPLOYEE_ROLES, type Application, type CandidacyNote } from '@ats/shared-types';
+import {
+  EMPLOYEE_ROLES,
+  type Application,
+  type CandidacyNote,
+} from '@ats/shared-types';
 import {
   CandidacyNoteForbiddenError,
   CandidacyNoteNotFoundError,

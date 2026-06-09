@@ -35,9 +35,7 @@ export function useEmployeeProfile(): UseEmployeeProfileResult {
       .catch((err: unknown) => {
         if (!cancelled) {
           setError(
-            err instanceof Error
-              ? err.message
-              : 'No se pudo cargar el perfil.',
+            err instanceof Error ? err.message : 'No se pudo cargar el perfil.',
           );
         }
       })

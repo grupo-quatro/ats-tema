@@ -80,11 +80,7 @@ export type CreateStageHistoryEntryDTO = Omit<
 
 export type CreateApplicationDTO = Omit<
   Application,
-  | 'id'
-  | 'createdAt'
-  | 'updatedAt'
-  | 'stageUpdatedAt'
-  | 'fitScore'
+  'id' | 'createdAt' | 'updatedAt' | 'stageUpdatedAt' | 'fitScore'
 >;
 export type UpdateApplicationDTO = Partial<
   Omit<Application, 'id' | 'createdAt'>

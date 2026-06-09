@@ -330,18 +330,31 @@ describe('StageEmailService.sendIfTemplateExists', () => {
     vi.mocked(sender.send).mockResolvedValue(undefined);
 
     const serviceWithCalendar = buildService(
-      templateRepo, logRepo, userRepo, orgRepo, resolver, sender, oauth2, employeeRepo,
+      templateRepo,
+      logRepo,
+      userRepo,
+      orgRepo,
+      resolver,
+      sender,
+      oauth2,
+      employeeRepo,
     );
 
     await serviceWithCalendar.sendIfTemplateExists(
-      application, candidate, job, 'applied', 'recruiter-1', 'recruiter@example.com',
+      application,
+      candidate,
+      job,
+      'applied',
+      'recruiter-1',
+      'recruiter@example.com',
     );
 
     expect(employeeRepo.getCalendarLink).toHaveBeenCalledWith('recruiter-1');
     expect(resolver.resolve).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
-        calendarLink: 'https://calendar.google.com/calendar/appointments/schedules/test123',
+        calendarLink:
+          'https://calendar.google.com/calendar/appointments/schedules/test123',
       }),
     );
   });
@@ -354,11 +367,23 @@ describe('StageEmailService.sendIfTemplateExists', () => {
     vi.mocked(sender.send).mockResolvedValue(undefined);
 
     const serviceWithCalendar = buildService(
-      templateRepo, logRepo, userRepo, orgRepo, resolver, sender, oauth2, employeeRepo,
+      templateRepo,
+      logRepo,
+      userRepo,
+      orgRepo,
+      resolver,
+      sender,
+      oauth2,
+      employeeRepo,
     );
 
     await serviceWithCalendar.sendIfTemplateExists(
-      application, candidate, job, 'applied', 'recruiter-1', 'recruiter@example.com',
+      application,
+      candidate,
+      job,
+      'applied',
+      'recruiter-1',
+      'recruiter@example.com',
     );
 
     expect(resolver.resolve).toHaveBeenCalledWith(

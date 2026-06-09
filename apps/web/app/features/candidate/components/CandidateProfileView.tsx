@@ -60,11 +60,16 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
   const { role, callerUid } = useAuth();
   const [formsModalOpen, setFormsModalOpen] = useState(false);
 
-  const canDoHrInterview = role === EMPLOYEE_ROLES.HR || role === EMPLOYEE_ROLES.ADMIN;
+  const canDoHrInterview =
+    role === EMPLOYEE_ROLES.HR || role === EMPLOYEE_ROLES.ADMIN;
   const canDoTechInterview =
-    role === EMPLOYEE_ROLES.AREA_LEADER || role === EMPLOYEE_ROLES.TECH_LEAD || role === EMPLOYEE_ROLES.ADMIN;
+    role === EMPLOYEE_ROLES.AREA_LEADER ||
+    role === EMPLOYEE_ROLES.TECH_LEAD ||
+    role === EMPLOYEE_ROLES.ADMIN;
   const canManageOffer =
-    role === EMPLOYEE_ROLES.ADMIN || role === EMPLOYEE_ROLES.HR || role === EMPLOYEE_ROLES.AREA_LEADER;
+    role === EMPLOYEE_ROLES.ADMIN ||
+    role === EMPLOYEE_ROLES.HR ||
+    role === EMPLOYEE_ROLES.AREA_LEADER;
   const canManageCandidateStage = role === EMPLOYEE_ROLES.HR;
 
   const formatNoteDate = (iso: string) => {

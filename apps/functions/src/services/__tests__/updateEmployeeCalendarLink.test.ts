@@ -29,11 +29,7 @@ import { EMPLOYEE_ROLES } from '@ats/shared-types';
 import { updateEmployeeCalendarLink } from '../../callables/updateEmployeeCalendarLink';
 import { EmployeeRepository } from '../../repositories/employeeRepository';
 
-const makeRequest = (
-  method: string,
-  body: unknown,
-  token = 'dev-recruiter',
-) =>
+const makeRequest = (method: string, body: unknown, token = 'dev-recruiter') =>
   ({
     method,
     body,

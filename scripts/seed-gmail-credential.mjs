@@ -11,7 +11,9 @@
  * luego copiarlos de Firestore → users/{uid}.gmailCredential
  *
  * Correr desde la raíz:
- *   SEED_GMAIL_UID=xxx SEED_GMAIL_ACCESS_TOKEN=ya29.xxx SEED_GMAIL_REFRESH_TOKEN=1//xxx node scripts/seed-gmail-credential.mjs
+ *   node --env-file=.env.local scripts/seed-gmail-credential.mjs
+ *
+ * Copiar .env.example → .env.local y completar los valores antes de correr.
  */
 
 process.env.FIRESTORE_EMULATOR_HOST = 'localhost:8080';
