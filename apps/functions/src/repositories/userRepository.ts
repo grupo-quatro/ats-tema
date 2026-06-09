@@ -10,6 +10,11 @@ export interface IUserRepository {
     uid: string,
     credential: GmailCredential,
   ): Promise<void>;
+  getCalendarCredential(uid: string): Promise<GmailCredential | null>;
+  updateCalendarCredential(
+    uid: string,
+    credential: GmailCredential,
+  ): Promise<void>;
 }
 
 export class UserRepositoryError extends Error {
@@ -56,6 +61,44 @@ export class UserRepository implements IUserRepository {
     } catch (error) {
       throw new UserRepositoryError(
         `No se pudo actualizar la credencial de Gmail para el usuario ${uid}.`,
+        error,
+      );
+    }
+  }
+
+  async getCalendarCredential(uid: string): Promise<GmailCredential | null> {
+    try {
+      const snapshot = await this.collection.doc(uid).get();
+
+      if (!snapshot.exists) {
+        return null;
+      }
+
+      const data = snapshot.data();
+      const credential = data?.calendarCredential as
+        | GmailCredential
+        | undefined;
+
+      return credential ?? null;
+    } catch (error) {
+      throw new UserRepositoryError(
+        `No se pudo obtener la credencial de Calendar para el usuario ${uid}.`,
+        error,
+      );
+    }
+  }
+
+  async updateCalendarCredential(
+    uid: string,
+    credential: GmailCredential,
+  ): Promise<void> {
+    try {
+      await this.collection
+        .doc(uid)
+        .set({ calendarCredential: credential }, { merge: true });
+    } catch (error) {
+      throw new UserRepositoryError(
+        `No se pudo actualizar la credencial de Calendar para el usuario ${uid}.`,
         error,
       );
     }

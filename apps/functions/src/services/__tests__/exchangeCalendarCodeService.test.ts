@@ -4,9 +4,9 @@ import type { GmailCredential } from '@ats/shared-types';
 
 import type { IUserRepository } from '../../repositories/userRepository';
 import {
-  ExchangeGmailCodeService,
-  ExchangeGmailCodeError,
-} from '../exchangeGmailCodeService';
+  ExchangeCalendarCodeService,
+  ExchangeCalendarCodeError,
+} from '../exchangeCalendarCodeService';
 
 const createUserRepositoryMock = (): IUserRepository => ({
   getGmailCredential: vi.fn(),
@@ -19,32 +19,32 @@ const createOAuth2ClientMock = () => ({
   getToken: vi.fn(),
 });
 
-describe('ExchangeGmailCodeService.exchange', () => {
+describe('ExchangeCalendarCodeService.exchange', () => {
   let userRepository: IUserRepository;
   let oauth2Client: ReturnType<typeof createOAuth2ClientMock>;
-  let service: ExchangeGmailCodeService;
+  let service: ExchangeCalendarCodeService;
 
   beforeEach(() => {
     vi.clearAllMocks();
     userRepository = createUserRepositoryMock();
     oauth2Client = createOAuth2ClientMock();
     // Cast is intentional: test only needs the two methods we stub
-    service = new ExchangeGmailCodeService(
+    service = new ExchangeCalendarCodeService(
       userRepository,
       oauth2Client as never,
     );
   });
 
-  it('guarda la credencial en el repositorio cuando el intercambio es exitoso', async () => {
+  it('guarda la credencial de Calendar en el repositorio cuando el intercambio es exitoso', async () => {
     const expiryDate = Date.now() + 3600 * 1000;
     oauth2Client.getToken.mockResolvedValue({
       tokens: {
-        access_token: 'access-token-123',
-        refresh_token: 'refresh-token-abc',
+        access_token: 'access-token-cal-123',
+        refresh_token: 'refresh-token-cal-abc',
         expiry_date: expiryDate,
       },
     });
-    vi.mocked(userRepository.updateGmailCredential).mockResolvedValue(
+    vi.mocked(userRepository.updateCalendarCredential).mockResolvedValue(
       undefined,
     );
 
@@ -55,11 +55,11 @@ describe('ExchangeGmailCodeService.exchange', () => {
       redirect_uri: 'https://app/callback',
     });
 
-    const savedCredential = vi.mocked(userRepository.updateGmailCredential).mock
-      .calls[0][1] as GmailCredential;
+    const savedCredential = vi.mocked(userRepository.updateCalendarCredential)
+      .mock.calls[0][1] as GmailCredential;
 
-    expect(savedCredential.accessToken).toBe('access-token-123');
-    expect(savedCredential.refreshToken).toBe('refresh-token-abc');
+    expect(savedCredential.accessToken).toBe('access-token-cal-123');
+    expect(savedCredential.refreshToken).toBe('refresh-token-cal-abc');
     expect(savedCredential.expiresAt).toBe(expiryDate);
   });
 
@@ -73,33 +73,33 @@ describe('ExchangeGmailCodeService.exchange', () => {
         expiry_date: null,
       },
     });
-    vi.mocked(userRepository.updateGmailCredential).mockResolvedValue(
+    vi.mocked(userRepository.updateCalendarCredential).mockResolvedValue(
       undefined,
     );
 
     await service.exchange('uid-test', 'auth-code', 'https://app/callback');
 
-    const savedCredential = vi.mocked(userRepository.updateGmailCredential).mock
-      .calls[0][1] as GmailCredential;
+    const savedCredential = vi.mocked(userRepository.updateCalendarCredential)
+      .mock.calls[0][1] as GmailCredential;
 
     expect(savedCredential.expiresAt).toBeGreaterThanOrEqual(
       beforeExchange + 3600 * 1000,
     );
   });
 
-  it('lanza ExchangeGmailCodeError cuando getToken falla', async () => {
+  it('lanza ExchangeCalendarCodeError cuando getToken falla', async () => {
     oauth2Client.getToken.mockRejectedValue(
       new Error('invalid_grant: Code was already redeemed.'),
     );
 
     await expect(
       service.exchange('uid-test', 'bad-code', 'https://app/callback'),
-    ).rejects.toThrow(ExchangeGmailCodeError);
+    ).rejects.toThrow(ExchangeCalendarCodeError);
 
-    expect(userRepository.updateGmailCredential).not.toHaveBeenCalled();
+    expect(userRepository.updateCalendarCredential).not.toHaveBeenCalled();
   });
 
-  it('lanza ExchangeGmailCodeError cuando la respuesta no contiene access_token', async () => {
+  it('lanza ExchangeCalendarCodeError cuando la respuesta no contiene access_token', async () => {
     oauth2Client.getToken.mockResolvedValue({
       tokens: {
         access_token: null,
@@ -110,12 +110,12 @@ describe('ExchangeGmailCodeService.exchange', () => {
 
     await expect(
       service.exchange('uid-test', 'auth-code', 'https://app/callback'),
-    ).rejects.toThrow(ExchangeGmailCodeError);
+    ).rejects.toThrow(ExchangeCalendarCodeError);
 
-    expect(userRepository.updateGmailCredential).not.toHaveBeenCalled();
+    expect(userRepository.updateCalendarCredential).not.toHaveBeenCalled();
   });
 
-  it('lanza ExchangeGmailCodeError cuando la respuesta no contiene refresh_token', async () => {
+  it('lanza ExchangeCalendarCodeError cuando la respuesta no contiene refresh_token', async () => {
     oauth2Client.getToken.mockResolvedValue({
       tokens: {
         access_token: 'access-token-123',
@@ -126,9 +126,9 @@ describe('ExchangeGmailCodeService.exchange', () => {
 
     await expect(
       service.exchange('uid-test', 'auth-code', 'https://app/callback'),
-    ).rejects.toThrow(ExchangeGmailCodeError);
+    ).rejects.toThrow(ExchangeCalendarCodeError);
 
-    expect(userRepository.updateGmailCredential).not.toHaveBeenCalled();
+    expect(userRepository.updateCalendarCredential).not.toHaveBeenCalled();
   });
 
   it('propaga errores del repositorio al guardar la credencial', async () => {
@@ -139,12 +139,30 @@ describe('ExchangeGmailCodeService.exchange', () => {
         expiry_date: Date.now() + 3600 * 1000,
       },
     });
-    vi.mocked(userRepository.updateGmailCredential).mockRejectedValue(
+    vi.mocked(userRepository.updateCalendarCredential).mockRejectedValue(
       new Error('Firestore write error'),
     );
 
     await expect(
       service.exchange('uid-test', 'auth-code', 'https://app/callback'),
     ).rejects.toThrow('Firestore write error');
+  });
+
+  it('no llama a updateGmailCredential — solo updateCalendarCredential', async () => {
+    oauth2Client.getToken.mockResolvedValue({
+      tokens: {
+        access_token: 'access-token-123',
+        refresh_token: 'refresh-token-abc',
+        expiry_date: Date.now() + 3600 * 1000,
+      },
+    });
+    vi.mocked(userRepository.updateCalendarCredential).mockResolvedValue(
+      undefined,
+    );
+
+    await service.exchange('uid-test', 'auth-code', 'https://app/callback');
+
+    expect(userRepository.updateGmailCredential).not.toHaveBeenCalled();
+    expect(userRepository.updateCalendarCredential).toHaveBeenCalledOnce();
   });
 });

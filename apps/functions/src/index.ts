@@ -58,3 +58,4 @@ export { seedGmailCredential } from './callables/seedGmailCredential';
 export { seedEmployees } from './callables/seedEmployees';
 export { updateEmployeeCalendarLink } from './callables/updateEmployeeCalendarLink';
 export { exchangeGmailCode } from './callables/exchangeGmailCode';
+export { exchangeCalendarCode } from './callables/exchangeCalendarCode';

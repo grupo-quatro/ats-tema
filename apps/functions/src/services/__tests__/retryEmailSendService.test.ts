@@ -56,6 +56,8 @@ const makeEmailLogRepo = (): IEmailLogRepository => ({
 const makeUserRepo = (): IUserRepository => ({
   getGmailCredential: vi.fn(),
   updateGmailCredential: vi.fn(),
+  getCalendarCredential: vi.fn(),
+  updateCalendarCredential: vi.fn(),
 });
 
 const makeGmailSender = (): GmailSenderService =>

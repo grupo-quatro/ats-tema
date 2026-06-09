@@ -23,6 +23,7 @@ import type { LucideIcon } from 'lucide-react';
 import { EMPLOYEE_ROLES, type EmployeeRole } from '@ats/shared-types';
 import { useAuth } from '../../shared/lib/authContext';
 import ConnectGmailButton from '../../features/gmail/components/ConnectGmailButton';
+import ConnectCalendarButton from '../../features/calendar/components/ConnectCalendarButton';
 import CalendarLinkEditor from '../../features/calendar/components/CalendarLinkEditor';
 
 const SIDEBAR_WIDTH = 240;
@@ -291,6 +292,7 @@ export default function Sidebar() {
               </Tooltip>
             </Box>
             <ConnectGmailButton />
+            {role === EMPLOYEE_ROLES.HR && <ConnectCalendarButton />}
             {role === EMPLOYEE_ROLES.HR && <CalendarLinkEditor />}
             <Typography sx={{ fontSize: '0.7rem', color: '#94a3b8' }}>
               ATS · Tema Consulting
