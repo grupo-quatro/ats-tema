@@ -32,7 +32,7 @@ export class CandidacyNoteForbiddenError extends Error {
 const ROLE_LABELS: Record<EmployeeRole, string> = {
   hr: 'Recursos Humanos',
   tech_lead: 'Líder técnico',
-  hiring_manager: 'Hiring Manager',
+  area_leader: 'Área Líder',
   admin: 'Administrador',
 };
 

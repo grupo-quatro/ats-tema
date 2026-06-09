@@ -1,4 +1,11 @@
-export type EmployeeRole = 'hr' | 'tech_lead' | 'hiring_manager' | 'admin';
+export const EMPLOYEE_ROLES = {
+  HR: 'hr',
+  TECH_LEAD: 'tech_lead',
+  AREA_LEADER: 'area_leader',
+  ADMIN: 'admin',
+} as const;
+
+export type EmployeeRole = (typeof EMPLOYEE_ROLES)[keyof typeof EMPLOYEE_ROLES];
 
 export interface Employee {
   id: string; // mismo uid que Firebase Auth
@@ -7,6 +14,7 @@ export interface Employee {
   role: EmployeeRole;
   department: string;
   active: boolean;
+  calendarLink?: string;
   createdAt: Date;
   updatedAt: Date;
 }

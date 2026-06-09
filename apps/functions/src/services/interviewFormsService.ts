@@ -1,11 +1,12 @@
-import type {
-  EmployeeRole,
-  GetInterviewFormsResponse,
-  InterviewForm,
-  InterviewFormDTO,
-  InterviewFormType,
-  SaveInterviewFormPayload,
-  SaveInterviewFormResponse,
+import {
+  EMPLOYEE_ROLES,
+  type EmployeeRole,
+  type GetInterviewFormsResponse,
+  type InterviewForm,
+  type InterviewFormDTO,
+  type InterviewFormType,
+  type SaveInterviewFormPayload,
+  type SaveInterviewFormResponse,
 } from '@ats/shared-types';
 
 import { findNextStageForTrigger } from '@ats/shared-types';
@@ -28,7 +29,7 @@ export class InterviewFormForbiddenError extends Error {
 const ROLE_LABELS: Record<EmployeeRole, string> = {
   hr: 'Recursos Humanos',
   tech_lead: 'Líder técnico',
-  hiring_manager: 'Hiring Manager',
+  area_leader: 'Área Líder',
   admin: 'Administrador',
 };
 
@@ -127,17 +128,17 @@ export class InterviewFormsService {
       throw new InterviewFormForbiddenError();
     }
 
-    if (role === 'admin') {
+    if (role === EMPLOYEE_ROLES.ADMIN) {
       return;
     }
 
-    if (type === 'hr' && role === 'hr') {
+    if (type === 'hr' && role === EMPLOYEE_ROLES.HR) {
       return;
     }
 
     if (
       type === 'tech' &&
-      (role === 'tech_lead' || role === 'hiring_manager')
+      (role === EMPLOYEE_ROLES.TECH_LEAD || role === EMPLOYEE_ROLES.AREA_LEADER)
     ) {
       return;
     }
@@ -147,10 +148,10 @@ export class InterviewFormsService {
 
   private assertCanViewForms(role: EmployeeRole | null): boolean {
     return (
-      role === 'admin' ||
-      role === 'hr' ||
-      role === 'tech_lead' ||
-      role === 'hiring_manager'
+      role === EMPLOYEE_ROLES.ADMIN ||
+      role === EMPLOYEE_ROLES.HR ||
+      role === EMPLOYEE_ROLES.TECH_LEAD ||
+      role === EMPLOYEE_ROLES.AREA_LEADER
     );
   }
 

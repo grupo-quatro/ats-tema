@@ -55,3 +55,4 @@ export {
 export { getEmailLogs } from './callables/getEmailLogs';
 export { retryEmailSend } from './callables/retryEmailSend';
 export { seedGmailCredential } from './callables/seedGmailCredential';
+export { updateEmployeeCalendarLink } from './callables/updateEmployeeCalendarLink';

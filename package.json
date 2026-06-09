@@ -11,7 +11,8 @@
     "dev-web": "turbo run dev --filter=@ats/web ",
     "test": "turbo run test",
     "test:watch": "turbo run test -- --watch",
-    "seed": "node scripts/seed-emulator.mjs"
+    "seed": "node scripts/seed-emulator.mjs",
+    "seed-gmail": "node scripts/seed-emulator.mjs && node scripts/seed-gmail-credential.mjs"
   },
   "config": {
     "ghooks": {

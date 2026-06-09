@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 const SESSION_COOKIE = 'ats-session';
 const ROLE_COOKIE = 'ats-role';
-const INTERNAL_ROLES = new Set(['admin', 'hr', 'hiring_manager', 'tech_lead']);
+const INTERNAL_ROLES = new Set(['admin', 'hr', 'area_leader', 'tech_lead']);
 const INTERNAL_HOME = '/dashboard/positions';
 const CANDIDATE_PATHS = ['/', '/jobs', '/postulation'];
 

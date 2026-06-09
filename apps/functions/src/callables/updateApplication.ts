@@ -1,10 +1,11 @@
 import { logger } from 'firebase-functions';
 import { onRequest } from 'firebase-functions/v2/https';
-import type {
-  EmployeeRole,
-  UpdateApplicationStagePayload,
+import {
+  EMPLOYEE_ROLES,
+  STAGE_CONFIG,
+  type EmployeeRole,
+  type UpdateApplicationStagePayload,
 } from '@ats/shared-types';
-import { STAGE_CONFIG } from '@ats/shared-types';
 import { OAuth2Client } from 'google-auth-library';
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
 import { ApplicationsRepository } from '../repositories/applicationRepository';
@@ -12,6 +13,7 @@ import { EmailLogRepository } from '../repositories/emailLogRepository';
 import { EmailTemplateRepository } from '../repositories/emailTemplateRepository';
 import { OrgConfigRepository } from '../repositories/orgConfigRepository';
 import { UserRepository } from '../repositories/userRepository';
+import { EmployeeRepository } from '../repositories/employeeRepository';
 import {
   ApplicationNotFoundError,
   ApplicationStageTransitionError,
@@ -37,7 +39,7 @@ class ApplicationStageForbiddenError extends Error {
   }
 }
 
-const OFFER_MANAGER_ROLES: EmployeeRole[] = ['admin', 'hr', 'hiring_manager'];
+const OFFER_MANAGER_ROLES: EmployeeRole[] = [EMPLOYEE_ROLES.ADMIN, EMPLOYEE_ROLES.HR, EMPLOYEE_ROLES.AREA_LEADER];
 
 const oauth2Client = new OAuth2Client(
   process.env.GOOGLE_OAUTH_CLIENT_ID,
@@ -58,6 +60,7 @@ const updateApplicationStageService = new UpdateApplicationStageService(
     new TemplateResolverService(),
     new GmailSenderService(),
     oauth2Client,
+    new EmployeeRepository(),
   ),
 );
 
@@ -177,7 +180,7 @@ function assertCanUpdateApplicationStage(
     return;
   }
 
-  if (role !== 'hr') {
+  if (role !== EMPLOYEE_ROLES.HR) {
     throw new ApplicationStageForbiddenError();
   }
 }

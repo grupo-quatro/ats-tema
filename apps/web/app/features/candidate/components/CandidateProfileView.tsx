@@ -37,7 +37,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
-import { STAGE_CONFIG } from '@ats/shared-types';
+import { EMPLOYEE_ROLES, STAGE_CONFIG } from '@ats/shared-types';
 import { STAGE_LABELS, type CandidateMockProfile } from '../mock/candidateMock';
 import { getCandidateStageLabel } from '../utils/candidateProfile.utils';
 import { useCandidateProfile } from '../hooks/useCandidateProfile';
@@ -60,12 +60,12 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
   const { role, callerUid } = useAuth();
   const [formsModalOpen, setFormsModalOpen] = useState(false);
 
-  const canDoHrInterview = role === 'hr' || role === 'admin';
+  const canDoHrInterview = role === EMPLOYEE_ROLES.HR || role === EMPLOYEE_ROLES.ADMIN;
   const canDoTechInterview =
-    role === 'hiring_manager' || role === 'tech_lead' || role === 'admin';
+    role === EMPLOYEE_ROLES.AREA_LEADER || role === EMPLOYEE_ROLES.TECH_LEAD || role === EMPLOYEE_ROLES.ADMIN;
   const canManageOffer =
-    role === 'admin' || role === 'hr' || role === 'hiring_manager';
-  const canManageCandidateStage = role === 'hr';
+    role === EMPLOYEE_ROLES.ADMIN || role === EMPLOYEE_ROLES.HR || role === EMPLOYEE_ROLES.AREA_LEADER;
+  const canManageCandidateStage = role === EMPLOYEE_ROLES.HR;
 
   const formatNoteDate = (iso: string) => {
     const parsed = new Date(iso);

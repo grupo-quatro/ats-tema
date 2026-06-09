@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Application, InterviewForm } from '@ats/shared-types';
+import { EMPLOYEE_ROLES, type Application, type InterviewForm } from '@ats/shared-types';
 import {
   InterviewFormForbiddenError,
   InterviewFormsService,
@@ -201,7 +201,7 @@ describe('InterviewFormsService.getInterviewForms', () => {
   it('hr ve todos los formularios', async () => {
     const result = await service.getInterviewForms('app-1', {
       uid: 'uid-hr',
-      role: 'hr',
+      role: EMPLOYEE_ROLES.HR,
     });
 
     expect(result).toHaveLength(2);
@@ -219,7 +219,7 @@ describe('InterviewFormsService.getInterviewForms', () => {
   it('retorna submittedAt como ISO string', async () => {
     const result = await service.getInterviewForms('app-1', {
       uid: 'uid-hr',
-      role: 'hr',
+      role: EMPLOYEE_ROLES.HR,
     });
 
     expect(result[0]?.submittedAt).toBe('2026-04-02T10:30:00.000Z');

@@ -11,10 +11,12 @@ const PORT = process.env.FUNCTIONS_EMULATOR_PORT ?? '5001';
 const BASE_URL = `http://127.0.0.1:${PORT}/${PROJECT_ID}/${REGION}`;
 const AUTH_EMULATOR_URL = `http://127.0.0.1:9099`;
 
+const CALENDAR_LINK = 'https://calendar.app.google/rvMLFNkM2WwBZLaU7';
+
 const DASHBOARD_USERS = [
-  { email: 'admin@tema.dev',     password: 'pass123', displayName: 'Admin Tema',       role: 'admin' },
-  { email: 'recruiter@tema.dev', password: 'pass123', displayName: 'Recruiter Tema',   role: 'hr' },
-  { email: 'hiring@tema.dev',    password: 'pass123', displayName: 'Hiring Manager',   role: 'hiring_manager' },
+  { email: 'admin@tema.dev',      password: 'pass123', displayName: 'Admin Tema',    role: 'admin' },
+  { email: 'recruiter@tema.dev',  password: 'pass123', displayName: 'Recruiter Tema', role: 'hr', calendarLink: CALENDAR_LINK },
+  { email: 'arealeader@tema.dev', password: 'pass123', displayName: 'Área Líder',     role: 'area_leader' },
 ];
 
 async function callSeeder(functionName) {
@@ -75,12 +77,26 @@ async function createAuthUser({ email, password, displayName, role }) {
   return localId;
 }
 
+async function setEmployeeCalendarLink(uid, calendarLink) {
+  const firestoreUrl = `http://127.0.0.1:8080/v1/projects/${PROJECT_ID}/databases/(default)/documents/employees/${uid}?updateMask.fieldPaths=calendarLink`;
+  await fetch(firestoreUrl, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      fields: { calendarLink: { stringValue: calendarLink } },
+    }),
+  });
+}
+
 async function main() {
   console.log(`\n🌱 Seeding emulator (${BASE_URL})\n`);
 
   console.log('0/5  Usuarios de dashboard...');
   for (const user of DASHBOARD_USERS) {
     const uid = await createAuthUser(user);
+    if (user.calendarLink) {
+      await setEmployeeCalendarLink(uid, user.calendarLink);
+    }
     console.log(`     ✓ ${user.email} (${user.role}) — uid: ${uid}`);
   }
   console.log();

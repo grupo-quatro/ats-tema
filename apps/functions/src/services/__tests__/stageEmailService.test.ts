@@ -15,6 +15,7 @@ vi.mock('firebase-functions', () => ({
 import { StageEmailService } from '../stageEmailService';
 import type { IEmailLogRepository } from '../../repositories/emailLogRepository';
 import type { IEmailTemplateRepository } from '../../repositories/emailTemplateRepository';
+import type { IEmployeeRepository } from '../../repositories/employeeRepository';
 import type { IOrgConfigRepository } from '../../repositories/orgConfigRepository';
 import type { IUserRepository } from '../../repositories/userRepository';
 import type { GmailSenderService } from '../gmailSenderService';
@@ -126,6 +127,10 @@ const makeOAuth2Client = (): OAuth2Client =>
     refreshAccessToken: vi.fn(),
   }) as unknown as OAuth2Client;
 
+const makeEmployeeRepo = (): IEmployeeRepository => ({
+  getCalendarLink: vi.fn().mockResolvedValue(null),
+});
+
 // --- Helper para construir el servicio ---
 
 const buildService = (
@@ -136,6 +141,7 @@ const buildService = (
   resolver: TemplateResolverService,
   sender: GmailSenderService,
   oauth2: OAuth2Client,
+  employeeRepo?: IEmployeeRepository,
 ) =>
   new StageEmailService(
     templateRepo,
@@ -145,6 +151,7 @@ const buildService = (
     resolver,
     sender,
     oauth2,
+    employeeRepo,
   );
 
 // --- Tests ---
@@ -310,6 +317,53 @@ describe('StageEmailService.sendIfTemplateExists', () => {
         status: 'failed',
         error: 'Gmail API error: 500',
       }),
+    );
+  });
+
+  it('pasa el calendarLink del recruiter al resolver de templates cuando está configurado', async () => {
+    const employeeRepo = makeEmployeeRepo();
+    vi.mocked(employeeRepo.getCalendarLink).mockResolvedValue(
+      'https://calendar.google.com/calendar/appointments/schedules/test123',
+    );
+    vi.mocked(templateRepo.findByStage).mockResolvedValue(makeTemplate());
+    vi.mocked(userRepo.getGmailCredential).mockResolvedValue(validCredential);
+    vi.mocked(sender.send).mockResolvedValue(undefined);
+
+    const serviceWithCalendar = buildService(
+      templateRepo, logRepo, userRepo, orgRepo, resolver, sender, oauth2, employeeRepo,
+    );
+
+    await serviceWithCalendar.sendIfTemplateExists(
+      application, candidate, job, 'applied', 'recruiter-1', 'recruiter@example.com',
+    );
+
+    expect(employeeRepo.getCalendarLink).toHaveBeenCalledWith('recruiter-1');
+    expect(resolver.resolve).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        calendarLink: 'https://calendar.google.com/calendar/appointments/schedules/test123',
+      }),
+    );
+  });
+
+  it('usa calendarLink vacío cuando el recruiter no tiene link configurado', async () => {
+    const employeeRepo = makeEmployeeRepo();
+    vi.mocked(employeeRepo.getCalendarLink).mockResolvedValue(null);
+    vi.mocked(templateRepo.findByStage).mockResolvedValue(makeTemplate());
+    vi.mocked(userRepo.getGmailCredential).mockResolvedValue(validCredential);
+    vi.mocked(sender.send).mockResolvedValue(undefined);
+
+    const serviceWithCalendar = buildService(
+      templateRepo, logRepo, userRepo, orgRepo, resolver, sender, oauth2, employeeRepo,
+    );
+
+    await serviceWithCalendar.sendIfTemplateExists(
+      application, candidate, job, 'applied', 'recruiter-1', 'recruiter@example.com',
+    );
+
+    expect(resolver.resolve).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ calendarLink: '' }),
     );
   });
 });

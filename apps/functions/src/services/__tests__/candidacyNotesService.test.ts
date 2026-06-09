@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Application, CandidacyNote } from '@ats/shared-types';
+import { EMPLOYEE_ROLES, type Application, type CandidacyNote } from '@ats/shared-types';
 import {
   CandidacyNoteForbiddenError,
   CandidacyNoteNotFoundError,
@@ -64,7 +64,7 @@ describe('CandidacyNotesService.saveCandidacyNote', () => {
   it('crea una nota nueva', async () => {
     const result = await service.saveCandidacyNote(
       { applicationId: 'app-1', text: 'Nueva nota' },
-      { uid: 'uid-hr', role: 'hr' },
+      { uid: 'uid-hr', role: EMPLOYEE_ROLES.HR },
     );
 
     expect(result.id).toBe('note-new');
@@ -81,7 +81,7 @@ describe('CandidacyNotesService.saveCandidacyNote', () => {
     await expect(
       service.saveCandidacyNote(
         { applicationId: 'missing', text: 'Nota' },
-        { uid: 'uid-hr', role: 'hr' },
+        { uid: 'uid-hr', role: EMPLOYEE_ROLES.HR },
       ),
     ).rejects.toThrow(ApplicationNotFoundError);
   });
@@ -109,7 +109,7 @@ describe('CandidacyNotesService.updateCandidacyNote', () => {
   it('actualiza una nota y retorna el DTO', async () => {
     const result = await service.updateCandidacyNote(
       { applicationId: 'app-1', id: 'note-1', text: 'Actualizada' },
-      { uid: 'uid-hr', role: 'hr' },
+      { uid: 'uid-hr', role: EMPLOYEE_ROLES.HR },
     );
 
     expect(mockNotesRepo.update).toHaveBeenCalledWith(
@@ -128,7 +128,7 @@ describe('CandidacyNotesService.updateCandidacyNote', () => {
     await expect(
       service.updateCandidacyNote(
         { applicationId: 'app-1', id: 'missing', text: 'Texto' },
-        { uid: 'uid-hr', role: 'hr' },
+        { uid: 'uid-hr', role: EMPLOYEE_ROLES.HR },
       ),
     ).rejects.toThrow(CandidacyNoteNotFoundError);
   });
@@ -157,7 +157,7 @@ describe('CandidacyNotesService.updateCandidacyNote', () => {
     await expect(
       service.updateCandidacyNote(
         { applicationId: 'app-1', id: 'note-1', text: 'Edit' },
-        { uid: 'uid-hr', role: 'hr' },
+        { uid: 'uid-hr', role: EMPLOYEE_ROLES.HR },
       ),
     ).rejects.toThrow(CandidacyNoteForbiddenError);
   });

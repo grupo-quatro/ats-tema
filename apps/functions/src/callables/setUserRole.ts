@@ -1,7 +1,8 @@
 import { onRequest } from 'firebase-functions/v2/https';
-import type {
-  SetUserRoleRequest,
-  SetUserRoleResponse,
+import {
+  EMPLOYEE_ROLES,
+  type SetUserRoleRequest,
+  type SetUserRoleResponse,
 } from '@ats/shared-types';
 import { auth } from '../core/firebaseAdmin';
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
@@ -15,7 +16,7 @@ export const setUserRole = onRequest(async (request, response) => {
   try {
     const caller = await requireAuthenticatedUser(request);
 
-    if (caller.role !== 'admin') {
+    if (caller.role !== EMPLOYEE_ROLES.ADMIN) {
       response
         .status(403)
         .json({ error: 'Forbidden. Only admins can assign roles.' });
@@ -29,7 +30,7 @@ export const setUserRole = onRequest(async (request, response) => {
       return;
     }
 
-    const validRoles = ['hr', 'tech_lead', 'hiring_manager', 'admin'];
+    const validRoles = Object.values(EMPLOYEE_ROLES);
     if (!role || !validRoles.includes(role)) {
       response
         .status(400)

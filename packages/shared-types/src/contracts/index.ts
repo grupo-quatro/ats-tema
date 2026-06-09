@@ -20,3 +20,4 @@ export * from './getCandidacyNotes';
 export * from './saveCandidacyNote';
 export * from './updateCandidacyNote';
 export * from './offer';
+export * from './employee';

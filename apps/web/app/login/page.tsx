@@ -16,12 +16,12 @@ import { useAuth, DomainNotAllowedError } from '../shared/lib/authContext';
 
 const IS_DEV = process.env.NEXT_PUBLIC_USE_EMULATORS === 'true';
 
-type DevRole = 'admin' | 'recruiter' | 'hiring_manager';
+type DevRole = 'admin' | 'recruiter' | 'area_leader';
 
 const DEV_ROLES: Array<{ role: DevRole; label: string }> = [
   { role: 'admin', label: 'Admin' },
   { role: 'recruiter', label: 'Recruiter' },
-  { role: 'hiring_manager', label: 'Management' },
+  { role: 'area_leader', label: 'Área Líder' },
 ];
 
 function PendingApprovalCard({

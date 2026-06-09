@@ -15,7 +15,7 @@ import {
   signOut as firebaseSignOut,
   type User,
 } from 'firebase/auth';
-import type { EmployeeRole } from '@ats/shared-types';
+import { EMPLOYEE_ROLES, type EmployeeRole } from '@ats/shared-types';
 import { auth, googleProvider } from './firebase';
 import { getFunctionUrl } from './functionsUrl';
 
@@ -44,12 +44,12 @@ interface AuthContextValue {
   signOut: () => Promise<void>;
 }
 
-type DevRole = 'admin' | 'recruiter' | 'hiring_manager';
+type DevRole = 'admin' | 'recruiter' | 'area_leader';
 
 const DEV_ACCOUNTS: Record<DevRole, { email: string; token: string }> = {
   admin: { email: 'admin@tema.dev', token: 'dev-admin' },
   recruiter: { email: 'recruiter@tema.dev', token: 'dev-recruiter' },
-  hiring_manager: { email: 'hiring@tema.dev', token: 'dev-hiring-manager' },
+  area_leader: { email: 'arealeader@tema.dev', token: 'dev-area-leader' },
 };
 const DEV_PASSWORD = 'pass123';
 
@@ -58,13 +58,13 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 const DEV_CALLER_UID_BY_TOKEN: Record<string, string> = {
   'dev-admin': 'admin-dev',
   'dev-recruiter': 'recruiter-dev',
-  'dev-hiring-manager': 'hiring-manager-dev',
+  'dev-area-leader': 'area-leader-dev',
 };
 
 function getDevRoleFromToken(token: string | null): EmployeeRole | null {
-  if (token === 'dev-admin') return 'admin';
-  if (token === 'dev-recruiter') return 'hr';
-  if (token === 'dev-hiring-manager') return 'hiring_manager';
+  if (token === 'dev-admin') return EMPLOYEE_ROLES.ADMIN;
+  if (token === 'dev-recruiter') return EMPLOYEE_ROLES.HR;
+  if (token === 'dev-area-leader') return EMPLOYEE_ROLES.AREA_LEADER;
   return null;
 }
 

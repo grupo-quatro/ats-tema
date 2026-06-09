@@ -1,11 +1,12 @@
 import { logger } from 'firebase-functions';
 import { onRequest } from 'firebase-functions/v2/https';
 
-import type {
-  CreateOfferDraftPayload,
-  EmployeeRole,
-  RespondOfferPayload,
-  SendOfferPayload,
+import {
+  EMPLOYEE_ROLES,
+  type CreateOfferDraftPayload,
+  type EmployeeRole,
+  type RespondOfferPayload,
+  type SendOfferPayload,
 } from '@ats/shared-types';
 
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
@@ -25,7 +26,7 @@ import {
 } from '../validators/offerValidator';
 
 const offerService = new OfferService();
-const OFFER_MANAGER_ROLES: EmployeeRole[] = ['admin', 'hr', 'hiring_manager'];
+const OFFER_MANAGER_ROLES: EmployeeRole[] = [EMPLOYEE_ROLES.ADMIN, EMPLOYEE_ROLES.HR, EMPLOYEE_ROLES.AREA_LEADER];
 
 export const createOfferDraft = onRequest(async (request, response) => {
   try {

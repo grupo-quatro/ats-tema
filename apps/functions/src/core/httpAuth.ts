@@ -1,4 +1,4 @@
-import type { EmployeeRole } from '@ats/shared-types';
+import { EMPLOYEE_ROLES, type EmployeeRole } from '@ats/shared-types';
 import { auth } from './firebaseAdmin';
 
 export class HttpAuthError extends Error {
@@ -34,13 +34,13 @@ export async function requireAuthenticatedUser(
 
   if (process.env.FUNCTIONS_EMULATOR === 'true') {
     if (token === 'dev-admin') {
-      return { uid: 'admin-dev', role: 'admin' };
+      return { uid: 'admin-dev', role: EMPLOYEE_ROLES.ADMIN };
     }
     if (token === 'dev-recruiter') {
-      return { uid: 'recruiter-dev', role: 'hr' };
+      return { uid: 'recruiter-dev', role: EMPLOYEE_ROLES.HR };
     }
-    if (token === 'dev-hiring-manager') {
-      return { uid: 'hiring-manager-dev', role: 'hiring_manager' };
+    if (token === 'dev-area-leader') {
+      return { uid: 'area-leader-dev', role: EMPLOYEE_ROLES.AREA_LEADER };
     }
     if (token === 'dev-candidate') {
       return { uid: 'candidate-dev', role: null };

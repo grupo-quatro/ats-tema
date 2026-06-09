@@ -14,6 +14,7 @@ import { STAGE_CONFIG } from '@ats/shared-types';
 
 import type { IEmailLogRepository } from '../repositories/emailLogRepository';
 import type { IEmailTemplateRepository } from '../repositories/emailTemplateRepository';
+import type { IEmployeeRepository } from '../repositories/employeeRepository';
 import type { IOrgConfigRepository } from '../repositories/orgConfigRepository';
 import type { IUserRepository } from '../repositories/userRepository';
 import type { GmailSenderService } from './gmailSenderService';
@@ -31,6 +32,7 @@ export class StageEmailService {
     private readonly templateResolver: TemplateResolverService,
     private readonly gmailSender: GmailSenderService,
     private readonly oauth2Client: OAuth2Client,
+    private readonly employeeRepository?: IEmployeeRepository,
   ) {}
 
   async sendIfTemplateExists(
@@ -55,9 +57,10 @@ export class StageEmailService {
         return false;
       }
 
-      const [orgConfig, credential] = await Promise.all([
+      const [orgConfig, credential, calendarLink] = await Promise.all([
         this.orgConfigRepository.get(),
         this.userRepository.getGmailCredential(recruiterId),
+        this.employeeRepository?.getCalendarLink(recruiterId) ?? Promise.resolve(null),
       ]);
 
       const candidateName =
@@ -71,7 +74,7 @@ export class StageEmailService {
         positionName: job.title,
         recruiterName: recruiterEmail,
         recruiterEmail,
-        calendarLink: '', //TODO: add calenndar link variable from logged user
+        calendarLink: calendarLink ?? '',
         companyName: orgConfig.companyName,
       };
 

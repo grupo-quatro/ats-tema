@@ -20,9 +20,10 @@ import {
   LogOut,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import type { EmployeeRole } from '@ats/shared-types';
+import { EMPLOYEE_ROLES, type EmployeeRole } from '@ats/shared-types';
 import { useAuth } from '../../shared/lib/authContext';
 import ConnectGmailButton from '../../features/gmail/components/ConnectGmailButton';
+import CalendarLinkEditor from '../../features/calendar/components/CalendarLinkEditor';
 
 const SIDEBAR_WIDTH = 240;
 const SIDEBAR_COLLAPSED_WIDTH = 64;
@@ -43,13 +44,13 @@ const NAV_ITEMS: Array<{
     label: 'Plantillas',
     href: '/dashboard/communication-templates',
     icon: Mail,
-    allowedRoles: ['hr', 'hiring_manager'],
+    allowedRoles: [EMPLOYEE_ROLES.HR, EMPLOYEE_ROLES.AREA_LEADER],
   },
 ];
 
 const ROLE_LABELS: Record<EmployeeRole, string> = {
   hr: 'Recruiter',
-  hiring_manager: 'Management',
+  area_leader: 'Área Líder',
   admin: 'Admin',
   tech_lead: 'Tech Lead',
 };
@@ -290,6 +291,7 @@ export default function Sidebar() {
               </Tooltip>
             </Box>
             <ConnectGmailButton />
+            {role === EMPLOYEE_ROLES.HR && <CalendarLinkEditor />}
             <Typography sx={{ fontSize: '0.7rem', color: '#94a3b8' }}>
               ATS · Tema Consulting
             </Typography>

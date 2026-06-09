@@ -49,7 +49,8 @@ const TEMPLATE_SEEDS: TemplateDefinition[] = [
       'Te invitamos a agendar tu 1ª entrevista con RRHH — [Nombre de la Posición]',
     body: `<p>Estimado/a [Nombre del Candidato],</p>
 <p>Nos alegra informarte que has avanzado en el proceso de selección para el puesto de <strong>[Nombre de la Posición]</strong> en <strong>[Nombre de la Empresa]</strong>.</p>
-<p>Te invitamos a agendar tu entrevista con nuestro equipo de RRHH a través del siguiente enlace: <a href="[Link de Agenda]">[Link de Agenda]</a></p>
+<p>Te invitamos a agendar tu entrevista con nuestro equipo de RRHH:</p>
+<p><a href="[Link de Agenda]" style="display:inline-block;background-color:#F4511E;color:#ffffff;font-family:sans-serif;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:6px;">Reservar una cita</a></p>
 <p>Saludos,<br>[Nombre del Reclutador]<br>[Email del Reclutador]</p>`,
     isDefault: true,
   },
@@ -73,7 +74,7 @@ const TEMPLATE_SEEDS: TemplateDefinition[] = [
       'Te invitamos a agendar tu 2ª entrevista con RRHH — [Nombre de la Posición]',
     body: `<p>Estimado/a [Nombre del Candidato],</p>
 <p>Queremos avanzar con una segunda instancia de entrevista con nuestro equipo de RRHH para el puesto de <strong>[Nombre de la Posición]</strong>.</p>
-<p>Podés agendar tu espacio en: <a href="[Link de Agenda]">[Link de Agenda]</a></p>
+<p><a href="[Link de Agenda]" style="display:inline-block;background-color:#F4511E;color:#ffffff;font-family:sans-serif;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:6px;">Reservar una cita</a></p>
 <p>Saludos,<br>[Nombre del Reclutador]<br>[Email del Reclutador]</p>`,
     isDefault: true,
   },
@@ -97,7 +98,7 @@ const TEMPLATE_SEEDS: TemplateDefinition[] = [
       'Te invitamos a agendar tu 1ª entrevista técnica — [Nombre de la Posición]',
     body: `<p>Estimado/a [Nombre del Candidato],</p>
 <p>Has avanzado a la instancia de evaluación técnica para el puesto de <strong>[Nombre de la Posición]</strong> en <strong>[Nombre de la Empresa]</strong>.</p>
-<p>Podés agendar tu entrevista técnica en: <a href="[Link de Agenda]">[Link de Agenda]</a></p>
+<p><a href="[Link de Agenda]" style="display:inline-block;background-color:#F4511E;color:#ffffff;font-family:sans-serif;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:6px;">Reservar una cita</a></p>
 <p>Saludos,<br>[Nombre del Reclutador]<br>[Email del Reclutador]</p>`,
     isDefault: true,
   },
@@ -121,7 +122,7 @@ const TEMPLATE_SEEDS: TemplateDefinition[] = [
       'Te invitamos a agendar tu 2ª entrevista técnica — [Nombre de la Posición]',
     body: `<p>Estimado/a [Nombre del Candidato],</p>
 <p>Queremos avanzar con una segunda instancia técnica para el puesto de <strong>[Nombre de la Posición]</strong>.</p>
-<p>Podés agendar en: <a href="[Link de Agenda]">[Link de Agenda]</a></p>
+<p><a href="[Link de Agenda]" style="display:inline-block;background-color:#F4511E;color:#ffffff;font-family:sans-serif;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:6px;">Reservar una cita</a></p>
 <p>Saludos,<br>[Nombre del Reclutador]<br>[Email del Reclutador]</p>`,
     isDefault: true,
   },
