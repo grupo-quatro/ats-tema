@@ -51,11 +51,15 @@ export const setUserRoleOnboarding = onRequest(async (request, response) => {
 
     await auth.setCustomUserClaims(uid, { role });
 
-    await employeeRef.update({
-      role,
-      active: true,
-      updatedAt: new Date(),
-    });
+    await employeeRef.set(
+      {
+        id: uid,
+        role,
+        active: true,
+        updatedAt: new Date(),
+      },
+      { merge: true },
+    );
 
     const result: SetUserRoleOnboardingResponse = { success: true };
     response.status(200).json(result);
