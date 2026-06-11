@@ -58,6 +58,9 @@ export interface Application {
   /** Fortalezas de la candidatura evaluadas por el reclutador. Editable desde el perfil del candidato. */ // branch: fb-50-57
   fortalezas?: string[];
 
+  /** ID del evento de Google Calendar asociado a esta postulación. Lo guarda el webhook al detectar la reserva. */
+  calendarEventId?: string;
+
   createdAt: Date;
   updatedAt: Date;
   stageUpdatedAt: Date; // para calcular tiempo en cada etapa
