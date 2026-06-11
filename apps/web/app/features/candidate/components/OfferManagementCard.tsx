@@ -19,11 +19,21 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { CheckCircle2, Copy, FileSignature, Send, XCircle } from 'lucide-react';
+import {
+  CheckCircle2,
+  Copy,
+  Eye,
+  FileSignature,
+  Pencil,
+  Send,
+  XCircle,
+} from 'lucide-react';
 import {
   createOfferDraft,
   getOfferByApplication,
+  previewOffer,
   sendOffer,
+  updateOfferDraft,
 } from '@/shared/api/offersApi';
 import {
   emailLogsQueryKey,
@@ -103,6 +113,17 @@ function buildBenefits(value: string) {
     .filter(Boolean);
 }
 
+function buildDraftForm(offer: Offer): DraftFormState {
+  return {
+    compensation: offer.compensation ?? '',
+    startDate: offer.startDate ?? '',
+    modality: offer.modality ?? '',
+    benefits: offer.benefits?.join('\n') ?? '',
+    expirationDate: offer.expirationDate ?? '',
+    observations: offer.observations ?? '',
+  };
+}
+
 export function OfferManagementCard({
   applicationId,
   candidateId,
@@ -116,9 +137,12 @@ export function OfferManagementCard({
   const [publicUrl, setPublicUrl] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [isPreviewing, setIsPreviewing] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [sendConfirmationOpen, setSendConfirmationOpen] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState('');
   const [form, setForm] = useState<DraftFormState>(EMPTY_DRAFT_FORM);
   const [feedback, setFeedback] = useState<{
     severity: 'success' | 'error';
@@ -169,21 +193,25 @@ export function OfferManagementCard({
     setIsCreating(true);
     setFeedback(null);
     try {
-      const response = await createOfferDraft({
-        applicationId,
+      const draftData = {
         compensation: form.compensation.trim() || undefined,
         startDate: form.startDate || undefined,
         modality: form.modality.trim() || undefined,
         benefits: buildBenefits(form.benefits),
         expirationDate: form.expirationDate || undefined,
         observations: form.observations.trim() || undefined,
-      });
+      };
+      const response = offer
+        ? await updateOfferDraft({ offerId: offer.id, ...draftData })
+        : await createOfferDraft({ applicationId, ...draftData });
       setOffer(response.offer);
       setDialogOpen(false);
       setForm(EMPTY_DRAFT_FORM);
       setFeedback({
         severity: 'success',
-        message: 'Carta oferta creada en borrador',
+        message: offer
+          ? 'Borrador de carta oferta actualizado'
+          : 'Carta oferta creada en borrador',
       });
     } catch (error) {
       setFeedback({
@@ -195,6 +223,33 @@ export function OfferManagementCard({
       });
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleOpenEditDraft = () => {
+    if (!offer) return;
+    setForm(buildDraftForm(offer));
+    setDialogOpen(true);
+  };
+
+  const handlePreviewOffer = async () => {
+    if (!offer) return;
+    setIsPreviewing(true);
+    setFeedback(null);
+    try {
+      const response = await previewOffer({ offerId: offer.id });
+      setPreviewHtml(response.documentHtml);
+      setPreviewDialogOpen(true);
+    } catch (error) {
+      setFeedback({
+        severity: 'error',
+        message:
+          error instanceof Error
+            ? error.message
+            : 'No se pudo previsualizar la carta oferta',
+      });
+    } finally {
+      setIsPreviewing(false);
     }
   };
 
@@ -362,15 +417,35 @@ export function OfferManagementCard({
             )}
 
             {canPublish && (
-              <Button
-                variant="contained"
-                startIcon={<Send size={16} />}
-                onClick={() => setSendConfirmationOpen(true)}
-                disabled={isSending}
-                sx={{ textTransform: 'none' }}
-              >
-                {isSending ? 'Enviando...' : 'Enviar carta oferta'}
-              </Button>
+              <>
+                <Button
+                  variant="outlined"
+                  startIcon={<Pencil size={16} />}
+                  onClick={handleOpenEditDraft}
+                  disabled={isCreating || isSending}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Editar borrador
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<Eye size={16} />}
+                  onClick={handlePreviewOffer}
+                  disabled={isPreviewing || isSending}
+                  sx={{ textTransform: 'none' }}
+                >
+                  {isPreviewing ? 'Cargando...' : 'Previsualizar carta'}
+                </Button>
+                <Button
+                  variant="contained"
+                  startIcon={<Send size={16} />}
+                  onClick={() => setSendConfirmationOpen(true)}
+                  disabled={isSending}
+                  sx={{ textTransform: 'none' }}
+                >
+                  {isSending ? 'Enviando...' : 'Enviar carta oferta'}
+                </Button>
+              </>
             )}
 
             {canMarkAsHired && (
@@ -388,6 +463,60 @@ export function OfferManagementCard({
           </Box>
         </Stack>
       )}
+
+      <Dialog
+        open={previewDialogOpen}
+        onClose={() => setPreviewDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>Previsualización de carta oferta</DialogTitle>
+        <DialogContent dividers>
+          <Box
+            sx={{
+              bgcolor: 'background.paper',
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 1,
+              p: { xs: 2, sm: 4 },
+              '& h1': { fontSize: 28 },
+              '& h2': { fontSize: 20, mt: 3 },
+              '& p, & li': { lineHeight: 1.6 },
+            }}
+            dangerouslySetInnerHTML={{ __html: previewHtml }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setPreviewDialogOpen(false)}
+            sx={{ textTransform: 'none' }}
+          >
+            Cerrar
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<Pencil size={16} />}
+            onClick={() => {
+              setPreviewDialogOpen(false);
+              handleOpenEditDraft();
+            }}
+            sx={{ textTransform: 'none' }}
+          >
+            Editar borrador
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<Send size={16} />}
+            onClick={() => {
+              setPreviewDialogOpen(false);
+              setSendConfirmationOpen(true);
+            }}
+            sx={{ textTransform: 'none' }}
+          >
+            Continuar al envío
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog
         open={sendConfirmationOpen}
@@ -429,7 +558,9 @@ export function OfferManagementCard({
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>Generar carta oferta</DialogTitle>
+        <DialogTitle>
+          {offer ? 'Editar borrador de carta oferta' : 'Generar carta oferta'}
+        </DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <Alert severity="info">
@@ -537,7 +668,11 @@ export function OfferManagementCard({
             disabled={isCreating}
             sx={{ textTransform: 'none' }}
           >
-            {isCreating ? 'Creando...' : 'Crear borrador'}
+            {isCreating
+              ? 'Guardando...'
+              : offer
+                ? 'Guardar cambios'
+                : 'Crear borrador'}
           </Button>
         </DialogActions>
       </Dialog>

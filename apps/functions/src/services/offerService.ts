@@ -6,11 +6,15 @@ import type {
   GetOfferByApplicationResponse,
   Job,
   Offer,
+  PreviewOfferPayload,
+  PreviewOfferResponse,
   PublicOfferResponse,
   RespondOfferPayload,
   RespondOfferResponse,
   SendOfferPayload,
   SendOfferResponse,
+  UpdateOfferDraftPayload,
+  UpdateOfferDraftResponse,
 } from '@ats/shared-types';
 
 import { auth, storage } from '../core/firebaseAdmin';
@@ -187,7 +191,9 @@ export class OfferService {
 
     const token = this.generateToken();
     const tokenHash = this.hash(token);
-    const tokenExpiresAt = this.addDays(new Date(), OFFER_TOKEN_TTL_DAYS);
+    const tokenExpiresAt = this.resolveTokenExpirationDate(
+      offer.expirationDate,
+    );
     const publicUrl = this.buildPublicOfferUrl(token);
     const userRecord = await auth.getUser(sentBy).catch(() => null);
     const sentByEmail = userRecord?.email ?? sentBy;
@@ -220,6 +226,64 @@ export class OfferService {
     const updatedOffer = await this.getRequiredOffer(offer.id);
 
     return { offer: updatedOffer, publicUrl };
+  }
+
+  async updateDraft(
+    payload: UpdateOfferDraftPayload,
+  ): Promise<UpdateOfferDraftResponse> {
+    const offer = await this.getRequiredOffer(payload.offerId.trim());
+    this.assertDraftOffer(offer);
+
+    const documentData: OfferDocumentData = {
+      candidateName: offer.candidateName,
+      jobTitle: offer.jobTitle,
+      compensation: payload.compensation?.trim() || undefined,
+      startDate: payload.startDate?.trim() || undefined,
+      modality: payload.modality?.trim() || undefined,
+      benefits: this.cleanBenefits(payload.benefits),
+      expirationDate: payload.expirationDate?.trim() || undefined,
+      observations: payload.observations?.trim() || undefined,
+    };
+    const documentHtml = this.renderOfferDocument(documentData);
+    const documentStoragePath = await this.storeOfferDocument(
+      offer.id,
+      documentHtml,
+    );
+    const updatedOffer = await this.offerRepository.updateDraftDetails(
+      offer.id,
+      {
+        compensation: documentData.compensation,
+        startDate: documentData.startDate,
+        modality: documentData.modality,
+        benefits: documentData.benefits,
+        expirationDate: documentData.expirationDate,
+        observations: documentData.observations,
+        documentStoragePath,
+        documentHash: this.hash(documentHtml),
+      },
+    );
+
+    return { offer: updatedOffer };
+  }
+
+  async previewOffer(
+    payload: PreviewOfferPayload,
+  ): Promise<PreviewOfferResponse> {
+    const offer = await this.getRequiredOffer(payload.offerId.trim());
+    this.assertDraftOffer(offer);
+
+    return {
+      documentHtml: this.renderOfferDocument({
+        candidateName: offer.candidateName,
+        jobTitle: offer.jobTitle,
+        compensation: offer.compensation,
+        startDate: offer.startDate,
+        modality: offer.modality,
+        benefits: offer.benefits,
+        expirationDate: offer.expirationDate,
+        observations: offer.observations,
+      }),
+    };
   }
 
   async getOfferByApplication(
@@ -333,6 +397,14 @@ export class OfferService {
     }
   }
 
+  private assertDraftOffer(offer: Offer): void {
+    if (offer.status !== 'draft') {
+      throw new OfferInvalidStateError(
+        'Solo se pueden modificar o previsualizar ofertas en estado draft.',
+      );
+    }
+  }
+
   private async assertPublicOfferAvailable(offer: Offer): Promise<void> {
     if (offer.status !== 'sent') {
       throw new OfferInvalidStateError('La oferta ya no está disponible.');
@@ -388,6 +460,26 @@ export class OfferService {
     const next = new Date(date);
     next.setDate(next.getDate() + days);
     return next;
+  }
+
+  private resolveTokenExpirationDate(expirationDate?: string): Date {
+    if (!expirationDate) {
+      return this.addDays(new Date(), OFFER_TOKEN_TTL_DAYS);
+    }
+
+    const parsed = new Date(`${expirationDate}T23:59:59.999Z`);
+    if (Number.isNaN(parsed.getTime())) {
+      throw new OfferInvalidStateError(
+        'La fecha de vencimiento de la oferta no es válida.',
+      );
+    }
+    if (parsed.getTime() <= Date.now()) {
+      throw new OfferInvalidStateError(
+        'La fecha de vencimiento de la oferta debe ser futura.',
+      );
+    }
+
+    return parsed;
   }
 
   private buildPublicOfferUrl(token: string): string {

@@ -5,8 +5,10 @@ import {
   EMPLOYEE_ROLES,
   type CreateOfferDraftPayload,
   type EmployeeRole,
+  type PreviewOfferPayload,
   type RespondOfferPayload,
   type SendOfferPayload,
+  type UpdateOfferDraftPayload,
 } from '@ats/shared-types';
 import { OAuth2Client } from 'google-auth-library';
 
@@ -31,8 +33,10 @@ import {
   validateCreateOfferDraftPayload,
   validateGetOfferByApplicationPayload,
   validateGetOfferByTokenPayload,
+  validatePreviewOfferPayload,
   validateRespondOfferPayload,
   validateSendOfferPayload,
+  validateUpdateOfferDraftPayload,
 } from '../validators/offerValidator';
 
 const oauth2Client = new OAuth2Client(
@@ -99,6 +103,46 @@ export const sendOffer = onRequest(async (request, response) => {
     response.status(200).json(result);
   } catch (error) {
     handleOfferError(response, error, '[sendOffer]');
+  }
+});
+
+export const updateOfferDraft = onRequest(async (request, response) => {
+  try {
+    if (request.method !== 'PUT') {
+      response.status(405).json({ error: 'Method Not Allowed.' });
+      return;
+    }
+
+    const { role } = await requireAuthenticatedUser(request);
+    assertCanManageOffers(role);
+
+    const payload = request.body as Partial<UpdateOfferDraftPayload>;
+    validateUpdateOfferDraftPayload(payload);
+
+    const result = await offerService.updateDraft(payload);
+    response.status(200).json(result);
+  } catch (error) {
+    handleOfferError(response, error, '[updateOfferDraft]');
+  }
+});
+
+export const previewOffer = onRequest(async (request, response) => {
+  try {
+    if (request.method !== 'POST') {
+      response.status(405).json({ error: 'Method Not Allowed.' });
+      return;
+    }
+
+    const { role } = await requireAuthenticatedUser(request);
+    assertCanManageOffers(role);
+
+    const payload = request.body as Partial<PreviewOfferPayload>;
+    validatePreviewOfferPayload(payload);
+
+    const result = await offerService.previewOffer(payload);
+    response.status(200).json(result);
+  } catch (error) {
+    handleOfferError(response, error, '[previewOffer]');
   }
 });
 

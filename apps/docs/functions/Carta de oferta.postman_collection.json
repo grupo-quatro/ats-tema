@@ -33,15 +33,9 @@
         "url": {
           "raw": "http://localhost:5001/ats-tema-ort/us-central1/createOfferDraft",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "5001",
-          "path": [
-            "ats-tema-ort",
-            "us-central1",
-            "createOfferDraft"
-          ]
+          "path": ["ats-tema-ort", "us-central1", "createOfferDraft"]
         }
       },
       "response": [
@@ -62,15 +56,9 @@
             "url": {
               "raw": "http://localhost:5001/ats-tema-ort/us-central1/createOfferDraft",
               "protocol": "http",
-              "host": [
-                "localhost"
-              ],
+              "host": ["localhost"],
               "port": "5001",
-              "path": [
-                "ats-tema-ort",
-                "us-central1",
-                "createOfferDraft"
-              ]
+              "path": ["ats-tema-ort", "us-central1", "createOfferDraft"]
             }
           },
           "status": "Created",
@@ -116,6 +104,74 @@
       ]
     },
     {
+      "name": "Carta de oferta - Editar borrador",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "dev-recruiter",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"offerId\": \"HY9fYfihev6D4w5A8zut\",\n    \"compensation\": \"ARS 1.750.000 bruto mensual\",\n    \"startDate\": \"2026-07-15\",\n    \"modality\": \"Híbrido\",\n    \"benefits\": [\n        \"Prepaga\",\n        \"Capacitaciones\",\n        \"Día de cumpleaños libre\"\n    ],\n    \"expirationDate\": \"2026-06-20\",\n    \"observations\": \"Borrador actualizado antes de enviar.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5001/ats-tema-ort/us-central1/updateOfferDraft",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5001",
+          "path": ["ats-tema-ort", "us-central1", "updateOfferDraft"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Carta de oferta - Previsualizar borrador",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "dev-recruiter",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"offerId\": \"HY9fYfihev6D4w5A8zut\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5001/ats-tema-ort/us-central1/previewOffer",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5001",
+          "path": ["ats-tema-ort", "us-central1", "previewOffer"]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Carta de oferta - Enviar",
       "request": {
         "auth": {
@@ -142,15 +198,9 @@
         "url": {
           "raw": "http://localhost:5001/ats-tema-ort/us-central1/sendOffer",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "5001",
-          "path": [
-            "ats-tema-ort",
-            "us-central1",
-            "sendOffer"
-          ]
+          "path": ["ats-tema-ort", "us-central1", "sendOffer"]
         }
       },
       "response": [
@@ -171,15 +221,9 @@
             "url": {
               "raw": "http://localhost:5001/ats-tema-ort/us-central1/sendOffer",
               "protocol": "http",
-              "host": [
-                "localhost"
-              ],
+              "host": ["localhost"],
               "port": "5001",
-              "path": [
-                "ats-tema-ort",
-                "us-central1",
-                "sendOffer"
-              ]
+              "path": ["ats-tema-ort", "us-central1", "sendOffer"]
             }
           },
           "status": "OK",
@@ -232,15 +276,9 @@
         "url": {
           "raw": "http://localhost:5001/ats-tema-ort/us-central1/getOfferByToken?token=NexUS6M7KXdHaIQscQag-c9bYh8FyEs2UVFdpjhrhyo",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "5001",
-          "path": [
-            "ats-tema-ort",
-            "us-central1",
-            "getOfferByToken"
-          ],
+          "path": ["ats-tema-ort", "us-central1", "getOfferByToken"],
           "query": [
             {
               "key": "token",
@@ -258,15 +296,9 @@
             "url": {
               "raw": "http://localhost:5001/ats-tema-ort/us-central1/getOfferByToken?token=NexUS6M7KXdHaIQscQag-c9bYh8FyEs2UVFdpjhrhyo",
               "protocol": "http",
-              "host": [
-                "localhost"
-              ],
+              "host": ["localhost"],
               "port": "5001",
-              "path": [
-                "ats-tema-ort",
-                "us-central1",
-                "getOfferByToken"
-              ],
+              "path": ["ats-tema-ort", "us-central1", "getOfferByToken"],
               "query": [
                 {
                   "key": "token",
@@ -334,15 +366,9 @@
         "url": {
           "raw": "http://localhost:5001/ats-tema-ort/us-central1/respondOffer",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "5001",
-          "path": [
-            "ats-tema-ort",
-            "us-central1",
-            "respondOffer"
-          ]
+          "path": ["ats-tema-ort", "us-central1", "respondOffer"]
         }
       },
       "response": [
@@ -363,15 +389,9 @@
             "url": {
               "raw": "http://localhost:5001/ats-tema-ort/us-central1/respondOffer",
               "protocol": "http",
-              "host": [
-                "localhost"
-              ],
+              "host": ["localhost"],
               "port": "5001",
-              "path": [
-                "ats-tema-ort",
-                "us-central1",
-                "respondOffer"
-              ]
+              "path": ["ats-tema-ort", "us-central1", "respondOffer"]
             }
           },
           "status": "OK",
@@ -433,15 +453,9 @@
         "url": {
           "raw": "http://localhost:5001/ats-tema-ort/us-central1/respondOffer",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "5001",
-          "path": [
-            "ats-tema-ort",
-            "us-central1",
-            "respondOffer"
-          ]
+          "path": ["ats-tema-ort", "us-central1", "respondOffer"]
         }
       },
       "response": [
@@ -462,15 +476,9 @@
             "url": {
               "raw": "http://localhost:5001/ats-tema-ort/us-central1/respondOffer",
               "protocol": "http",
-              "host": [
-                "localhost"
-              ],
+              "host": ["localhost"],
               "port": "5001",
-              "path": [
-                "ats-tema-ort",
-                "us-central1",
-                "respondOffer"
-              ]
+              "path": ["ats-tema-ort", "us-central1", "respondOffer"]
             }
           },
           "status": "Conflict",
@@ -530,15 +538,9 @@
             "url": {
               "raw": "http://localhost:5001/ats-tema-ort/us-central1/respondOffer",
               "protocol": "http",
-              "host": [
-                "localhost"
-              ],
+              "host": ["localhost"],
               "port": "5001",
-              "path": [
-                "ats-tema-ort",
-                "us-central1",
-                "respondOffer"
-              ]
+              "path": ["ats-tema-ort", "us-central1", "respondOffer"]
             }
           },
           "status": "OK",
@@ -610,15 +612,9 @@
         "url": {
           "raw": "http://localhost:5001/ats-tema-ort/us-central1/updateApplicationStage",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "5001",
-          "path": [
-            "ats-tema-ort",
-            "us-central1",
-            "updateApplicationStage"
-          ]
+          "path": ["ats-tema-ort", "us-central1", "updateApplicationStage"]
         }
       },
       "response": [
@@ -639,15 +635,9 @@
             "url": {
               "raw": "http://localhost:5001/ats-tema-ort/us-central1/updateApplicationStage",
               "protocol": "http",
-              "host": [
-                "localhost"
-              ],
+              "host": ["localhost"],
               "port": "5001",
-              "path": [
-                "ats-tema-ort",
-                "us-central1",
-                "updateApplicationStage"
-              ]
+              "path": ["ats-tema-ort", "us-central1", "updateApplicationStage"]
             }
           },
           "status": "OK",
@@ -710,15 +700,9 @@
         "url": {
           "raw": "http://localhost:5001/ats-tema-ort/us-central1/getOfferByApplication?applicationId=seed-candidate-01_frontend-ssr-developer",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "5001",
-          "path": [
-            "ats-tema-ort",
-            "us-central1",
-            "getOfferByApplication"
-          ],
+          "path": ["ats-tema-ort", "us-central1", "getOfferByApplication"],
           "query": [
             {
               "key": "applicationId",
@@ -736,15 +720,9 @@
             "url": {
               "raw": "http://localhost:5001/ats-tema-ort/us-central1/getOfferByApplication?applicationId=seed-candidate-01_frontend-ssr-developer",
               "protocol": "http",
-              "host": [
-                "localhost"
-              ],
+              "host": ["localhost"],
               "port": "5001",
-              "path": [
-                "ats-tema-ort",
-                "us-central1",
-                "getOfferByApplication"
-              ],
+              "path": ["ats-tema-ort", "us-central1", "getOfferByApplication"],
               "query": [
                 {
                   "key": "applicationId",
@@ -801,15 +779,9 @@
             "url": {
               "raw": "http://localhost:5001/ats-tema-ort/us-central1/getOfferByApplication?applicationId=seed-candidate-01_frontend-ssr-developer",
               "protocol": "http",
-              "host": [
-                "localhost"
-              ],
+              "host": ["localhost"],
               "port": "5001",
-              "path": [
-                "ats-tema-ort",
-                "us-central1",
-                "getOfferByApplication"
-              ],
+              "path": ["ats-tema-ort", "us-central1", "getOfferByApplication"],
               "query": [
                 {
                   "key": "applicationId",
@@ -866,15 +838,9 @@
             "url": {
               "raw": "http://localhost:5001/ats-tema-ort/us-central1/getOfferByApplication?applicationId=seed-candidate-01_frontend-ssr-developer",
               "protocol": "http",
-              "host": [
-                "localhost"
-              ],
+              "host": ["localhost"],
               "port": "5001",
-              "path": [
-                "ats-tema-ort",
-                "us-central1",
-                "getOfferByApplication"
-              ],
+              "path": ["ats-tema-ort", "us-central1", "getOfferByApplication"],
               "query": [
                 {
                   "key": "applicationId",

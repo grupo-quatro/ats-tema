@@ -140,7 +140,14 @@
       },
       "OfferStatus": {
         "type": "string",
-        "enum": ["draft", "sent", "accepted", "declined", "expired", "cancelled"]
+        "enum": [
+          "draft",
+          "sent",
+          "accepted",
+          "declined",
+          "expired",
+          "cancelled"
+        ]
       },
       "Offer": {
         "type": "object",
@@ -232,6 +239,43 @@
         "required": ["offer"],
         "properties": {
           "offer": { "$ref": "#/components/schemas/Offer" }
+        }
+      },
+      "UpdateOfferDraftRequest": {
+        "type": "object",
+        "required": ["offerId"],
+        "properties": {
+          "offerId": { "type": "string" },
+          "compensation": { "type": "string" },
+          "startDate": { "type": "string" },
+          "modality": { "type": "string" },
+          "benefits": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "expirationDate": { "type": "string" },
+          "observations": { "type": "string" }
+        }
+      },
+      "UpdateOfferDraftResponse": {
+        "type": "object",
+        "required": ["offer"],
+        "properties": {
+          "offer": { "$ref": "#/components/schemas/Offer" }
+        }
+      },
+      "PreviewOfferRequest": {
+        "type": "object",
+        "required": ["offerId"],
+        "properties": {
+          "offerId": { "type": "string" }
+        }
+      },
+      "PreviewOfferResponse": {
+        "type": "object",
+        "required": ["documentHtml"],
+        "properties": {
+          "documentHtml": { "type": "string" }
         }
       },
       "SendOfferRequest": {
@@ -2101,6 +2145,78 @@
         }
       }
     },
+    "/updateOfferDraft": {
+      "put": {
+        "tags": ["Offers"],
+        "operationId": "updateOfferDraft",
+        "summary": "Update an offer letter draft",
+        "description": "Updates editable fields of an Offer in `draft` status, regenerates the stored HTML document and recalculates its hash.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOfferDraftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Offer draft updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateOfferDraftResponse"
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation error" },
+          "401": { "description": "Unauthenticated" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Offer not found" },
+          "409": { "description": "Offer is not in draft status" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
+    "/previewOffer": {
+      "post": {
+        "tags": ["Offers"],
+        "operationId": "previewOffer",
+        "summary": "Preview an offer letter draft",
+        "description": "Returns the generated HTML for an Offer in `draft` status without publishing it, generating a token or changing state.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PreviewOfferRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Generated offer preview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewOfferResponse"
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation error" },
+          "401": { "description": "Unauthenticated" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Offer not found" },
+          "409": { "description": "Offer is not in draft status" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
     "/sendOffer": {
       "post": {
         "tags": ["Offers"],
@@ -2322,7 +2438,9 @@
             "description": "Offer response recorded",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/RespondOfferResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/RespondOfferResponse"
+                }
               }
             }
           },

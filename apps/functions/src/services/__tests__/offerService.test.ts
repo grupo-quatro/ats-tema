@@ -65,6 +65,7 @@ const offerRepository = {
   findLatestByApplicationId: vi.fn(),
   findByTokenHash: vi.fn(),
   update: vi.fn(),
+  updateDraftDetails: vi.fn(),
 };
 
 const applicationsRepository = {
@@ -107,6 +108,14 @@ describe('OfferService', () => {
       ),
     );
     offerRepository.update.mockImplementation((offerId, data) =>
+      Promise.resolve(
+        makeOffer({
+          id: offerId,
+          ...data,
+        }),
+      ),
+    );
+    offerRepository.updateDraftDetails.mockImplementation((offerId, data) =>
       Promise.resolve(
         makeOffer({
           id: offerId,
@@ -220,6 +229,88 @@ describe('OfferService', () => {
       }),
     );
     expect(result.publicUrl).toContain('/offer/');
+  });
+
+  it('actualiza un borrador, regenera su documento y permite limpiar campos', async () => {
+    offerRepository.findById.mockResolvedValue(
+      makeOffer({
+        compensation: 'ARS 100',
+        observations: 'Observación anterior',
+      }),
+    );
+
+    const result = await service.updateDraft({
+      offerId: 'offer-1',
+      compensation: 'ARS 200',
+      observations: '',
+      benefits: ['Prepaga'],
+    });
+
+    expect(firebaseAdminMocks.saveFile).toHaveBeenCalledWith(
+      expect.stringContaining('ARS 200'),
+      expect.objectContaining({ contentType: 'text/html; charset=utf-8' }),
+    );
+    expect(offerRepository.updateDraftDetails).toHaveBeenCalledWith(
+      'offer-1',
+      expect.objectContaining({
+        compensation: 'ARS 200',
+        observations: undefined,
+        benefits: ['Prepaga'],
+        documentStoragePath: 'offers/offer-1/offer.html',
+        documentHash: expect.stringMatching(/^[a-f0-9]{64}$/),
+      }),
+    );
+    expect(result.offer.status).toBe('draft');
+  });
+
+  it('solo permite editar y previsualizar ofertas en borrador', async () => {
+    offerRepository.findById.mockResolvedValue(makeOffer({ status: 'sent' }));
+
+    await expect(
+      service.updateDraft({ offerId: 'offer-1', compensation: 'ARS 200' }),
+    ).rejects.toThrow(OfferInvalidStateError);
+    await expect(service.previewOffer({ offerId: 'offer-1' })).rejects.toThrow(
+      OfferInvalidStateError,
+    );
+  });
+
+  it('previsualiza el documento del borrador sin modificarlo', async () => {
+    offerRepository.findById.mockResolvedValue(
+      makeOffer({ compensation: 'ARS 200', observations: 'Revisar' }),
+    );
+
+    const result = await service.previewOffer({ offerId: 'offer-1' });
+
+    expect(result.documentHtml).toContain('ARS 200');
+    expect(result.documentHtml).toContain('Revisar');
+    expect(offerRepository.update).not.toHaveBeenCalled();
+    expect(offerRepository.updateDraftDetails).not.toHaveBeenCalled();
+  });
+
+  it('alinea el vencimiento del token con expirationDate', async () => {
+    offerRepository.findById.mockResolvedValue(
+      makeOffer({ expirationDate: '2099-04-20' }),
+    );
+
+    await service.sendOffer({ offerId: 'offer-1' }, 'hr-1');
+
+    expect(offerWorkflowRepository.sendOffer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tokenExpiresAt: new Date('2099-04-20T23:59:59.999Z'),
+      }),
+    );
+  });
+
+  it('no envía una oferta cuya fecha de vencimiento ya pasó', async () => {
+    offerRepository.findById.mockResolvedValue(
+      makeOffer({ expirationDate: '2020-04-20' }),
+    );
+
+    await expect(
+      service.sendOffer({ offerId: 'offer-1' }, 'hr-1'),
+    ).rejects.toThrow(OfferInvalidStateError);
+
+    expect(stageEmailService.sendIfTemplateExists).not.toHaveBeenCalled();
   });
 
   it('mantiene la oferta en draft y no avanza la candidatura cuando Gmail falla', async () => {
