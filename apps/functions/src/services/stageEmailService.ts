@@ -42,11 +42,15 @@ export class StageEmailService {
     newStage: ApplicationStage,
     recruiterId: string,
     recruiterEmail: string,
+    offerLink = '',
   ): Promise<boolean> {
     try {
       //  Resolver emailTemplateStage si es null no hay comunicaciones para esa etapa
       const { emailTemplateStage } = STAGE_CONFIG[newStage];
       if (emailTemplateStage === null) {
+        return false;
+      }
+      if (emailTemplateStage === 'offer' && !offerLink) {
         return false;
       }
 
@@ -77,6 +81,7 @@ export class StageEmailService {
         recruiterEmail,
         calendarLink: calendarLink ?? '',
         companyName: orgConfig.companyName,
+        offerLink,
       };
 
       const { subject, body } = this.templateResolver.resolve(

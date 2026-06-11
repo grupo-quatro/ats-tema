@@ -57,6 +57,10 @@ export const TEMPLATE_VARIABLES = {
     label: '[Nombre de la Empresa]',
     description: 'Nombre de la organización',
   },
+  OFFER_LINK: {
+    label: '[Link de Carta Oferta]',
+    description: 'URL pública para revisar y responder la carta oferta',
+  },
 } as const;
 
 export type TemplateVariableKey = keyof typeof TEMPLATE_VARIABLES;
