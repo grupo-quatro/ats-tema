@@ -60,3 +60,7 @@ export { updateEmployeeCalendarLink } from './callables/updateEmployeeCalendarLi
 export { exchangeGmailCode } from './callables/exchangeGmailCode';
 export { exchangeCalendarCode } from './callables/exchangeCalendarCode';
 export { setUserRoleOnboarding } from './callables/setUserRoleOnboarding';
+export { onApplicationUpdated } from './triggers/onApplicationUpdated';
+export { registerCalendarWatch } from './callables/registerCalendarWatch';
+export { calendarWebhook } from './callables/calendarWebhook';
+export { renewCalendarWatches } from './scheduled/renewCalendarWatches';
