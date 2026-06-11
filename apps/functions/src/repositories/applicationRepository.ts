@@ -296,6 +296,63 @@ export class ApplicationsRepository {
     }
   }
 
+  /**
+   * Busca aplicaciones por email del candidato, estado y etapas.
+   * Lo usa el calendarWebhook para encontrar la aplicación activa
+   * de un candidato que acaba de reservar una entrevista.
+   */
+  async findActiveInSchedulingByEmail(
+    candidateEmail: string,
+    stages: readonly string[],
+  ): Promise<Application | null> {
+    try {
+      const snapshot = await this.collection
+        .where('candidateEmail', '==', candidateEmail)
+        .where('status', '==', 'active')
+        .where('stage', 'in', stages)
+        .limit(1)
+        .get();
+
+      if (snapshot.empty) return null;
+
+      return this.mapToApplication(
+        snapshot.docs[0].data() as FirestoreApplication,
+      );
+    } catch (error) {
+      throw new ApplicationsRepositoryError(
+        `No se pudo buscar aplicación activa para ${candidateEmail}.`,
+        error,
+      );
+    }
+  }
+
+  async getLatestStageHistoryEntry(
+    applicationId: string,
+  ): Promise<StageHistoryEntry | null> {
+    try {
+      const snapshot = await this.collection
+        .doc(applicationId)
+        .collection('stageHistory')
+        .orderBy('changedAt', 'desc')
+        .limit(1)
+        .get();
+
+      if (snapshot.empty) {
+        return null;
+      }
+
+      const data = snapshot.docs[0].data();
+      return {
+        ...data,
+        changedAt: (data.changedAt as Timestamp).toDate(),
+      } as StageHistoryEntry;
+    } catch (error) {
+      throw new ApplicationsRepositoryError(
+        `No se pudo obtener el último historial de etapa para ${applicationId}.`,
+        error,
+      );
+    }
+  }
   private mapToApplication(application: FirestoreApplication): Application {
     return {
       ...application,
