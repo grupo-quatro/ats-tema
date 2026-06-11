@@ -159,6 +159,10 @@
         ],
         "properties": {
           "id": { "type": "string" },
+          "offerId": {
+            "type": "string",
+            "description": "Present when the email attempt belongs to an offer letter"
+          },
           "applicationId": { "type": "string" },
           "candidateId": { "type": "string" },
           "jobId": { "type": "string" },
@@ -2102,7 +2106,7 @@
         "tags": ["Offers"],
         "operationId": "sendOffer",
         "summary": "Publish/send an offer and generate a secure link",
-        "description": "Moves an Offer from `draft` to `sent`, generates a random public token, stores only its SHA-256 hash with an expiration date, updates the application to `stage: offer_sent`, and writes stageHistory atomically. The current implementation prepares the communication/link; real outbound email delivery is handled separately.",
+        "description": "Generates a secure public link, resolves the configured `offer` email template, sends it through the recruiter's connected Gmail account, and records the attempt in emailLogs. Only after Gmail confirms delivery does it move the Offer from `draft` to `sent`, store the token hash, update the application to `stage: offer_sent`, and write stageHistory atomically.",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,

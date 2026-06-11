@@ -268,6 +268,7 @@ describe('StageEmailService.sendIfTemplateExists', () => {
       'recruiter-1',
       'recruiter@example.com',
       'https://ats.example.com/offer/public-token',
+      'offer-1',
     );
 
     expect(resolver.resolve).toHaveBeenCalledWith(
@@ -275,6 +276,9 @@ describe('StageEmailService.sendIfTemplateExists', () => {
       expect.objectContaining({
         offerLink: 'https://ats.example.com/offer/public-token',
       }),
+    );
+    expect(logRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ offerId: 'offer-1', stage: 'send_offer' }),
     );
   });
 

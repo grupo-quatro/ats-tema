@@ -4,6 +4,7 @@ export type EmailLogStatus = 'sent' | 'failed' | 'pending';
 
 export interface EmailLog {
   id: string;
+  offerId?: string;
   applicationId: string;
   candidateId: string;
   candidateEmail: string;

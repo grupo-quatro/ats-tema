@@ -57,7 +57,7 @@ export async function sendOffer(
 
   if (!res.ok) {
     throw new Error(
-      await parseErrorResponse(res, 'No se pudo publicar la carta oferta'),
+      await parseErrorResponse(res, 'No se pudo enviar la carta oferta'),
     );
   }
 

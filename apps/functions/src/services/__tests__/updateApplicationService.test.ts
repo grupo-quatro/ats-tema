@@ -334,4 +334,25 @@ describe('UpdateApplicationStageService.updateStage', () => {
 
     expect(result).toEqual({ ok: true });
   });
+
+  it('no dispara el email automático al cambiar manualmente a send_offer', async () => {
+    mockRepo.findById.mockResolvedValue(makeApplication());
+    mockRepo.update.mockResolvedValue(undefined);
+
+    const serviceWithEmail = new UpdateApplicationStageService(
+      mockRepo as any,
+      mockCandidateRepo as any,
+      mockJobRepo as any,
+      mockStageEmailService,
+    );
+
+    await serviceWithEmail.updateStage(
+      { applicationId: 'app-1', stage: 'send_offer' },
+      'uid-test',
+    );
+
+    expect(mockStageEmailService.sendIfTemplateExists).not.toHaveBeenCalled();
+    expect(mockCandidateRepo.findById).not.toHaveBeenCalled();
+    expect(mockJobRepo.findById).not.toHaveBeenCalled();
+  });
 });

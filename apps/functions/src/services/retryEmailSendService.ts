@@ -13,6 +13,15 @@ export class EmailLogNotFoundError extends Error {
   }
 }
 
+export class OfferEmailRetryUnsupportedError extends Error {
+  constructor() {
+    super(
+      'Los emails de carta oferta deben reenviarse desde la gestión de la oferta.',
+    );
+    this.name = 'OfferEmailRetryUnsupportedError';
+  }
+}
+
 export class RetryEmailSendService {
   constructor(
     private readonly emailLogRepository: IEmailLogRepository,
@@ -26,6 +35,9 @@ export class RetryEmailSendService {
     const log = await this.emailLogRepository.findById(logId);
     if (!log) {
       throw new EmailLogNotFoundError(logId);
+    }
+    if (log.offerId) {
+      throw new OfferEmailRetryUnsupportedError();
     }
 
     // 2. Actualizar a status='pending'

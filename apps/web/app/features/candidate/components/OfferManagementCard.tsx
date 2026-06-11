@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { Offer, OfferStatus } from '@ats/shared-types';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Alert,
   Box,
@@ -24,9 +25,14 @@ import {
   getOfferByApplication,
   sendOffer,
 } from '@/shared/api/offersApi';
+import {
+  emailLogsQueryKey,
+  failedEmailLogsQueryKey,
+} from '../hooks/useEmailLogs';
 
 interface OfferManagementCardProps {
   applicationId: string;
+  candidateId: string;
   disabled?: boolean;
   isMarkingHired?: boolean;
   onOfferSent: () => void;
@@ -99,17 +105,20 @@ function buildBenefits(value: string) {
 
 export function OfferManagementCard({
   applicationId,
+  candidateId,
   disabled = false,
   isMarkingHired = false,
   onOfferSent,
   onMarkAsHired,
 }: OfferManagementCardProps) {
+  const queryClient = useQueryClient();
   const [offer, setOffer] = useState<Offer | null>(null);
   const [publicUrl, setPublicUrl] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [sendConfirmationOpen, setSendConfirmationOpen] = useState(false);
   const [form, setForm] = useState<DraftFormState>(EMPTY_DRAFT_FORM);
   const [feedback, setFeedback] = useState<{
     severity: 'success' | 'error';
@@ -197,10 +206,19 @@ export function OfferManagementCard({
       const response = await sendOffer({ offerId: offer.id });
       setOffer(response.offer);
       setPublicUrl(response.publicUrl);
+      setSendConfirmationOpen(false);
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: emailLogsQueryKey(candidateId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: failedEmailLogsQueryKey(applicationId),
+        }),
+      ]);
       onOfferSent();
       setFeedback({
         severity: 'success',
-        message: 'Link de carta oferta publicado',
+        message: 'Carta oferta enviada al candidato',
       });
     } catch (error) {
       setFeedback({
@@ -208,7 +226,7 @@ export function OfferManagementCard({
         message:
           error instanceof Error
             ? error.message
-            : 'No se pudo publicar la carta oferta',
+            : 'No se pudo enviar la carta oferta',
       });
     } finally {
       setIsSending(false);
@@ -315,7 +333,8 @@ export function OfferManagementCard({
                 </Button>
               }
             >
-              Link público generado para compartir con el candidato.
+              Carta oferta enviada por email. También podés copiar el link
+              público.
             </Alert>
           ) : offer?.status === 'sent' ? (
             <Alert severity="info">
@@ -346,11 +365,11 @@ export function OfferManagementCard({
               <Button
                 variant="contained"
                 startIcon={<Send size={16} />}
-                onClick={handleSendOffer}
+                onClick={() => setSendConfirmationOpen(true)}
                 disabled={isSending}
                 sx={{ textTransform: 'none' }}
               >
-                {isSending ? 'Publicando...' : 'Publicar link'}
+                {isSending ? 'Enviando...' : 'Enviar carta oferta'}
               </Button>
             )}
 
@@ -369,6 +388,40 @@ export function OfferManagementCard({
           </Box>
         </Stack>
       )}
+
+      <Dialog
+        open={sendConfirmationOpen}
+        onClose={() => !isSending && setSendConfirmationOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Confirmar envío de carta oferta</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            ¿Confirmás el envío del correo con la carta oferta al candidato?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setSendConfirmationOpen(false)}
+            disabled={isSending}
+            sx={{ textTransform: 'none' }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSendOffer}
+            disabled={isSending}
+            startIcon={
+              isSending ? <CircularProgress size={16} /> : <Send size={16} />
+            }
+            sx={{ textTransform: 'none' }}
+          >
+            {isSending ? 'Enviando...' : 'Confirmar envío'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog
         open={dialogOpen}

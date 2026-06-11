@@ -20,6 +20,7 @@ vi.mock('../../core/firebaseAdmin', () => ({
 }));
 
 import {
+  OfferEmailSendError,
   OfferInvalidStateError,
   OfferNotFoundError,
   OfferService,
@@ -84,6 +85,10 @@ const offerWorkflowRepository = {
   sendOffer: vi.fn(),
 };
 
+const stageEmailService = {
+  sendIfTemplateExists: vi.fn(),
+};
+
 describe('OfferService', () => {
   let service: OfferService;
 
@@ -127,6 +132,7 @@ describe('OfferService', () => {
       benefits: ['Home office total', 'Learning budget'],
     });
     offerWorkflowRepository.sendOffer.mockResolvedValue(undefined);
+    stageEmailService.sendIfTemplateExists.mockResolvedValue(true);
 
     service = new OfferService(
       offerRepository as any,
@@ -134,6 +140,7 @@ describe('OfferService', () => {
       candidatesRepository as any,
       jobsRepository as any,
       offerWorkflowRepository as any,
+      stageEmailService as any,
     );
   });
 
@@ -187,11 +194,21 @@ describe('OfferService', () => {
     );
   });
 
-  it('envía la oferta, mueve la candidatura a offer_sent y registra historial', async () => {
+  it('envía el email y luego mueve la oferta y candidatura a sent', async () => {
     offerRepository.findById.mockResolvedValue(makeOffer());
 
     const result = await service.sendOffer({ offerId: 'offer-1' }, 'hr-1');
 
+    expect(stageEmailService.sendIfTemplateExists).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'app-1' }),
+      expect.objectContaining({ email: 'ana@example.com' }),
+      expect.objectContaining({ title: 'Backend Developer' }),
+      'send_offer',
+      'hr-1',
+      'hr@example.com',
+      expect.stringContaining('/offer/'),
+      'offer-1',
+    );
     expect(offerWorkflowRepository.sendOffer).toHaveBeenCalledWith(
       expect.objectContaining({
         offerId: 'offer-1',
@@ -200,13 +217,22 @@ describe('OfferService', () => {
         sentByEmail: 'hr@example.com',
         tokenHash: expect.stringMatching(/^[a-f0-9]{64}$/),
         tokenExpiresAt: expect.any(Date),
-        email: expect.objectContaining({
-          to: 'ana@example.com',
-          subject: 'Carta oferta - Backend Developer',
-        }),
       }),
     );
     expect(result.publicUrl).toContain('/offer/');
+  });
+
+  it('mantiene la oferta en draft y no avanza la candidatura cuando Gmail falla', async () => {
+    offerRepository.findById.mockResolvedValue(makeOffer());
+    stageEmailService.sendIfTemplateExists.mockResolvedValue(false);
+
+    await expect(
+      service.sendOffer({ offerId: 'offer-1' }, 'hr-1'),
+    ).rejects.toThrow(OfferEmailSendError);
+
+    expect(offerWorkflowRepository.sendOffer).not.toHaveBeenCalled();
+    expect(offerRepository.update).not.toHaveBeenCalled();
+    expect(applicationsRepository.update).not.toHaveBeenCalled();
   });
 
   it('obtiene la oferta interna asociada a una candidatura', async () => {

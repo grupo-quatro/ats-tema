@@ -19,6 +19,7 @@ import { CandidatesRepository } from '../repositories/candidateRepository';
 import { JobsRepository } from '../repositories/jobRepository';
 import { OfferRepository } from '../repositories/offerRepository';
 import { OfferWorkflowRepository } from '../repositories/offerWorkflowRepository';
+import type { StageEmailService } from './stageEmailService';
 
 const OFFER_TOKEN_TTL_DAYS = 7;
 const DEFAULT_TEMPLATE_ID = 'default-offer-letter';
@@ -45,6 +46,13 @@ export class OfferUnauthorizedStateError extends Error {
   }
 }
 
+export class OfferEmailSendError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'OfferEmailSendError';
+  }
+}
+
 export type OfferResponseContext = {
   ip?: string;
   userAgent?: string;
@@ -68,6 +76,7 @@ export class OfferService {
     private readonly candidatesRepository: CandidatesRepository = new CandidatesRepository(),
     private readonly jobsRepository: JobsRepository = new JobsRepository(),
     private readonly offerWorkflowRepository: OfferWorkflowRepository = new OfferWorkflowRepository(),
+    private readonly stageEmailService?: StageEmailService,
   ) {}
 
   async createDraft(
@@ -160,29 +169,52 @@ export class OfferService {
     }
     this.assertApplicationCanReceiveOffer(application.status);
 
+    if (!this.stageEmailService) {
+      throw new OfferEmailSendError(
+        'El servicio de envío de emails no está configurado.',
+      );
+    }
+
+    const [candidate, job] = await Promise.all([
+      this.candidatesRepository.findById(application.candidateId),
+      this.jobsRepository.findById(application.jobId),
+    ]);
+    if (!candidate || !job) {
+      throw new OfferInvalidStateError(
+        'La candidatura debe tener candidato y posición válidos para enviar la oferta.',
+      );
+    }
+
     const token = this.generateToken();
     const tokenHash = this.hash(token);
     const tokenExpiresAt = this.addDays(new Date(), OFFER_TOKEN_TTL_DAYS);
     const publicUrl = this.buildPublicOfferUrl(token);
     const userRecord = await auth.getUser(sentBy).catch(() => null);
+    const sentByEmail = userRecord?.email ?? sentBy;
+
+    const emailSent = await this.stageEmailService.sendIfTemplateExists(
+      application,
+      candidate,
+      job,
+      'send_offer',
+      sentBy,
+      sentByEmail,
+      publicUrl,
+      offer.id,
+    );
+    if (!emailSent) {
+      throw new OfferEmailSendError(
+        'No se pudo enviar la carta oferta por email. La oferta permanece en borrador.',
+      );
+    }
 
     await this.offerWorkflowRepository.sendOffer({
       offerId: offer.id,
       applicationId: offer.applicationId,
       sentBy,
-      sentByEmail: userRecord?.email ?? sentBy,
+      sentByEmail,
       tokenHash,
       tokenExpiresAt,
-      email: {
-        to: offer.candidateEmail,
-        subject: `Carta oferta - ${offer.jobTitle}`,
-        html: this.renderOfferEmail(offer, publicUrl),
-        text: `Hola ${offer.candidateName}. Podés revisar tu carta oferta en ${publicUrl}`,
-        metadata: {
-          offerId: offer.id,
-          applicationId: offer.applicationId,
-        },
-      },
     });
 
     const updatedOffer = await this.getRequiredOffer(offer.id);
@@ -376,17 +408,6 @@ export class OfferService {
       resumable: false,
     });
     return filePath;
-  }
-
-  private renderOfferEmail(offer: Offer, publicUrl: string): string {
-    return `
-      <p>Hola ${this.escapeHtml(offer.candidateName)},</p>
-      <p>Te enviamos la carta oferta para la posición <strong>${this.escapeHtml(
-        offer.jobTitle,
-      )}</strong>.</p>
-      <p>Podés revisarla y responder desde el siguiente enlace:</p>
-      <p><a href="${this.escapeHtml(publicUrl)}">Ver carta oferta</a></p>
-    `;
   }
 
   private renderOfferDocument(data: OfferDocumentData): string {

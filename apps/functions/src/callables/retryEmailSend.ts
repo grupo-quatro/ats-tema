@@ -12,6 +12,7 @@ import { UserRepository } from '../repositories/userRepository';
 import { GmailSenderService } from '../services/gmailSenderService';
 import {
   EmailLogNotFoundError,
+  OfferEmailRetryUnsupportedError,
   RetryEmailSendService,
 } from '../services/retryEmailSendService';
 
@@ -55,6 +56,11 @@ export const retryEmailSend = onRequest(async (request, response) => {
 
     if (error instanceof EmailLogNotFoundError) {
       response.status(404).json({ error: error.message });
+      return;
+    }
+
+    if (error instanceof OfferEmailRetryUnsupportedError) {
+      response.status(409).json({ error: error.message });
       return;
     }
 
