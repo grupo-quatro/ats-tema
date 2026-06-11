@@ -1,4 +1,5 @@
 import { HttpsError, onRequest } from 'firebase-functions/v2/https';
+import { setCorsHeaders } from '../core/cors';
 import { logger } from 'firebase-functions';
 import {
   CandidatePostulationCVPayload,
@@ -54,14 +55,6 @@ function sendError(
   }
 
   response.status(500).json({ error: fallbackMessage, code: 'internal' });
-}
-
-function setCorsHeaders(
-  response: Parameters<Parameters<typeof onRequest>[0]>[1],
-): void {
-  response.set('Access-Control-Allow-Origin', '*');
-  response.set('Access-Control-Allow-Methods', 'GET, PATCH, POST, OPTIONS');
-  response.set('Access-Control-Allow-Headers', 'Authorization, Content-Type');
 }
 
 function assertMethod(

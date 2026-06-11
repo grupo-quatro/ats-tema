@@ -15,20 +15,20 @@ import {
   signOut as firebaseSignOut,
   type User,
 } from 'firebase/auth';
-import { EMPLOYEE_ROLES, type EmployeeRole } from '@ats/shared-types';
+import {
+  EMPLOYEE_ROLES,
+  AUTH_EMAIL_WHITELIST,
+  type EmployeeRole,
+} from '@ats/shared-types';
 import { auth, googleProvider } from './firebase';
 import { getFunctionUrl } from './functionsUrl';
 
 const ALLOWED_DOMAIN = 'temaconsulting.com.ar';
 
-// TODO: eliminar estos emails de prueba antes de deploy a producción
-const DEV_WHITELIST_EMAILS = ['jamija.webdev@gmail.com'];
-
 function isEmailAllowed(email: string): boolean {
-  if (email.endsWith(`@${ALLOWED_DOMAIN}`)) return true;
-  // TODO: eliminar whitelist de prueba antes de producción
-  if (DEV_WHITELIST_EMAILS.includes(email)) return true;
-  return false;
+  return (
+    email.endsWith(`@${ALLOWED_DOMAIN}`) || AUTH_EMAIL_WHITELIST.has(email)
+  );
 }
 
 interface AuthContextValue {

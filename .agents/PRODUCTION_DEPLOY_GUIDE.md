@@ -92,6 +92,12 @@ Configurar secrets de las functions en Firebase:
 ```bash
 firebase functions:secrets:set GOOGLE_OAUTH_CLIENT_ID
 firebase functions:secrets:set GOOGLE_OAUTH_CLIENT_SECRET
+
+# Generar y setear la clave de encriptación para OAuth tokens (32 bytes en hex)
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))" | firebase functions:secrets:set OAUTH_ENCRYPTION_KEY
+
+# Dominio permitido para CORS — crear apps/functions/.env.ats-tema-ort (no commitear):
+# ALLOWED_ORIGIN=https://TU_DOMINIO_O_IP
 ```
 
 ---
