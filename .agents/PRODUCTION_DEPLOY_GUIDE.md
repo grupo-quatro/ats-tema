@@ -175,6 +175,20 @@ Los seeders de jobs, candidatos y templates tienen un guard `isEmulatorEnvironme
 
 ---
 
+## Operación post-deploy — Gmail OAuth
+
+El refresh del access token de Gmail es **automático en el backend**. Cada vez que una Cloud Function necesita enviar un email, verifica si el token está por vencer y lo renueva usando el refresh token guardado en Firestore, sin intervención del usuario.
+
+El recruiter **solo necesita reconectar Gmail manualmente** si ocurre alguno de estos casos:
+
+- **Revocó el acceso** desde su cuenta de Google (myaccount.google.com → Seguridad → Aplicaciones con acceso)
+- **Google invalidó el refresh token** por inactividad prolongada (política de Google: 6 meses sin uso)
+- **El refresh token se perdió o corrompió** en Firestore (ej: incidente de datos)
+
+En cualquiera de estos casos, el recruiter vuelve a hacer el flujo de "Conectar Gmail" desde el sidebar del dashboard.
+
+---
+
 ## Checklist previo a la demo
 
 - [ ] Google Sign-In habilitado en Firebase Console
