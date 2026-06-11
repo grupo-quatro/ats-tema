@@ -131,6 +131,7 @@ const makeOAuth2Client = (): OAuth2Client =>
 
 const makeEmployeeRepo = (): IEmployeeRepository => ({
   getCalendarLink: vi.fn().mockResolvedValue(null),
+  setGmailStatus: vi.fn().mockResolvedValue(undefined),
 });
 
 // --- Helper para construir el servicio ---

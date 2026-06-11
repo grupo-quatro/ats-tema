@@ -8,6 +8,7 @@ import {
   validateRetryEmailSendPayload,
 } from '../validators/retryEmailSendValidator';
 import { EmailLogRepository } from '../repositories/emailLogRepository';
+import { EmployeeRepository } from '../repositories/employeeRepository';
 import { UserRepository } from '../repositories/userRepository';
 import { GmailSenderService } from '../services/gmailSenderService';
 import {
@@ -25,6 +26,7 @@ const retryEmailSendService = new RetryEmailSendService(
   new UserRepository(),
   new GmailSenderService(),
   oauth2Client,
+  new EmployeeRepository(),
 );
 
 export const retryEmailSend = onRequest(

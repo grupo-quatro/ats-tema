@@ -20,11 +20,16 @@ import {
   LogOut,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { EMPLOYEE_ROLES, type EmployeeRole } from '@ats/shared-types';
+import {
+  EMPLOYEE_ROLES,
+  GMAIL_STATUS,
+  type EmployeeRole,
+} from '@ats/shared-types';
 import { useAuth } from '../../shared/lib/authContext';
 import ConnectGmailButton from '../../features/gmail/components/ConnectGmailButton';
 import ConnectCalendarButton from '../../features/calendar/components/ConnectCalendarButton';
 import CalendarLinkEditor from '../../features/calendar/components/CalendarLinkEditor';
+import { useEmployeeProfile } from '../../features/calendar/hooks/useEmployeeProfile';
 
 const SIDEBAR_WIDTH = 240;
 const SIDEBAR_COLLAPSED_WIDTH = 64;
@@ -60,6 +65,8 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const { user, role, signOut } = useAuth();
+  const { employee } = useEmployeeProfile();
+  const gmailRevoked = employee?.gmailStatus === GMAIL_STATUS.DISCONNECTED;
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -291,6 +298,22 @@ export default function Sidebar() {
                 </IconButton>
               </Tooltip>
             </Box>
+            {gmailRevoked && (
+              <Box
+                sx={{
+                  px: 1.5,
+                  py: 1,
+                  borderRadius: 1,
+                  bgcolor: 'warning.light',
+                  color: 'warning.contrastText',
+                  fontSize: '0.75rem',
+                  lineHeight: 1.4,
+                }}
+              >
+                Tu cuenta de Gmail fue desconectada. Reconectá para continuar
+                enviando emails.
+              </Box>
+            )}
             <ConnectGmailButton />
             {role === EMPLOYEE_ROLES.HR && <ConnectCalendarButton />}
             {role === EMPLOYEE_ROLES.HR && <CalendarLinkEditor />}

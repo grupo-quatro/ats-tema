@@ -1,9 +1,11 @@
+import type { GmailStatus } from '@ats/shared-types';
 import { db } from '../core/firebaseAdmin';
 
 const EMPLOYEES_COLLECTION = 'employees';
 
 export interface IEmployeeRepository {
   getCalendarLink(uid: string): Promise<string | null>;
+  setGmailStatus(uid: string, status: GmailStatus): Promise<void>;
 }
 
 export class EmployeeRepositoryError extends Error {
@@ -30,6 +32,19 @@ export class EmployeeRepository implements IEmployeeRepository {
     } catch (error) {
       throw new EmployeeRepositoryError(
         `No se pudo obtener el calendarLink para el empleado ${uid}.`,
+        error,
+      );
+    }
+  }
+
+  async setGmailStatus(uid: string, status: GmailStatus): Promise<void> {
+    try {
+      await this.collection
+        .doc(uid)
+        .update({ gmailStatus: status, updatedAt: new Date() });
+    } catch (error) {
+      throw new EmployeeRepositoryError(
+        `No se pudo actualizar gmailStatus para el empleado ${uid}.`,
         error,
       );
     }

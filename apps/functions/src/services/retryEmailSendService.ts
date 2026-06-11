@@ -1,8 +1,10 @@
 import type { OAuth2Client } from 'google-auth-library';
 
+import { GMAIL_STATUS } from '@ats/shared-types';
 import type { GmailCredential } from '@ats/shared-types';
 
 import type { IEmailLogRepository } from '../repositories/emailLogRepository';
+import type { IEmployeeRepository } from '../repositories/employeeRepository';
 import type { IUserRepository } from '../repositories/userRepository';
 import type { GmailSenderService } from './gmailSenderService';
 
@@ -19,6 +21,7 @@ export class RetryEmailSendService {
     private readonly userRepository: IUserRepository,
     private readonly gmailSender: GmailSenderService,
     private readonly oauth2Client: OAuth2Client,
+    private readonly employeeRepository?: IEmployeeRepository,
   ) {}
 
   async retry(logId: string, retryingUserId: string): Promise<void> {
@@ -51,9 +54,22 @@ export class RetryEmailSendService {
     try {
       freshCredential = await this.refreshIfNeeded(credential, retryingUserId);
     } catch (refreshError) {
+      const isRevoked =
+        refreshError instanceof Error &&
+        refreshError.message.includes('invalid_grant');
+
+      if (isRevoked) {
+        await this.employeeRepository?.setGmailStatus(
+          retryingUserId,
+          GMAIL_STATUS.DISCONNECTED,
+        );
+      }
+
       await this.emailLogRepository.updateStatus(logId, {
         status: 'failed',
-        error: 'No se pudo refrescar el token de acceso de Gmail.',
+        error: isRevoked
+          ? 'TOKEN_REVOKED: el acceso a Gmail fue revocado. El recruiter debe reconectar su cuenta.'
+          : 'No se pudo refrescar el token de acceso de Gmail.',
       });
       throw refreshError;
     }
