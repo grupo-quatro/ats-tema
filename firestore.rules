@@ -15,13 +15,22 @@ service cloud.firestore {
       return hasRole('admin') || hasRole('hr');
     }
 
+    function isBackoffice() {
+      return isAuth() && request.auth.token.role != null;
+    }
+
+    function canWriteApplications() {
+      return hasRole('admin') || hasRole('hr') || hasRole('recruiter');
+    }
+
     match /jobs/{jobId} {
       allow read: if isAuth();
       allow write: if isAdminOrHr();
     }
 
     match /applications/{appId} {
-      allow read, write: if isAuth();
+      allow read: if isBackoffice();
+      allow write: if canWriteApplications();
     }
 
     match /candidates/{candidateId} {

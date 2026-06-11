@@ -31,6 +31,10 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const googleProvider = new GoogleAuthProvider();
 
+if (process.env.NEXT_PUBLIC_USE_EMULATORS !== 'true') {
+  googleProvider.setCustomParameters({ hd: 'temaconsulting.com.ar' });
+}
+
 const useEmulators = process.env.NEXT_PUBLIC_USE_EMULATORS === 'true';
 const functionsEmulatorPort =
   process.env.NEXT_PUBLIC_FUNCTIONS_EMULATOR_PORT ?? '5001';
