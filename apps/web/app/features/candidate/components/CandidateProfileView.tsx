@@ -445,7 +445,9 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                     lineHeight: 1,
                   }}
                 >
-                  {candidate.fitScore}%
+                  {candidate.fitScore === undefined
+                    ? 'No disponible'
+                    : `${candidate.fitScore}%`}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   compatibilidad general con la posición

@@ -54,9 +54,9 @@ describe('mapDetailToProfile', () => {
     expect(profile.strengths).toEqual([]);
   });
 
-  it('retorna fitScore 0 cuando no está definido', () => {
+  it('conserva fitScore sin definir cuando no está disponible', () => {
     const profile = mapDetailToProfile(makeDetail({ fitScore: undefined }));
-    expect(profile.fitScore).toBe(0);
+    expect(profile.fitScore).toBeUndefined();
   });
 
   it('retorna interviewNotes vacío (se cargan desde el backend en el perfil)', () => {

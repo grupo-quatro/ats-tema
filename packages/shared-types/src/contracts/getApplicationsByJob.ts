@@ -24,8 +24,7 @@ export interface ApplicationWithCandidateDTO {
   coverLetter?: string;
   /**
    * Estadísticas de match ponderado de skills.
-   * Disponible tras la ejecución del trigger onApplicationCreated.
-   * Puede estar ausente en postulaciones antiguas o si el trigger aún no corrió.
+   * Puede estar ausente si todavía no existe un cálculo válido.
    */
   skillMatchStats?: SkillMatchStats;
   candidateName?: string;

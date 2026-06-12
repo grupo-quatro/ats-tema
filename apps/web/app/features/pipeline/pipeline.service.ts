@@ -27,7 +27,9 @@ export class PipelineService {
     try {
       return await this.repo.getApplicationsByJob({
         jobId,
-        orderBy: options?.orderBy ?? 'fitScore',
+        // Firestore excluye documentos sin el campo usado en orderBy.
+        // El pipeline ordena por FIT en memoria para incluir scores no disponibles.
+        orderBy: options?.orderBy ?? 'createdAt',
         orderDirection: options?.orderDirection ?? 'desc',
         limit: options?.limit,
       });

@@ -43,13 +43,13 @@ export interface Application {
   stage: ApplicationStage;
   status: ApplicationStatus;
 
-  fitScore?: number; // 0-100, generado por AI tras parsear CV
+  fitScore?: number; // 0-100, calculado cuando existen criterios y perfil confirmado
   coverLetter?: string;
 
   /**
-   * Estadísticas de match de skills calculadas automáticamente por Cloud Function
-   * al momento de crear la postulación. Usa los pesos (weight) y tipos (type)
-   * de Job.skills para ponderar el score.
+   * Estadísticas de match de skills calculadas automáticamente por Cloud
+   * Functions al crear la postulación y al cambiar sus insumos. Usa los pesos
+   * (weight) y tipos (type) de Job.skills para ponderar el score.
    */
   skillMatchStats?: SkillMatchStats;
 
