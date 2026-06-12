@@ -1,4 +1,3 @@
-// branch: fb-50-57
 import type {
   ApplicationDetailDTO,
   ApplicationDetailCandidateDTO,

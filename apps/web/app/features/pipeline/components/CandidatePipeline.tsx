@@ -272,7 +272,7 @@ export default function CandidatePipeline({
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
-              placeholder="Buscar por nombre o habilidades..."
+              placeholder="Buscar por nombre o email..."
               value={searchTerm}
               onChange={(event) => {
                 setSearchTerm(event.target.value);

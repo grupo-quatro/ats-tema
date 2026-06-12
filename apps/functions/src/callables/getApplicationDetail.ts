@@ -1,4 +1,3 @@
-// branch: fb-50-57
 import { logger } from 'firebase-functions';
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
 

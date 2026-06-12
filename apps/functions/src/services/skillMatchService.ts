@@ -33,7 +33,7 @@ export class SkillMatchService {
 
   /**
    * Calcula el match ponderado de skills para una postulación y persiste
-   * el resultado en el mismo documento que disparó el trigger.
+   * el resultado en su documento de aplicación.
    *
    * Lecturas Firestore: 3 en total (application → candidate + job en paralelo).
    * Escritura Firestore: 1 (.update sobre application).

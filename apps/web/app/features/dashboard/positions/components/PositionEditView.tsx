@@ -872,7 +872,7 @@ export default function PositionEditView({ job, onSave }: Props) {
               <Typography
                 sx={{ fontWeight: 700, fontSize: '0.86rem', color: '#2563eb' }}
               >
-                Matching Automático con IA
+                Matching Automático por Skills
               </Typography>
               <Typography
                 sx={{ fontSize: '0.78rem', color: '#2563eb', mt: 0.4 }}

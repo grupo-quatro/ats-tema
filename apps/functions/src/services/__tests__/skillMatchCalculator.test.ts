@@ -13,6 +13,12 @@ const mandatorySkill = (name: string): Skill => ({
   type: 'mandatory',
 });
 
+const skill = (name: string, weight: number, type: Skill['type']): Skill => ({
+  name,
+  weight,
+  type,
+});
+
 describe('skillMatchCalculator normalizado', () => {
   it.each([
     ['Node.js', 'NodeJS'],
@@ -82,5 +88,70 @@ describe('skillMatchCalculator normalizado', () => {
         },
       ]),
     ).toEqual([{ name: 'React', weight: 5, type: 'mandatory' }]);
+  });
+});
+
+describe('skillMatchCalculator ponderado', () => {
+  it('calcula scores total, obligatorio y deseable según los pesos', () => {
+    const result = computeWeightedMatch(
+      [
+        skill('React', 5, 'mandatory'),
+        skill('TypeScript', 3, 'mandatory'),
+        skill('Docker', 2, 'desirable'),
+      ],
+      buildCandidateSkillSet(['React', 'Docker']),
+    );
+
+    expect(result).toMatchObject({
+      scoreTotal: 70,
+      scoreMandatory: 62.5,
+      scoreDesirable: 100,
+      tieneTodosLosMandatorios: false,
+    });
+  });
+
+  it('reserva score 0 para un cálculo válido sin coincidencias', () => {
+    const result = computeWeightedMatch(
+      [skill('React', 5, 'mandatory')],
+      buildCandidateSkillSet([]),
+    );
+
+    expect(result).toMatchObject({
+      scoreTotal: 0,
+      scoreMandatory: 0,
+      scoreDesirable: 0,
+      tieneTodosLosMandatorios: false,
+    });
+  });
+
+  it('considera cumplidos los obligatorios cuando la posición no tiene ninguno', () => {
+    const result = computeWeightedMatch(
+      [skill('Docker', 2, 'desirable')],
+      buildCandidateSkillSet([]),
+    );
+
+    expect(result.scoreMandatory).toBe(100);
+    expect(result.tieneTodosLosMandatorios).toBe(true);
+  });
+
+  it('ordena coincidencias por peso y faltantes por tipo y peso', () => {
+    const result = computeWeightedMatch(
+      [
+        skill('React', 3, 'mandatory'),
+        skill('TypeScript', 5, 'mandatory'),
+        skill('Docker', 4, 'desirable'),
+        skill('AWS', 2, 'desirable'),
+      ],
+      buildCandidateSkillSet(['React', 'AWS']),
+    );
+
+    expect(result.skillsCoincidentes.map(({ name }) => name)).toEqual([
+      'React',
+      'AWS',
+    ]);
+    expect(result.skillsFaltantes.map(({ name }) => name)).toEqual([
+      'TypeScript',
+      'Docker',
+    ]);
   });
 });

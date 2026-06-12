@@ -1,4 +1,3 @@
-// branch: fb-50-57
 /**
  * Módulo de cálculo puro de match de skills.
  * No tiene dependencias de Firestore ni de firebase-admin.
@@ -97,7 +96,7 @@ export function round2(value: number): number {
  * │  scoreDesirable = (Σ w_i · m_i | D)   / (Σ w_i | D)   · 100            │
  * │                                                                          │
  * │  Casos borde:                                                            │
- * │  • sin skills en el puesto      → scoreTotal = 0                        │
+ * │  • sin skills en el puesto      → scoreTotal = 0 (convención interna)   │
  * │  • sin mandatory                → scoreMandatory = 100 (vacío = cumple) │
  * │  • sin desirable                → scoreDesirable = 0                    │
  * └──────────────────────────────────────────────────────────────────────────┘

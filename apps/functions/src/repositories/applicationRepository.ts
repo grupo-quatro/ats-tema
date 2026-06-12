@@ -1,4 +1,3 @@
-// branch: fb-50-57
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
 import type {

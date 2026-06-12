@@ -1,4 +1,3 @@
-// branch: fb-50-57
 import type { SkillMatchStats } from './skillMatch';
 
 export type ApplicationStage =
@@ -43,7 +42,8 @@ export interface Application {
   stage: ApplicationStage;
   status: ApplicationStatus;
 
-  fitScore?: number; // 0-100, calculado cuando existen criterios y perfil confirmado
+  /** 0-100 cuando existe un cálculo válido; ausente no equivale a 0. */
+  fitScore?: number;
   coverLetter?: string;
 
   /**
@@ -55,7 +55,7 @@ export interface Application {
 
   rejectionReason?: string;
   notes?: string;
-  /** Fortalezas de la candidatura evaluadas por el reclutador. Editable desde el perfil del candidato. */ // branch: fb-50-57
+  /** Fortalezas de la candidatura evaluadas por el reclutador. Editable desde el perfil del candidato. */
   fortalezas?: string[];
 
   createdAt: Date;
