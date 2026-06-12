@@ -360,7 +360,7 @@ describe('StageEmailService.sendIfTemplateExists', () => {
       expect.anything(),
       expect.objectContaining({
         calendarLink:
-          'https://calendar.google.com/calendar/appointments/schedules/test123?description=ats-app-app-1',
+          'https://calendar.google.com/calendar/appointments/schedules/test123',
       }),
     );
   });

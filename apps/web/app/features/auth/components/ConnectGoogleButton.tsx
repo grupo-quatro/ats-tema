@@ -1,37 +1,30 @@
 'use client';
 
+import { useCallback, useEffect, useState } from 'react';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tooltip from '@mui/material/Tooltip';
-import { Mail, CheckCircle, AlertCircle } from 'lucide-react';
-import type { GmailStatus } from '@ats/shared-types';
-import { useGmailConnect } from '../hooks/useGmailConnect';
+import { AlertCircle, Globe } from 'lucide-react';
+import { buildGoogleUnifiedOAuthUrl } from '../../../shared/api/googleOAuthApi';
 
-interface Props {
-  gmailStatus?: GmailStatus;
-}
+type Status = 'idle' | 'loading' | 'error';
 
-export default function ConnectGmailButton({ gmailStatus }: Props) {
-  const { status, errorMessage, connect } = useGmailConnect(gmailStatus);
+export default function ConnectGoogleButton() {
+  const [status, setStatus] = useState<Status>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  if (status === 'connected') {
-    return (
-      <Button
-        variant="outlined"
-        color="success"
-        size="small"
-        disabled
-        startIcon={<CheckCircle size={16} />}
-        sx={{
-          textTransform: 'none',
-          fontWeight: 500,
-          '&.Mui-disabled': { color: 'success.main', borderColor: 'success.main' },
-        }}
-      >
-        Gmail conectado
-      </Button>
-    );
-  }
+  useEffect(() => {
+    const onError = (e: Event) => {
+      setErrorMessage((e as CustomEvent<string>).detail ?? 'Error al conectar con Google');
+      setStatus('error');
+    };
+    window.addEventListener('gmail-connect-error', onError);
+    return () => window.removeEventListener('gmail-connect-error', onError);
+  }, []);
+
+  const connect = useCallback(() => {
+    window.location.href = buildGoogleUnifiedOAuthUrl();
+  }, []);
 
   if (status === 'loading') {
     return (
@@ -49,7 +42,7 @@ export default function ConnectGmailButton({ gmailStatus }: Props) {
 
   if (status === 'error') {
     return (
-      <Tooltip title={errorMessage ?? 'Error al conectar Gmail'}>
+      <Tooltip title={errorMessage ?? 'Error al conectar con Google'}>
         <Button
           variant="outlined"
           color="error"
@@ -70,10 +63,10 @@ export default function ConnectGmailButton({ gmailStatus }: Props) {
       color="error"
       size="small"
       onClick={connect}
-      startIcon={<Mail size={16} />}
+      startIcon={<Globe size={16} />}
       sx={{ textTransform: 'none', fontWeight: 500 }}
     >
-      Conectar Gmail
+      Conectar con Google
     </Button>
   );
 }

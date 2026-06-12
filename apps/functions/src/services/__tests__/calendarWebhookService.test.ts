@@ -4,6 +4,7 @@ const {
   mockGetCalendarCredential,
   mockUpdateCalendarCredential,
   mockFindById,
+  mockFindActiveInSchedulingByEmail,
   mockUpdate,
   mockUpdateStage,
   mockSetCalendarStatus,
@@ -12,6 +13,7 @@ const {
   mockGetCalendarCredential: vi.fn(),
   mockUpdateCalendarCredential: vi.fn(),
   mockFindById: vi.fn(),
+  mockFindActiveInSchedulingByEmail: vi.fn(),
   mockUpdate: vi.fn(),
   mockUpdateStage: vi.fn(),
   mockSetCalendarStatus: vi.fn(),
@@ -59,6 +61,7 @@ vi.mock('../../repositories/userRepository', () => ({
 vi.mock('../../repositories/applicationRepository', () => ({
   ApplicationsRepository: vi.fn().mockImplementation(() => ({
     findById: mockFindById,
+    findActiveInSchedulingByEmail: mockFindActiveInSchedulingByEmail,
     update: mockUpdate,
   })),
 }));
@@ -118,7 +121,6 @@ const makeApplication = (
 
 const makeEvent = (overrides = {}) => ({
   id: 'evt-1',
-  description: 'ats-app-app-1',
   attendees: [{ email: 'candidate@example.com', self: false }],
   ...overrides,
 });
@@ -127,6 +129,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockGetCalendarCredential.mockResolvedValue(CREDENTIAL);
   mockFindById.mockResolvedValue(null);
+  mockFindActiveInSchedulingByEmail.mockResolvedValue(null);
   mockUpdate.mockResolvedValue(undefined);
   mockUpdateStage.mockResolvedValue(undefined);
   mockSetCalendarStatus.mockResolvedValue(undefined);
@@ -151,37 +154,47 @@ describe('processCalendarNotification', () => {
     expect(mockUpdateStage).not.toHaveBeenCalled();
   });
 
-  it('transiciona la aplicación usando el applicationId de la descripción del evento', async () => {
+  it('transiciona la aplicación al encontrar el candidato por email del asistente', async () => {
     const app = makeApplication();
-    mockFindById.mockResolvedValue(app);
+    mockFindActiveInSchedulingByEmail.mockResolvedValue(app);
     mockEventsList.mockResolvedValue({ data: { items: [makeEvent()] } });
 
     await processCalendarNotification('uid-1');
 
-    expect(mockFindById).toHaveBeenCalledWith('app-1');
+    expect(mockFindActiveInSchedulingByEmail).toHaveBeenCalledWith(
+      'candidate@example.com',
+      expect.any(Array),
+    );
     expect(mockUpdateStage).toHaveBeenCalledWith(
       { applicationId: 'app-1', stage: 'hr_1_scheduled' },
       'uid-1',
     );
-    expect(mockUpdate).toHaveBeenCalledWith('app-1', {
-      calendarEventId: 'evt-1',
-    });
+    expect(mockUpdate).toHaveBeenCalledWith('app-1', { calendarEventId: 'evt-1' });
   });
 
-  it('ignora eventos sin applicationId en la descripción', async () => {
+  it('ignora eventos sin asistente externo', async () => {
     mockEventsList.mockResolvedValue({
-      data: { items: [makeEvent({ description: '', id: 'evt-2' })] },
+      data: { items: [makeEvent({ attendees: [{ email: 'recruiter@example.com', self: true }] })] },
     });
 
     await processCalendarNotification('uid-1');
 
-    expect(mockFindById).not.toHaveBeenCalled();
+    expect(mockFindActiveInSchedulingByEmail).not.toHaveBeenCalled();
+    expect(mockUpdateStage).not.toHaveBeenCalled();
+  });
+
+  it('no hace nada si no hay aplicación activa en scheduling para el candidato', async () => {
+    mockFindActiveInSchedulingByEmail.mockResolvedValue(null);
+    mockEventsList.mockResolvedValue({ data: { items: [makeEvent()] } });
+
+    await processCalendarNotification('uid-1');
+
     expect(mockUpdateStage).not.toHaveBeenCalled();
   });
 
   it('no reprocesa si calendarEventId ya está seteado (idempotencia)', async () => {
     const app = makeApplication({ calendarEventId: 'evt-1' });
-    mockFindById.mockResolvedValue(app);
+    mockFindActiveInSchedulingByEmail.mockResolvedValue(app);
     mockEventsList.mockResolvedValue({ data: { items: [makeEvent()] } });
 
     await processCalendarNotification('uid-1');
@@ -192,7 +205,7 @@ describe('processCalendarNotification', () => {
 
   it('guarda calendarEventId DESPUÉS de updateStage — si falla no queda marcado', async () => {
     const app = makeApplication();
-    mockFindById.mockResolvedValue(app);
+    mockFindActiveInSchedulingByEmail.mockResolvedValue(app);
     mockUpdateStage.mockRejectedValue(new Error('updateStage failed'));
     mockEventsList.mockResolvedValue({ data: { items: [makeEvent()] } });
 
@@ -207,15 +220,6 @@ describe('processCalendarNotification', () => {
     await processCalendarNotification('uid-1');
 
     expect(mockSetCalendarStatus).toHaveBeenCalledWith('uid-1', 'disconnected');
-    expect(mockUpdateStage).not.toHaveBeenCalled();
-  });
-
-  it('no transiciona si la aplicación no existe para el applicationId de la descripción', async () => {
-    mockFindById.mockResolvedValue(null);
-    mockEventsList.mockResolvedValue({ data: { items: [makeEvent()] } });
-
-    await processCalendarNotification('uid-1');
-
     expect(mockUpdateStage).not.toHaveBeenCalled();
   });
 });

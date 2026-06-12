@@ -70,18 +70,12 @@ export class StageEmailService {
         candidate.email ||
         '';
 
-      // Appendear applicationId al calendarLink para que el webhook de Calendar
-      // pueda identificar exactamente qué postulación avanzar (Opción B del plan).
-      const calendarLinkWithId = calendarLink
-        ? `${calendarLink}${calendarLink.includes('?') ? '&' : '?'}description=ats-app-${application.id}`
-        : '';
-
       const context: ResolverContext = {
         candidateName,
         positionName: job.title,
         recruiterName: recruiterEmail,
         recruiterEmail,
-        calendarLink: calendarLinkWithId,
+        calendarLink: calendarLink ?? '',
         companyName: orgConfig.companyName,
       };
 

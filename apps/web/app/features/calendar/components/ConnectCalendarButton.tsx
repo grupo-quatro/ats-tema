@@ -4,10 +4,15 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tooltip from '@mui/material/Tooltip';
 import { CalendarDays, CheckCircle, AlertCircle } from 'lucide-react';
+import type { GmailStatus } from '@ats/shared-types';
 import { useCalendarConnect } from '../hooks/useCalendarConnect';
 
-function ConnectCalendarButtonInner() {
-  const { status, errorMessage, connect } = useCalendarConnect();
+interface Props {
+  calendarStatus?: GmailStatus;
+}
+
+export default function ConnectCalendarButton({ calendarStatus }: Props) {
+  const { status, errorMessage, connect } = useCalendarConnect(calendarStatus);
 
   if (status === 'connected') {
     return (
@@ -20,10 +25,7 @@ function ConnectCalendarButtonInner() {
         sx={{
           textTransform: 'none',
           fontWeight: 500,
-          '&.Mui-disabled': {
-            color: 'success.main',
-            borderColor: 'success.main',
-          },
+          '&.Mui-disabled': { color: 'success.main', borderColor: 'success.main' },
         }}
       >
         Calendario conectado
@@ -65,6 +67,7 @@ function ConnectCalendarButtonInner() {
   return (
     <Button
       variant="outlined"
+      color="error"
       size="small"
       onClick={connect}
       startIcon={<CalendarDays size={16} />}
@@ -73,8 +76,4 @@ function ConnectCalendarButtonInner() {
       Conectar Google Calendar
     </Button>
   );
-}
-
-export default function ConnectCalendarButton() {
-  return <ConnectCalendarButtonInner />;
 }

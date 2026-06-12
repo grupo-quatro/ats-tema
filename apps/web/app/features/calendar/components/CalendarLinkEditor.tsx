@@ -50,9 +50,10 @@ export default function CalendarLinkEditor() {
   }
 
   // savedThisSession=null means no save happened yet this session → use Firestore value
-  const hasSavedLink = savedThisSession !== null
-    ? Boolean(savedThisSession.trim())
-    : Boolean(employee?.calendarLink?.trim());
+  const hasSavedLink =
+    savedThisSession !== null
+      ? Boolean(savedThisSession.trim())
+      : Boolean(employee?.calendarLink?.trim());
 
   if (!editing) {
     if (hasSavedLink) {
@@ -67,7 +68,10 @@ export default function CalendarLinkEditor() {
           sx={{
             textTransform: 'none',
             fontWeight: 500,
-            '&.Mui-disabled': { color: 'success.main', borderColor: 'success.main' },
+            '&.Mui-disabled': {
+              color: 'success.main',
+              borderColor: 'success.main',
+            },
           }}
         >
           Link de agenda cargado
@@ -110,7 +114,10 @@ export default function CalendarLinkEditor() {
       {saveStatus === 'error' && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
           <AlertCircle size={14} color="#ef4444" />
-          <Box component="span" sx={{ fontSize: '0.7rem', color: 'error.main' }}>
+          <Box
+            component="span"
+            sx={{ fontSize: '0.7rem', color: 'error.main' }}
+          >
             {errorMessage ?? 'Error al guardar.'}
           </Box>
         </Box>
@@ -127,7 +134,12 @@ export default function CalendarLinkEditor() {
               <CircularProgress size={12} color="inherit" />
             ) : undefined
           }
-          sx={{ textTransform: 'none', fontWeight: 500, fontSize: '0.75rem', flex: 1 }}
+          sx={{
+            textTransform: 'none',
+            fontWeight: 500,
+            fontSize: '0.75rem',
+            flex: 1,
+          }}
         >
           {saveStatus === 'saving' ? 'Guardando...' : 'Guardar'}
         </Button>

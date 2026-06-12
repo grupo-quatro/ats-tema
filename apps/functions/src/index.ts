@@ -65,3 +65,4 @@ export { onApplicationUpdated } from './triggers/onApplicationUpdated';
 export { registerCalendarWatch } from './callables/registerCalendarWatch';
 export { calendarWebhook } from './callables/calendarWebhook';
 export { renewCalendarWatches } from './scheduled/renewCalendarWatches';
+export { exchangeGoogleCode } from './callables/exchangeGoogleCode';
