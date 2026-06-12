@@ -20,7 +20,11 @@ import {
   LogOut,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { EMPLOYEE_ROLES, GMAIL_STATUS, type EmployeeRole } from '@ats/shared-types';
+import {
+  EMPLOYEE_ROLES,
+  GMAIL_STATUS,
+  type EmployeeRole,
+} from '@ats/shared-types';
 import { useAuth } from '../../shared/lib/authContext';
 import ConnectGmailButton from '../../features/gmail/components/ConnectGmailButton';
 import ConnectCalendarButton from '../../features/calendar/components/ConnectCalendarButton';
@@ -63,7 +67,8 @@ export default function Sidebar() {
   const { user, role, signOut } = useAuth();
   const { employee } = useEmployeeProfile();
   const gmailRevoked = employee?.gmailStatus === GMAIL_STATUS.DISCONNECTED;
-  const calendarRevoked = employee?.calendarStatus === GMAIL_STATUS.DISCONNECTED;
+  const calendarRevoked =
+    employee?.calendarStatus === GMAIL_STATUS.DISCONNECTED;
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);

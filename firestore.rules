@@ -39,7 +39,8 @@ service cloud.firestore {
     }
 
     match /employees/{empId} {
-      allow read, write: if hasRole('admin');
+      allow read: if isAuth();
+      allow write: if hasRole('admin');
     }
 
     match /emailTemplates/{templateId} {

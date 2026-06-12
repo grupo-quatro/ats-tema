@@ -23,8 +23,12 @@ export const calendarWebhook = onRequest(async (request, response) => {
   }
 
   const channelId = request.headers['x-goog-channel-id'] as string | undefined;
-  const resourceState = request.headers['x-goog-resource-state'] as string | undefined;
-  const channelToken = request.headers['x-goog-channel-token'] as string | undefined;
+  const resourceState = request.headers['x-goog-resource-state'] as
+    | string
+    | undefined;
+  const channelToken = request.headers['x-goog-channel-token'] as
+    | string
+    | undefined;
 
   if (!channelId) {
     logger.warn('[calendarWebhook] Notificación sin X-Goog-Channel-ID');

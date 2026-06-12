@@ -122,14 +122,19 @@ async function renewWatchForUser(
 
   // Detener el canal anterior para evitar acumular canales huérfanos en Google.
   // Si falla (canal ya expirado o desconocido), lo ignoramos y seguimos.
-  await calendar.channels.stop({
-    requestBody: {
-      id: existingWatch.channelId,
-      resourceId: existingWatch.resourceId,
-    },
-  }).catch((err: unknown) => {
-    logger.warn(`[renewCalendarWatches] No se pudo detener canal anterior para ${uid}`, { err });
-  });
+  await calendar.channels
+    .stop({
+      requestBody: {
+        id: existingWatch.channelId,
+        resourceId: existingWatch.resourceId,
+      },
+    })
+    .catch((err: unknown) => {
+      logger.warn(
+        `[renewCalendarWatches] No se pudo detener canal anterior para ${uid}`,
+        { err },
+      );
+    });
 
   const channelId = `${uid}-calendar-watch`;
   const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;

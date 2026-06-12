@@ -17,7 +17,14 @@ function ConnectGmailButtonInner() {
         size="small"
         disabled
         startIcon={<CheckCircle size={16} />}
-        sx={{ textTransform: 'none', fontWeight: 500 }}
+        sx={{
+          textTransform: 'none',
+          fontWeight: 500,
+          '&.Mui-disabled': {
+            color: 'success.main',
+            borderColor: 'success.main',
+          },
+        }}
       >
         Gmail conectado
       </Button>

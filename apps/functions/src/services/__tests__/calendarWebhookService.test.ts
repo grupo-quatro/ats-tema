@@ -102,7 +102,9 @@ const CREDENTIAL = {
   expiresAt: Date.now() + 3600_000,
 };
 
-const makeApplication = (overrides: Partial<Application> = {}): Application => ({
+const makeApplication = (
+  overrides: Partial<Application> = {},
+): Application => ({
   id: 'app-1',
   jobId: 'job-1',
   candidateId: 'cand-1',
@@ -161,7 +163,9 @@ describe('processCalendarNotification', () => {
       { applicationId: 'app-1', stage: 'hr_1_scheduled' },
       'uid-1',
     );
-    expect(mockUpdate).toHaveBeenCalledWith('app-1', { calendarEventId: 'evt-1' });
+    expect(mockUpdate).toHaveBeenCalledWith('app-1', {
+      calendarEventId: 'evt-1',
+    });
   });
 
   it('ignora eventos sin applicationId en la descripción', async () => {

@@ -3,7 +3,10 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { exchangeGmailCode } from '../../../shared/api/gmailApi';
-import { exchangeCalendarCode, registerCalendarWatch } from '../../../shared/api/calendarOAuthApi';
+import {
+  exchangeCalendarCode,
+  registerCalendarWatch,
+} from '../../../shared/api/calendarOAuthApi';
 
 const GMAIL_CONNECTED_KEY = 'ats-gmail-connected';
 const CALENDAR_CONNECTED_KEY = 'ats-calendar-connected';
@@ -79,7 +82,10 @@ export default function OAuthCodeHandler() {
           // Fire-and-forget: no bloqueamos la UX si falla; el recruiter puede
           // reconectar Calendar para reintentar el registro.
           registerCalendarWatch().catch((err: unknown) => {
-            console.error('[OAuthCodeHandler] registerCalendarWatch failed:', err);
+            console.error(
+              '[OAuthCodeHandler] registerCalendarWatch failed:',
+              err,
+            );
           });
         })
         .catch((err: unknown) => {

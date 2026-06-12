@@ -105,7 +105,9 @@ export class UserRepository implements IUserRepository {
       const snapshot = await this.collection.doc(uid).get();
       if (!snapshot.exists) return null;
 
-      const raw = snapshot.data()?.gmailCredential as GmailCredential | undefined;
+      const raw = snapshot.data()?.gmailCredential as
+        | GmailCredential
+        | undefined;
       return raw ? decryptCredential(raw) : null;
     } catch (error) {
       throw new UserRepositoryError(
@@ -141,7 +143,9 @@ export class UserRepository implements IUserRepository {
       const snapshot = await this.collection.doc(uid).get();
       if (!snapshot.exists) return null;
 
-      const raw = snapshot.data()?.calendarCredential as GmailCredential | undefined;
+      const raw = snapshot.data()?.calendarCredential as
+        | GmailCredential
+        | undefined;
       return raw ? decryptCredential(raw) : null;
     } catch (error) {
       throw new UserRepositoryError(

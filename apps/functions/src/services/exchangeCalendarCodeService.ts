@@ -60,6 +60,9 @@ export class ExchangeCalendarCodeService {
     };
 
     await this.userRepository.updateCalendarCredential(uid, credential);
-    await this.employeeRepository?.setCalendarStatus(uid, GMAIL_STATUS.CONNECTED);
+    await this.employeeRepository?.setCalendarStatus(
+      uid,
+      GMAIL_STATUS.CONNECTED,
+    );
   }
 }
