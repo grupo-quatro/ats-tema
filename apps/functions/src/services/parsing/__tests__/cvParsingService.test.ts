@@ -252,4 +252,62 @@ Tecnicatura Superior en Análisis de Sistemas ORT Argentina
       ],
     });
   });
+
+  it('descarta campos y elementos inválidos conservando los datos utilizables', async () => {
+    process.env.CV_PARSING_FORCE_REAL_AI = 'true';
+    process.env.GCP_PROJECT = 'ats-tema-ort';
+    mocks.generateContent.mockResolvedValue({
+      text: JSON.stringify({
+        fullName: 'Sofia Loria',
+        email: 123,
+        phone: { value: '11223344' },
+        yearsOfExperience: '5',
+        technicalSkills: ['TypeScript', 123, null, 'React'],
+        parsedExperience: [
+          null,
+          { company: 'Acme', role: 123, unknownField: 'ignored' },
+          { role: 'Developer', description: false },
+          {},
+        ],
+        parsedEducation: 'ORT',
+        unknownRootField: 'ignored',
+      }),
+    });
+
+    const service = new CvParsingService();
+
+    const result = await service.parseFromBuffer(Buffer.from('pdf'));
+
+    expect(result).toMatchObject({
+      firstName: 'Sofia',
+      lastName: 'Loria',
+      fullName: 'Sofia Loria',
+      technicalSkills: ['TypeScript', 'React'],
+      parsedExperience: [{ company: 'Acme' }, { role: 'Developer' }],
+    });
+    expect(result.email).toBeUndefined();
+    expect(result.phone).toBeUndefined();
+    expect(result.yearsOfExperience).toBeUndefined();
+    expect(result).not.toHaveProperty('unknownRootField');
+  });
+
+  it('rechaza una respuesta estructurada completamente inutilizable', async () => {
+    process.env.CV_PARSING_FORCE_REAL_AI = 'true';
+    process.env.GCP_PROJECT = 'ats-tema-ort';
+    mocks.generateContent.mockResolvedValue({
+      text: JSON.stringify({
+        fullName: 123,
+        email: false,
+        phone: null,
+        technicalSkills: 'TypeScript',
+        parsedExperience: [{ company: 'Acme' }],
+      }),
+    });
+
+    const service = new CvParsingService();
+
+    await expect(service.parseFromBuffer(Buffer.from('pdf'))).rejects.toThrow(
+      'No se pudo parsear el CV con Vertex AI.',
+    );
+  });
 });
