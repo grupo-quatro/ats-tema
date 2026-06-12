@@ -169,12 +169,20 @@ describe('processCalendarNotification', () => {
       { applicationId: 'app-1', stage: 'hr_1_scheduled' },
       'uid-1',
     );
-    expect(mockUpdate).toHaveBeenCalledWith('app-1', { calendarEventId: 'evt-1' });
+    expect(mockUpdate).toHaveBeenCalledWith('app-1', {
+      calendarEventId: 'evt-1',
+    });
   });
 
   it('ignora eventos sin asistente externo', async () => {
     mockEventsList.mockResolvedValue({
-      data: { items: [makeEvent({ attendees: [{ email: 'recruiter@example.com', self: true }] })] },
+      data: {
+        items: [
+          makeEvent({
+            attendees: [{ email: 'recruiter@example.com', self: true }],
+          }),
+        ],
+      },
     });
 
     await processCalendarNotification('uid-1');

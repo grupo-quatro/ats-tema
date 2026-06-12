@@ -31,7 +31,9 @@ function buildGoogleCalendarOAuthUrl(): string {
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 }
 
-export function useCalendarConnect(calendarStatus?: GmailStatus): UseCalendarConnectReturn {
+export function useCalendarConnect(
+  calendarStatus?: GmailStatus,
+): UseCalendarConnectReturn {
   const [status, setStatus] = useState<CalendarConnectStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -51,7 +53,9 @@ export function useCalendarConnect(calendarStatus?: GmailStatus): UseCalendarCon
       setErrorMessage(null);
     };
     const onError = (e: Event) => {
-      const message = (e as CustomEvent<string>).detail ?? 'Error al conectar Google Calendar';
+      const message =
+        (e as CustomEvent<string>).detail ??
+        'Error al conectar Google Calendar';
       setErrorMessage(message);
       setStatus('error');
     };

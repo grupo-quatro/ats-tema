@@ -70,7 +70,8 @@ export default function Sidebar() {
   const gmailConnected = employee?.gmailStatus === GMAIL_STATUS.CONNECTED;
   const calendarConnected = employee?.calendarStatus === GMAIL_STATUS.CONNECTED;
   const gmailRevoked = employee?.gmailStatus === GMAIL_STATUS.DISCONNECTED;
-  const calendarRevoked = employee?.calendarStatus === GMAIL_STATUS.DISCONNECTED;
+  const calendarRevoked =
+    employee?.calendarStatus === GMAIL_STATUS.DISCONNECTED;
   const showUnifiedConnect = !gmailConnected && !calendarConnected;
 
   useEffect(() => {
@@ -308,17 +309,43 @@ export default function Sidebar() {
             ) : (
               <>
                 {gmailRevoked && (
-                  <Box sx={{ px: 1.5, py: 1, borderRadius: 1, bgcolor: 'warning.light', color: 'warning.contrastText', fontSize: '0.75rem', lineHeight: 1.4 }}>
-                    Tu cuenta de Gmail fue desconectada. Reconectá para continuar enviando emails.
+                  <Box
+                    sx={{
+                      px: 1.5,
+                      py: 1,
+                      borderRadius: 1,
+                      bgcolor: 'warning.light',
+                      color: 'warning.contrastText',
+                      fontSize: '0.75rem',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    Tu cuenta de Gmail fue desconectada. Reconectá para
+                    continuar enviando emails.
                   </Box>
                 )}
                 <ConnectGmailButton gmailStatus={employee?.gmailStatus} />
                 {role === EMPLOYEE_ROLES.HR && calendarRevoked && (
-                  <Box sx={{ px: 1.5, py: 1, borderRadius: 1, bgcolor: 'warning.light', color: 'warning.contrastText', fontSize: '0.75rem', lineHeight: 1.4 }}>
-                    Tu cuenta de Google Calendar fue desconectada. Reconectá para continuar detectando reservas.
+                  <Box
+                    sx={{
+                      px: 1.5,
+                      py: 1,
+                      borderRadius: 1,
+                      bgcolor: 'warning.light',
+                      color: 'warning.contrastText',
+                      fontSize: '0.75rem',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    Tu cuenta de Google Calendar fue desconectada. Reconectá
+                    para continuar detectando reservas.
                   </Box>
                 )}
-                {role === EMPLOYEE_ROLES.HR && <ConnectCalendarButton calendarStatus={employee?.calendarStatus} />}
+                {role === EMPLOYEE_ROLES.HR && (
+                  <ConnectCalendarButton
+                    calendarStatus={employee?.calendarStatus}
+                  />
+                )}
               </>
             )}
             {role === EMPLOYEE_ROLES.HR && <CalendarLinkEditor />}

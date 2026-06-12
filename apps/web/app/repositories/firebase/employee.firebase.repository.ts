@@ -13,10 +13,15 @@ export class EmployeeFirebaseRepository implements IEmployeeRepository {
     return { id: snap.id, ...snap.data() } as Employee;
   }
 
-  subscribe(uid: string, onUpdate: (employee: Employee | null) => void): () => void {
+  subscribe(
+    uid: string,
+    onUpdate: (employee: Employee | null) => void,
+  ): () => void {
     const ref = doc(db, this.collectionName, uid);
     return onSnapshot(ref, (snap) => {
-      onUpdate(snap.exists() ? ({ id: snap.id, ...snap.data() } as Employee) : null);
+      onUpdate(
+        snap.exists() ? ({ id: snap.id, ...snap.data() } as Employee) : null,
+      );
     });
   }
 }

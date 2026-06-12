@@ -17,7 +17,9 @@ const GMAIL_REDIRECT_URI =
 const CALENDAR_REDIRECT_URI =
   process.env.NEXT_PUBLIC_CALENDAR_REDIRECT_URI ?? 'http://localhost:3000';
 
-function detectOAuthType(scope: string): 'google' | 'gmail' | 'calendar' | null {
+function detectOAuthType(
+  scope: string,
+): 'google' | 'gmail' | 'calendar' | null {
   const hasGmail = scope.includes('gmail') || scope.includes('mail.google.com');
   const hasCalendar = scope.includes('calendar');
   if (hasGmail && hasCalendar) return 'google';
@@ -44,7 +46,9 @@ export default function OAuthCodeHandler() {
 
     const cleanUrl = () => {
       const url = new URL(window.location.href);
-      ['code', 'scope', 'authuser', 'prompt'].forEach((p) => url.searchParams.delete(p));
+      ['code', 'scope', 'authuser', 'prompt'].forEach((p) =>
+        url.searchParams.delete(p),
+      );
       router.replace(url.pathname + (url.search || ''));
     };
 
@@ -55,15 +59,23 @@ export default function OAuthCodeHandler() {
           window.dispatchEvent(new Event('gmail-connected'));
           window.dispatchEvent(new Event('calendar-connected'));
           registerCalendarWatch().catch((err: unknown) => {
-            console.error('[OAuthCodeHandler] registerCalendarWatch failed:', err);
+            console.error(
+              '[OAuthCodeHandler] registerCalendarWatch failed:',
+              err,
+            );
           });
         })
         .catch((err: unknown) => {
-          const message = err instanceof Error ? err.message : 'Error desconocido';
+          const message =
+            err instanceof Error ? err.message : 'Error desconocido';
           console.error('[OAuthCodeHandler] Google exchange failed:', message);
           cleanUrl();
-          window.dispatchEvent(new CustomEvent('gmail-connect-error', { detail: message }));
-          window.dispatchEvent(new CustomEvent('calendar-connect-error', { detail: message }));
+          window.dispatchEvent(
+            new CustomEvent('gmail-connect-error', { detail: message }),
+          );
+          window.dispatchEvent(
+            new CustomEvent('calendar-connect-error', { detail: message }),
+          );
         });
     } else if (oauthType === 'gmail') {
       exchangeGmailCode({ code, redirectUri: GMAIL_REDIRECT_URI })
@@ -72,10 +84,13 @@ export default function OAuthCodeHandler() {
           window.dispatchEvent(new Event('gmail-connected'));
         })
         .catch((err: unknown) => {
-          const message = err instanceof Error ? err.message : 'Error desconocido';
+          const message =
+            err instanceof Error ? err.message : 'Error desconocido';
           console.error('[OAuthCodeHandler] Gmail exchange failed:', message);
           cleanUrl();
-          window.dispatchEvent(new CustomEvent('gmail-connect-error', { detail: message }));
+          window.dispatchEvent(
+            new CustomEvent('gmail-connect-error', { detail: message }),
+          );
         });
     } else {
       exchangeCalendarCode({ code, redirectUri: CALENDAR_REDIRECT_URI })
@@ -83,14 +98,23 @@ export default function OAuthCodeHandler() {
           cleanUrl();
           window.dispatchEvent(new Event('calendar-connected'));
           registerCalendarWatch().catch((err: unknown) => {
-            console.error('[OAuthCodeHandler] registerCalendarWatch failed:', err);
+            console.error(
+              '[OAuthCodeHandler] registerCalendarWatch failed:',
+              err,
+            );
           });
         })
         .catch((err: unknown) => {
-          const message = err instanceof Error ? err.message : 'Error desconocido';
-          console.error('[OAuthCodeHandler] Calendar exchange failed:', message);
+          const message =
+            err instanceof Error ? err.message : 'Error desconocido';
+          console.error(
+            '[OAuthCodeHandler] Calendar exchange failed:',
+            message,
+          );
           cleanUrl();
-          window.dispatchEvent(new CustomEvent('calendar-connect-error', { detail: message }));
+          window.dispatchEvent(
+            new CustomEvent('calendar-connect-error', { detail: message }),
+          );
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

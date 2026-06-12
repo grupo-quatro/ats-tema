@@ -25,7 +25,10 @@ export default function ConnectGmailButton({ gmailStatus }: Props) {
         sx={{
           textTransform: 'none',
           fontWeight: 500,
-          '&.Mui-disabled': { color: 'success.main', borderColor: 'success.main' },
+          '&.Mui-disabled': {
+            color: 'success.main',
+            borderColor: 'success.main',
+          },
         }}
       >
         Gmail conectado

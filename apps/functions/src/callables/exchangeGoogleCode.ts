@@ -45,13 +45,18 @@ export const exchangeGoogleCode = onRequest(
       };
 
       if (!code || !redirectUri) {
-        response.status(400).json({ error: 'code y redirectUri son requeridos.' });
+        response
+          .status(400)
+          .json({ error: 'code y redirectUri son requeridos.' });
         return;
       }
 
       await exchangeGoogleCodeService.exchange(uid, code, redirectUri);
 
-      logger.info('[exchangeGoogleCode] Credenciales de Gmail y Calendar guardadas', { uid });
+      logger.info(
+        '[exchangeGoogleCode] Credenciales de Gmail y Calendar guardadas',
+        { uid },
+      );
 
       response.status(200).json({ ok: true });
     } catch (error) {
@@ -63,8 +68,13 @@ export const exchangeGoogleCode = onRequest(
         response.status(400).json({ error: error.message });
         return;
       }
-      logger.error('[exchangeGoogleCode] Error intercambiando código de Google', error);
-      response.status(500).json({ error: 'No se pudieron conectar las cuentas de Google.' });
+      logger.error(
+        '[exchangeGoogleCode] Error intercambiando código de Google',
+        error,
+      );
+      response
+        .status(500)
+        .json({ error: 'No se pudieron conectar las cuentas de Google.' });
     }
   },
 );

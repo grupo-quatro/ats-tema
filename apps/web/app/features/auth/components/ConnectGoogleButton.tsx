@@ -15,7 +15,9 @@ export default function ConnectGoogleButton() {
 
   useEffect(() => {
     const onError = (e: Event) => {
-      setErrorMessage((e as CustomEvent<string>).detail ?? 'Error al conectar con Google');
+      setErrorMessage(
+        (e as CustomEvent<string>).detail ?? 'Error al conectar con Google',
+      );
       setStatus('error');
     };
     window.addEventListener('gmail-connect-error', onError);

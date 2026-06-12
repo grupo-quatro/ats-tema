@@ -25,7 +25,10 @@ export default function ConnectCalendarButton({ calendarStatus }: Props) {
         sx={{
           textTransform: 'none',
           fontWeight: 500,
-          '&.Mui-disabled': { color: 'success.main', borderColor: 'success.main' },
+          '&.Mui-disabled': {
+            color: 'success.main',
+            borderColor: 'success.main',
+          },
         }}
       >
         Calendario conectado

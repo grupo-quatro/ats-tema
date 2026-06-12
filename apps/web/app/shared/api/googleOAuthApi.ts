@@ -38,6 +38,8 @@ export async function exchangeGoogleCode(payload: {
   });
   if (!res.ok) {
     const error = (await res.json().catch(() => ({}))) as { error?: string };
-    throw new Error(error.error ?? 'No se pudieron conectar las cuentas de Google.');
+    throw new Error(
+      error.error ?? 'No se pudieron conectar las cuentas de Google.',
+    );
   }
 }

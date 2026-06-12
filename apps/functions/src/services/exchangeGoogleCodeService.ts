@@ -23,7 +23,11 @@ export class ExchangeGoogleCodeService {
     private readonly employeeRepository?: IEmployeeRepository,
   ) {}
 
-  async exchange(uid: string, code: string, redirectUri: string): Promise<void> {
+  async exchange(
+    uid: string,
+    code: string,
+    redirectUri: string,
+  ): Promise<void> {
     let tokens: {
       access_token?: string | null;
       refresh_token?: string | null;
@@ -31,7 +35,10 @@ export class ExchangeGoogleCodeService {
     };
 
     try {
-      const response = await this.oauth2Client.getToken({ code, redirect_uri: redirectUri });
+      const response = await this.oauth2Client.getToken({
+        code,
+        redirect_uri: redirectUri,
+      });
       tokens = response.tokens;
     } catch (error) {
       throw new ExchangeGoogleCodeError(

@@ -28,7 +28,9 @@ function buildGoogleOAuthUrl(): string {
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 }
 
-export function useGmailConnect(gmailStatus?: GmailStatus): UseGmailConnectReturn {
+export function useGmailConnect(
+  gmailStatus?: GmailStatus,
+): UseGmailConnectReturn {
   const [status, setStatus] = useState<GmailConnectStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -48,7 +50,8 @@ export function useGmailConnect(gmailStatus?: GmailStatus): UseGmailConnectRetur
       setErrorMessage(null);
     };
     const onError = (e: Event) => {
-      const message = (e as CustomEvent<string>).detail ?? 'Error al conectar Gmail';
+      const message =
+        (e as CustomEvent<string>).detail ?? 'Error al conectar Gmail';
       setErrorMessage(message);
       setStatus('error');
     };

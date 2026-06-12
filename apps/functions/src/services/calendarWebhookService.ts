@@ -2,7 +2,11 @@ import { logger } from 'firebase-functions';
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 
-import { findNextStageForTrigger, GMAIL_STATUS, STAGE_CONFIG } from '@ats/shared-types';
+import {
+  findNextStageForTrigger,
+  GMAIL_STATUS,
+  STAGE_CONFIG,
+} from '@ats/shared-types';
 
 import { ApplicationsRepository } from '../repositories/applicationRepository';
 import { EmailLogRepository } from '../repositories/emailLogRepository';
@@ -35,7 +39,9 @@ export async function processCalendarNotification(
 ): Promise<void> {
   const credential = await userRepository.getCalendarCredential(recruiterUid);
   if (!credential) {
-    logger.warn('[calendarWebhookService] Recruiter sin calendarCredential', { recruiterUid });
+    logger.warn('[calendarWebhookService] Recruiter sin calendarCredential', {
+      recruiterUid,
+    });
     return;
   }
 
@@ -55,7 +61,10 @@ export async function processCalendarNotification(
     }
   });
 
-  const calendar = google.calendar({ version: 'v3', auth: calendarOauth2Client });
+  const calendar = google.calendar({
+    version: 'v3',
+    auth: calendarOauth2Client,
+  });
   const updatedMin = new Date(Date.now() - 3 * 60 * 1000).toISOString();
 
   let eventsResponse;
@@ -67,12 +76,21 @@ export async function processCalendarNotification(
       orderBy: 'updated',
     });
   } catch (err) {
-    const isRevoked = err instanceof Error && err.message.includes('invalid_grant');
+    const isRevoked =
+      err instanceof Error && err.message.includes('invalid_grant');
     if (isRevoked) {
-      logger.warn('[calendarWebhookService] Token revocado para recruiter', { recruiterUid });
-      await employeeRepository.setCalendarStatus(recruiterUid, GMAIL_STATUS.DISCONNECTED);
+      logger.warn('[calendarWebhookService] Token revocado para recruiter', {
+        recruiterUid,
+      });
+      await employeeRepository.setCalendarStatus(
+        recruiterUid,
+        GMAIL_STATUS.DISCONNECTED,
+      );
     } else {
-      logger.error('[calendarWebhookService] Error listando eventos', { recruiterUid, err });
+      logger.error('[calendarWebhookService] Error listando eventos', {
+        recruiterUid,
+        err,
+      });
     }
     return;
   }
@@ -80,7 +98,9 @@ export async function processCalendarNotification(
   const events = eventsResponse.data.items ?? [];
 
   if (events.length === 0) {
-    logger.info('[calendarWebhookService] Sin eventos nuevos', { recruiterUid });
+    logger.info('[calendarWebhookService] Sin eventos nuevos', {
+      recruiterUid,
+    });
     return;
   }
 
@@ -89,16 +109,25 @@ export async function processCalendarNotification(
     if (!eventId) continue;
 
     // Buscar el email del candidato entre los asistentes externos del evento.
-    const attendeeEmail = (event.attendees ?? []).find((a) => !a.self)?.email ?? null;
+    const attendeeEmail =
+      (event.attendees ?? []).find((a) => !a.self)?.email ?? null;
 
     if (!attendeeEmail) {
-      logger.info('[calendarWebhookService] Evento sin asistente externo — ignorado', { eventId });
+      logger.info(
+        '[calendarWebhookService] Evento sin asistente externo — ignorado',
+        { eventId },
+      );
       continue;
     }
 
-    await matchAndTransition({ recruiterUid, eventId, attendeeEmail }).catch((err) => {
-      logger.error('[calendarWebhookService] Error procesando evento', { eventId, error: err });
-    });
+    await matchAndTransition({ recruiterUid, eventId, attendeeEmail }).catch(
+      (err) => {
+        logger.error('[calendarWebhookService] Error procesando evento', {
+          eventId,
+          error: err,
+        });
+      },
+    );
   }
 }
 
@@ -109,26 +138,36 @@ async function matchAndTransition(params: {
 }): Promise<void> {
   const { recruiterUid, eventId, attendeeEmail } = params;
 
-  const application = await applicationsRepository.findActiveInSchedulingByEmail(
-    attendeeEmail,
-    SCHEDULING_STAGES,
-  );
+  const application =
+    await applicationsRepository.findActiveInSchedulingByEmail(
+      attendeeEmail,
+      SCHEDULING_STAGES,
+    );
 
   if (!application) {
-    logger.info('[calendarWebhookService] Sin aplicación activa en scheduling para asistente', {
-      attendeeEmail,
-    });
+    logger.info(
+      '[calendarWebhookService] Sin aplicación activa en scheduling para asistente',
+      {
+        attendeeEmail,
+      },
+    );
     return;
   }
 
   const applicationId = application.id;
 
   if (application.calendarEventId === eventId) {
-    logger.info('[calendarWebhookService] Evento ya procesado', { applicationId, eventId });
+    logger.info('[calendarWebhookService] Evento ya procesado', {
+      applicationId,
+      eventId,
+    });
     return;
   }
 
-  const nextStage = findNextStageForTrigger(application.stage, 'on_calendar_event');
+  const nextStage = findNextStageForTrigger(
+    application.stage,
+    'on_calendar_event',
+  );
 
   if (!nextStage) {
     logger.warn('[calendarWebhookService] No se encontró siguiente etapa', {
@@ -167,9 +206,17 @@ async function matchAndTransition(params: {
     ),
   );
 
-  await updateService.updateStage({ applicationId, stage: nextStage }, recruiterUid);
+  await updateService.updateStage(
+    { applicationId, stage: nextStage },
+    recruiterUid,
+  );
 
-  await applicationsRepository.update(applicationId, { calendarEventId: eventId });
+  await applicationsRepository.update(applicationId, {
+    calendarEventId: eventId,
+  });
 
-  logger.info('[calendarWebhookService] Aplicación transicionada', { applicationId, stage: nextStage });
+  logger.info('[calendarWebhookService] Aplicación transicionada', {
+    applicationId,
+    stage: nextStage,
+  });
 }
