@@ -17,6 +17,25 @@ export interface CreateOfferDraftResponse {
   offer: Offer;
 }
 
+export interface UpdateOfferDraftPayload extends Omit<
+  OfferInput,
+  'applicationId' | 'templateId'
+> {
+  offerId: string;
+}
+
+export interface UpdateOfferDraftResponse {
+  offer: Offer;
+}
+
+export interface PreviewOfferPayload {
+  offerId: string;
+}
+
+export interface PreviewOfferResponse {
+  documentHtml: string;
+}
+
 export interface SendOfferPayload {
   offerId: string;
 }

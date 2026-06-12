@@ -131,6 +131,52 @@ export class OfferRepository {
     }
   }
 
+  async updateDraftDetails(
+    offerId: string,
+    data: Pick<
+      UpdateOfferDTO,
+      | 'compensation'
+      | 'startDate'
+      | 'modality'
+      | 'benefits'
+      | 'expirationDate'
+      | 'observations'
+      | 'documentStoragePath'
+      | 'documentHash'
+    >,
+  ): Promise<Offer> {
+    try {
+      const offerRef = this.collection.doc(offerId);
+      const optionalFields = [
+        'compensation',
+        'startDate',
+        'modality',
+        'benefits',
+        'expirationDate',
+        'observations',
+      ] as const;
+      const updates: Record<string, unknown> = {
+        documentStoragePath: data.documentStoragePath,
+        documentHash: data.documentHash,
+        updatedAt: FieldValue.serverTimestamp(),
+      };
+
+      optionalFields.forEach((field) => {
+        updates[field] = data[field] ?? FieldValue.delete();
+      });
+
+      await offerRef.update(updates);
+
+      const updated = await offerRef.get();
+      return this.mapToOffer(updated.data() as FirestoreOffer);
+    } catch (error) {
+      throw new OfferRepositoryError(
+        `No se pudo actualizar el borrador ${offerId}.`,
+        error,
+      );
+    }
+  }
+
   private clean<T extends Record<string, unknown>>(data: T): T {
     return Object.fromEntries(
       Object.entries(data).filter(([, value]) => value !== undefined),

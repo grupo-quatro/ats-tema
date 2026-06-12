@@ -145,7 +145,10 @@ const TEMPLATE_SEEDS: TemplateDefinition[] = [
     subject: 'Tenemos una oferta para vos — [Nombre de la Posición]',
     body: `<p>Estimado/a [Nombre del Candidato],</p>
 <p>Es un placer informarte que, tras el proceso de selección, queremos extenderte una oferta para el puesto de <strong>[Nombre de la Posición]</strong> en <strong>[Nombre de la Empresa]</strong>.</p>
-<p>Nos pondremos en contacto a la brevedad para compartirte los detalles.</p>
+<p>Te invitamos a que revises y respondas a la propuesta desde el siguiente enlace:</p>
+<p>
+  <a href="[Link de Carta Oferta]">Ver carta oferta</a>
+</p>
 <p>Saludos,<br>[Nombre del Reclutador]<br>[Email del Reclutador]</p>`,
     isDefault: true,
   },

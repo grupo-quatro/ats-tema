@@ -2,11 +2,15 @@ import type {
   CreateOfferDraftPayload,
   CreateOfferDraftResponse,
   GetOfferByApplicationResponse,
+  PreviewOfferPayload,
+  PreviewOfferResponse,
   PublicOfferResponse,
   RespondOfferPayload,
   RespondOfferResponse,
   SendOfferPayload,
   SendOfferResponse,
+  UpdateOfferDraftPayload,
+  UpdateOfferDraftResponse,
 } from '@ats/shared-types';
 import { getToken } from '../lib/auth';
 import { getFunctionUrl } from '../lib/functionsUrl';
@@ -57,7 +61,51 @@ export async function sendOffer(
 
   if (!res.ok) {
     throw new Error(
-      await parseErrorResponse(res, 'No se pudo publicar la carta oferta'),
+      await parseErrorResponse(res, 'No se pudo enviar la carta oferta'),
+    );
+  }
+
+  return res.json();
+}
+
+export async function updateOfferDraft(
+  payload: UpdateOfferDraftPayload,
+): Promise<UpdateOfferDraftResponse> {
+  const token = await getToken();
+  const res = await fetch(getFunctionUrl('updateOfferDraft'), {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    throw new Error(
+      await parseErrorResponse(res, 'No se pudo actualizar la carta oferta'),
+    );
+  }
+
+  return res.json();
+}
+
+export async function previewOffer(
+  payload: PreviewOfferPayload,
+): Promise<PreviewOfferResponse> {
+  const token = await getToken();
+  const res = await fetch(getFunctionUrl('previewOffer'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    throw new Error(
+      await parseErrorResponse(res, 'No se pudo previsualizar la carta oferta'),
     );
   }
 

@@ -8,10 +8,12 @@ import {
   validateRetryEmailSendPayload,
 } from '../validators/retryEmailSendValidator';
 import { EmailLogRepository } from '../repositories/emailLogRepository';
+import { EmployeeRepository } from '../repositories/employeeRepository';
 import { UserRepository } from '../repositories/userRepository';
 import { GmailSenderService } from '../services/gmailSenderService';
 import {
   EmailLogNotFoundError,
+  OfferEmailRetryUnsupportedError,
   RetryEmailSendService,
 } from '../services/retryEmailSendService';
 
@@ -25,6 +27,7 @@ const retryEmailSendService = new RetryEmailSendService(
   new UserRepository(),
   new GmailSenderService(),
   oauth2Client,
+  new EmployeeRepository(),
 );
 
 export const retryEmailSend = onRequest(
@@ -59,6 +62,11 @@ export const retryEmailSend = onRequest(
         response.status(404).json({ error: error.message });
         return;
       }
+
+    if (error instanceof OfferEmailRetryUnsupportedError) {
+      response.status(409).json({ error: error.message });
+      return;
+    }
 
       logger.error(
         '[retryEmailSend] Error inesperado al reintentar envío de email',

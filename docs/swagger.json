@@ -65,13 +65,19 @@
         "type": "object",
         "required": ["name", "yearsOfExperience", "weight", "type"],
         "properties": {
-          "name": { "type": "string" },
-          "yearsOfExperience": { "type": "number" },
+          "name": {
+            "type": "string"
+          },
+          "yearsOfExperience": {
+            "type": "number"
+          },
           "weight": {
             "type": "number",
             "description": "Relative weight for score calculation"
           },
-          "type": { "$ref": "#/components/schemas/SkillType" }
+          "type": {
+            "$ref": "#/components/schemas/SkillType"
+          }
         }
       },
       "Job": {
@@ -93,54 +99,113 @@
           "updatedAt"
         ],
         "properties": {
-          "id": { "type": "string" },
-          "title": { "type": "string" },
-          "department": { "type": "string" },
-          "seniority": { "type": "string" },
-          "location": { "$ref": "#/components/schemas/JobLocation" },
-          "city": { "type": "string" },
-          "description": { "type": "string" },
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "department": {
+            "type": "string"
+          },
+          "seniority": {
+            "type": "string"
+          },
+          "location": {
+            "$ref": "#/components/schemas/JobLocation"
+          },
+          "city": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
           "skills": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/Skill" }
+            "items": {
+              "$ref": "#/components/schemas/Skill"
+            }
           },
           "requirements": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
-          "observations": { "type": "string" },
+          "observations": {
+            "type": "string"
+          },
           "additionalCriteria": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
-          "slug": { "type": "string" },
-          "salaryMin": { "type": "number" },
-          "salaryMax": { "type": "number" },
-          "currency": { "type": "string" },
+          "slug": {
+            "type": "string"
+          },
+          "salaryMin": {
+            "type": "number"
+          },
+          "salaryMax": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
           "type": {
             "type": "string",
             "description": "e.g. Full-time, Part-time"
           },
-          "candidates": { "type": "number" },
-          "status": { "$ref": "#/components/schemas/JobStatus" },
+          "candidates": {
+            "type": "number"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobStatus"
+          },
           "responsabilities": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
           "benefits": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
-          "hiringManagerId": { "type": "string" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" },
-          "closedAt": { "type": "string", "format": "date-time" },
-          "publishedAt": { "type": "string", "format": "date-time" }
+          "hiringManagerId": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "closedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       },
       "OfferStatus": {
         "type": "string",
-        "enum": ["draft", "sent", "accepted", "declined", "expired", "cancelled"]
+        "enum": [
+          "draft",
+          "sent",
+          "accepted",
+          "declined",
+          "expired",
+          "cancelled"
+        ]
       },
       "Offer": {
         "type": "object",
@@ -158,7 +223,45 @@
           "updatedAt"
         ],
         "properties": {
+          "id": {
+            "type": "string"
+          },
+          "applicationId": {
+            "type": "string"
+          },
+          "candidateId": {
+            "type": "string"
+          },
+          "jobId": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OfferStatus"
+          },
+          "candidateName": {
+            "type": "string"
+          },
+          "candidateEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "jobTitle": {
+            "type": "string"
+          },
+          "compensation": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "modality": {
+            "type": "string"
+          },
           "id": { "type": "string" },
+          "offerId": {
+            "type": "string",
+            "description": "Present when the email attempt belongs to an offer letter"
+          },
           "applicationId": { "type": "string" },
           "candidateId": { "type": "string" },
           "jobId": { "type": "string" },
@@ -171,77 +274,182 @@
           "modality": { "type": "string" },
           "benefits": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
-          "expirationDate": { "type": "string" },
-          "observations": { "type": "string" },
-          "templateId": { "type": "string" },
-          "templateVersion": { "type": "string" },
-          "documentStoragePath": { "type": "string" },
-          "documentHash": { "type": "string" },
+          "expirationDate": {
+            "type": "string"
+          },
+          "observations": {
+            "type": "string"
+          },
+          "templateId": {
+            "type": "string"
+          },
+          "templateVersion": {
+            "type": "string"
+          },
+          "documentStoragePath": {
+            "type": "string"
+          },
+          "documentHash": {
+            "type": "string"
+          },
           "tokenHash": {
             "type": "string",
             "description": "SHA-256 hash of the public token. The plain token is never persisted."
           },
-          "tokenExpiresAt": { "type": "string", "format": "date-time" },
-          "tokenUsedAt": { "type": "string", "format": "date-time" },
-          "sentAt": { "type": "string", "format": "date-time" },
-          "sentBy": { "type": "string" },
-          "acceptedAt": { "type": "string", "format": "date-time" },
-          "declinedAt": { "type": "string", "format": "date-time" },
-          "acceptedByName": { "type": "string" },
-          "acceptedByEmail": { "type": "string", "format": "email" },
-          "responseFromIp": { "type": "string" },
-          "responseUserAgent": { "type": "string" },
-          "declineReason": { "type": "string" },
-          "createdBy": { "type": "string" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" }
+          "tokenExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "tokenUsedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sentBy": {
+            "type": "string"
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "declinedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "acceptedByName": {
+            "type": "string"
+          },
+          "acceptedByEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "responseFromIp": {
+            "type": "string"
+          },
+          "responseUserAgent": {
+            "type": "string"
+          },
+          "declineReason": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       },
       "CreateOfferDraftRequest": {
         "type": "object",
         "required": ["applicationId"],
         "properties": {
-          "applicationId": { "type": "string" },
+          "applicationId": {
+            "type": "string"
+          },
           "compensation": {
             "type": "string",
             "description": "Overrides the compensation text. If omitted, job salary/currency defaults can be used."
           },
-          "startDate": { "type": "string" },
+          "startDate": {
+            "type": "string"
+          },
           "modality": {
             "type": "string",
             "description": "Overrides the job modality/location label."
           },
           "benefits": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": {
+              "type": "string"
+            },
             "description": "Overrides job benefits. If omitted, defaults from the job are used."
           },
-          "expirationDate": { "type": "string" },
-          "observations": { "type": "string" },
-          "templateId": { "type": "string" }
+          "expirationDate": {
+            "type": "string"
+          },
+          "observations": {
+            "type": "string"
+          },
+          "templateId": {
+            "type": "string"
+          }
         }
       },
       "CreateOfferDraftResponse": {
         "type": "object",
         "required": ["offer"],
         "properties": {
+          "offer": {
+            "$ref": "#/components/schemas/Offer"
+          }
+        }
+      },
+      "UpdateOfferDraftRequest": {
+        "type": "object",
+        "required": ["offerId"],
+        "properties": {
+          "offerId": { "type": "string" },
+          "compensation": { "type": "string" },
+          "startDate": { "type": "string" },
+          "modality": { "type": "string" },
+          "benefits": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "expirationDate": { "type": "string" },
+          "observations": { "type": "string" }
+        }
+      },
+      "UpdateOfferDraftResponse": {
+        "type": "object",
+        "required": ["offer"],
+        "properties": {
           "offer": { "$ref": "#/components/schemas/Offer" }
         }
       },
-      "SendOfferRequest": {
+      "PreviewOfferRequest": {
         "type": "object",
         "required": ["offerId"],
         "properties": {
           "offerId": { "type": "string" }
         }
       },
+      "PreviewOfferResponse": {
+        "type": "object",
+        "required": ["documentHtml"],
+        "properties": {
+          "documentHtml": { "type": "string" }
+        }
+      },
+      "SendOfferRequest": {
+        "type": "object",
+        "required": ["offerId"],
+        "properties": {
+          "offerId": {
+            "type": "string"
+          }
+        }
+      },
       "SendOfferResponse": {
         "type": "object",
         "required": ["offer", "publicUrl"],
         "properties": {
-          "offer": { "$ref": "#/components/schemas/Offer" },
+          "offer": {
+            "$ref": "#/components/schemas/Offer"
+          },
           "publicUrl": {
             "type": "string",
             "format": "uri",
@@ -254,7 +462,11 @@
         "required": ["offer"],
         "properties": {
           "offer": {
-            "allOf": [{ "$ref": "#/components/schemas/Offer" }],
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Offer"
+              }
+            ],
             "nullable": true
           }
         }
@@ -270,20 +482,43 @@
           "documentHtml"
         ],
         "properties": {
-          "offerId": { "type": "string" },
-          "status": { "$ref": "#/components/schemas/OfferStatus" },
-          "candidateName": { "type": "string" },
-          "candidateEmail": { "type": "string", "format": "email" },
-          "jobTitle": { "type": "string" },
-          "compensation": { "type": "string" },
-          "startDate": { "type": "string" },
-          "modality": { "type": "string" },
+          "offerId": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OfferStatus"
+          },
+          "candidateName": {
+            "type": "string"
+          },
+          "candidateEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "jobTitle": {
+            "type": "string"
+          },
+          "compensation": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "modality": {
+            "type": "string"
+          },
           "benefits": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
-          "expirationDate": { "type": "string" },
-          "observations": { "type": "string" },
+          "expirationDate": {
+            "type": "string"
+          },
+          "observations": {
+            "type": "string"
+          },
           "documentHtml": {
             "type": "string",
             "description": "Generated offer letter HTML shown to the candidate."
@@ -294,21 +529,33 @@
         "type": "object",
         "required": ["token", "action"],
         "properties": {
-          "token": { "type": "string" },
-          "action": { "type": "string", "enum": ["accept", "decline"] },
+          "token": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": ["accept", "decline"]
+          },
           "signerName": {
             "type": "string",
             "description": "Required when action is accept."
           },
-          "declineReason": { "type": "string" }
+          "declineReason": {
+            "type": "string"
+          }
         }
       },
       "RespondOfferResponse": {
         "type": "object",
         "required": ["offerId", "status"],
         "properties": {
-          "offerId": { "type": "string" },
-          "status": { "type": "string", "enum": ["accepted", "declined"] }
+          "offerId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["accepted", "declined"]
+          }
         }
       },
       "ApplicationStage": {
@@ -342,13 +589,19 @@
         "properties": {
           "matched": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
           "missing": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
-          "score": { "type": "number" }
+          "score": {
+            "type": "number"
+          }
         }
       },
       "ApplicationWithCandidateDTO": {
@@ -364,84 +617,178 @@
           "stageUpdatedAt"
         ],
         "properties": {
-          "id": { "type": "string" },
-          "jobId": { "type": "string" },
-          "candidateId": { "type": "string" },
-          "stage": { "$ref": "#/components/schemas/ApplicationStage" },
-          "status": { "$ref": "#/components/schemas/ApplicationStatus" },
-          "fitScore": { "type": "number", "minimum": 0, "maximum": 100 },
-          "coverLetter": { "type": "string" },
-          "skillMatchStats": { "$ref": "#/components/schemas/SkillMatchStats" },
-          "candidateName": { "type": "string" },
-          "candidateEmail": { "type": "string" },
-          "notes": { "type": "string" },
-          "rejectionReason": { "type": "string" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" },
-          "stageUpdatedAt": { "type": "string", "format": "date-time" }
+          "id": {
+            "type": "string"
+          },
+          "jobId": {
+            "type": "string"
+          },
+          "candidateId": {
+            "type": "string"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/ApplicationStage"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ApplicationStatus"
+          },
+          "fitScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "coverLetter": {
+            "type": "string"
+          },
+          "skillMatchStats": {
+            "$ref": "#/components/schemas/SkillMatchStats"
+          },
+          "candidateName": {
+            "type": "string"
+          },
+          "candidateEmail": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "rejectionReason": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "stageUpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       },
       "StageHistoryEntry": {
         "type": "object",
         "required": ["id", "stage", "changedAt", "changedBy", "changedByEmail"],
         "properties": {
-          "id": { "type": "string" },
-          "stage": { "$ref": "#/components/schemas/ApplicationStage" },
-          "changedAt": { "type": "string", "format": "date-time" },
+          "id": {
+            "type": "string"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/ApplicationStage"
+          },
+          "changedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
           "changedBy": {
             "type": "string",
             "description": "UID of the user who changed the stage"
           },
-          "changedByEmail": { "type": "string" },
-          "notes": { "type": "string" },
-          "rejectionReason": { "type": "string" }
+          "changedByEmail": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "rejectionReason": {
+            "type": "string"
+          }
         }
       },
       "ParsedExperience": {
         "type": "object",
         "properties": {
-          "company": { "type": "string" },
-          "role": { "type": "string" },
-          "startDate": { "type": "string" },
-          "endDate": { "type": "string" },
-          "description": { "type": "string" }
+          "company": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
         }
       },
       "ParsedEducation": {
         "type": "object",
         "properties": {
-          "institution": { "type": "string" },
-          "degree": { "type": "string" },
-          "field": { "type": "string" },
-          "startDate": { "type": "string" },
-          "endDate": { "type": "string" }
+          "institution": {
+            "type": "string"
+          },
+          "degree": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "string"
+          }
         }
       },
       "ApplicationDetailCandidateDTO": {
         "type": "object",
         "required": ["id"],
         "properties": {
-          "id": { "type": "string" },
-          "fullName": { "type": "string" },
-          "firstName": { "type": "string" },
-          "lastName": { "type": "string" },
-          "email": { "type": "string" },
-          "phone": { "type": "string" },
-          "location": { "type": "string" },
-          "yearsOfExperience": { "type": "number" },
-          "education": { "type": "string" },
+          "id": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "yearsOfExperience": {
+            "type": "number"
+          },
+          "education": {
+            "type": "string"
+          },
           "technicalSkills": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
-          "professionalSummary": { "type": "string" },
+          "professionalSummary": {
+            "type": "string"
+          },
           "parsedExperience": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ParsedExperience" }
+            "items": {
+              "$ref": "#/components/schemas/ParsedExperience"
+            }
           },
           "parsedEducation": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ParsedEducation" }
+            "items": {
+              "$ref": "#/components/schemas/ParsedEducation"
+            }
           },
           "cvStoragePath": {
             "type": "string",
@@ -463,17 +810,44 @@
           "job"
         ],
         "properties": {
-          "id": { "type": "string" },
-          "stage": { "$ref": "#/components/schemas/ApplicationStage" },
-          "status": { "$ref": "#/components/schemas/ApplicationStatus" },
-          "fitScore": { "type": "number", "minimum": 0, "maximum": 100 },
-          "skillMatchStats": { "$ref": "#/components/schemas/SkillMatchStats" },
-          "notes": { "type": "string" },
-          "coverLetter": { "type": "string" },
-          "rejectionReason": { "type": "string" },
-          "createdAt": { "type": "string", "format": "date-time" },
-          "updatedAt": { "type": "string", "format": "date-time" },
-          "stageUpdatedAt": { "type": "string", "format": "date-time" },
+          "id": {
+            "type": "string"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/ApplicationStage"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ApplicationStatus"
+          },
+          "fitScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "skillMatchStats": {
+            "$ref": "#/components/schemas/SkillMatchStats"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "coverLetter": {
+            "type": "string"
+          },
+          "rejectionReason": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "stageUpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
           "candidate": {
             "$ref": "#/components/schemas/ApplicationDetailCandidateDTO"
           },
@@ -481,11 +855,17 @@
             "type": "object",
             "required": ["id", "title", "skills"],
             "properties": {
-              "id": { "type": "string" },
-              "title": { "type": "string" },
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
               "skills": {
                 "type": "array",
-                "items": { "$ref": "#/components/schemas/Skill" }
+                "items": {
+                  "$ref": "#/components/schemas/Skill"
+                }
               }
             }
           }
@@ -495,26 +875,51 @@
         "type": "object",
         "required": ["firstName", "lastName", "email", "phone"],
         "properties": {
-          "firstName": { "type": "string" },
-          "lastName": { "type": "string" },
-          "email": { "type": "string", "format": "email" },
-          "phone": { "type": "string" },
-          "location": { "type": "string" },
-          "desiredPosition": { "type": "string" },
-          "yearsOfExperience": { "type": "number" },
-          "education": { "type": "string" },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "desiredPosition": {
+            "type": "string"
+          },
+          "yearsOfExperience": {
+            "type": "number"
+          },
+          "education": {
+            "type": "string"
+          },
           "technicalSkills": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
-          "professionalSummary": { "type": "string" },
+          "professionalSummary": {
+            "type": "string"
+          },
           "parsedExperience": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ParsedExperience" }
+            "items": {
+              "$ref": "#/components/schemas/ParsedExperience"
+            }
           },
           "parsedEducation": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ParsedEducation" }
+            "items": {
+              "$ref": "#/components/schemas/ParsedEducation"
+            }
           }
         }
       },
@@ -522,25 +927,48 @@
         "type": "object",
         "description": "Canonical candidate profile fields populated by manual input or CV parsing. All fields are optional because parsing can still be pending, processing, or failed.",
         "properties": {
-          "firstName": { "type": "string" },
-          "lastName": { "type": "string" },
-          "email": { "type": "string", "format": "email" },
-          "phone": { "type": "string" },
-          "location": { "type": "string" },
-          "yearsOfExperience": { "type": "number" },
-          "education": { "type": "string" },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "yearsOfExperience": {
+            "type": "number"
+          },
+          "education": {
+            "type": "string"
+          },
           "technicalSkills": {
             "type": "array",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
-          "professionalSummary": { "type": "string" },
+          "professionalSummary": {
+            "type": "string"
+          },
           "parsedExperience": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ParsedExperience" }
+            "items": {
+              "$ref": "#/components/schemas/ParsedExperience"
+            }
           },
           "parsedEducation": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/ParsedEducation" }
+            "items": {
+              "$ref": "#/components/schemas/ParsedEducation"
+            }
           }
         }
       },
@@ -586,14 +1014,31 @@
           "attemptedAt"
         ],
         "properties": {
-          "id": { "type": "string" },
-          "applicationId": { "type": "string" },
-          "candidateId": { "type": "string" },
-          "candidateEmail": { "type": "string", "format": "email" },
-          "jobId": { "type": "string" },
-          "templateId": { "type": "string" },
-          "templateName": { "type": "string" },
-          "stage": { "$ref": "#/components/schemas/ApplicationStage" },
+          "id": {
+            "type": "string"
+          },
+          "applicationId": {
+            "type": "string"
+          },
+          "candidateId": {
+            "type": "string"
+          },
+          "candidateEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "jobId": {
+            "type": "string"
+          },
+          "templateId": {
+            "type": "string"
+          },
+          "templateName": {
+            "type": "string"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/ApplicationStage"
+          },
           "subject": {
             "type": "string",
             "description": "Resolved subject — template variables already substituted"
@@ -602,26 +1047,417 @@
             "type": "string",
             "description": "Resolved HTML body — template variables already substituted"
           },
-          "status": { "$ref": "#/components/schemas/EmailLogStatus" },
+          "status": {
+            "$ref": "#/components/schemas/EmailLogStatus"
+          },
           "error": {
             "type": "string",
             "description": "Present only when status is `failed`"
           },
-          "recruiterId": { "type": "string" },
-          "recruiterEmail": { "type": "string", "format": "email" },
-          "attemptedAt": { "type": "string", "format": "date-time" },
+          "recruiterId": {
+            "type": "string"
+          },
+          "recruiterEmail": {
+            "type": "string",
+            "format": "email"
+          },
+          "attemptedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
           "sentAt": {
             "type": "string",
             "format": "date-time",
             "description": "Present only when status is `sent`"
           }
         }
+      },
+      "BooleanOkResponse": {
+        "type": "object",
+        "required": ["ok"],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "BooleanSuccessResponse": {
+        "type": "object",
+        "required": ["success"],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "DeletePositionRequest": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Position/job id to delete"
+          }
+        }
+      },
+      "DeletePositionResponse": {
+        "type": "object",
+        "required": ["ok"],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "DiscardCandidateDraftRequest": {
+        "type": "object",
+        "required": ["candidateId", "applicationId"],
+        "properties": {
+          "candidateId": {
+            "type": "string"
+          },
+          "applicationId": {
+            "type": "string"
+          }
+        }
+      },
+      "DiscardCandidateDraftResponse": {
+        "type": "object",
+        "required": ["candidateId", "applicationId", "discarded"],
+        "properties": {
+          "candidateId": {
+            "type": "string"
+          },
+          "applicationId": {
+            "type": "string"
+          },
+          "discarded": {
+            "type": "boolean",
+            "enum": [true]
+          }
+        }
+      },
+      "InterviewFormType": {
+        "type": "string",
+        "enum": ["hr", "tech"]
+      },
+      "SaveInterviewFormQuestionInput": {
+        "type": "object",
+        "required": ["question", "answer"],
+        "properties": {
+          "question": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number"
+          }
+        }
+      },
+      "SaveInterviewFormRequest": {
+        "type": "object",
+        "required": [
+          "applicationId",
+          "type",
+          "title",
+          "overallRating",
+          "decision",
+          "questions"
+        ],
+        "properties": {
+          "applicationId": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/InterviewFormType"
+          },
+          "title": {
+            "type": "string"
+          },
+          "overallRating": {
+            "type": "number"
+          },
+          "decision": {
+            "type": "string"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SaveInterviewFormQuestionInput"
+            }
+          }
+        }
+      },
+      "SaveInterviewFormResponse": {
+        "type": "object",
+        "required": ["id", "submittedAt"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "InterviewFormQuestion": {
+        "type": "object",
+        "required": ["id", "question", "answer"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          },
+          "answer": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number"
+          }
+        }
+      },
+      "InterviewForm": {
+        "type": "object",
+        "required": [
+          "id",
+          "applicationId",
+          "type",
+          "title",
+          "authorUid",
+          "authorName",
+          "authorRole",
+          "submittedAt",
+          "questions"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "applicationId": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/InterviewFormType"
+          },
+          "title": {
+            "type": "string"
+          },
+          "authorUid": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "authorRole": {
+            "type": "string"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "overallRating": {
+            "type": "number"
+          },
+          "decision": {
+            "type": "string"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InterviewFormQuestion"
+            }
+          }
+        }
+      },
+      "CandidacyNoteSource": {
+        "type": "string",
+        "enum": ["manual", "interview"]
+      },
+      "SaveCandidacyNoteRequest": {
+        "type": "object",
+        "required": ["applicationId", "text"],
+        "properties": {
+          "applicationId": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/CandidacyNoteSource"
+          }
+        }
+      },
+      "SaveCandidacyNoteResponse": {
+        "type": "object",
+        "required": ["id", "createdAt", "updatedAt"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UpdateCandidacyNoteRequest": {
+        "type": "object",
+        "required": ["applicationId", "id", "text"],
+        "properties": {
+          "applicationId": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string",
+            "description": "Candidacy note id"
+          },
+          "text": {
+            "type": "string"
+          }
+        }
+      },
+      "CandidacyNote": {
+        "type": "object",
+        "required": [
+          "id",
+          "applicationId",
+          "text",
+          "source",
+          "authorUid",
+          "authorName",
+          "authorRole",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "applicationId": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/CandidacyNoteSource"
+          },
+          "authorUid": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "authorRole": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ExchangeOAuthCodeRequest": {
+        "type": "object",
+        "required": ["code", "redirectUri"],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "redirectUri": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateCalendarLinkRequest": {
+        "type": "object",
+        "required": ["calendarLink"],
+        "properties": {
+          "calendarLink": {
+            "type": "string",
+            "description": "HTTPS calendar scheduling URL, or empty string to clear it"
+          }
+        }
+      },
+      "SetUserRoleOnboardingRequest": {
+        "type": "object",
+        "required": ["role"],
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": ["hr", "area_leader"]
+          }
+        }
+      },
+      "SeedGmailCredentialRequest": {
+        "type": "object",
+        "required": ["uid", "accessToken", "refreshToken"],
+        "properties": {
+          "uid": {
+            "type": "string"
+          },
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "number"
+          }
+        }
+      },
+      "SeedEmployeeInput": {
+        "type": "object",
+        "required": ["uid", "email", "name", "role"],
+        "properties": {
+          "uid": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "calendarLink": {
+            "type": "string"
+          }
+        }
       }
     }
   },
-  "security": [{ "bearerAuth": [] }],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
   "tags": [
-    { "name": "Health", "description": "Service health check" },
+    {
+      "name": "Health",
+      "description": "Service health check"
+    },
     {
       "name": "Jobs (Public)",
       "description": "Public job listing endpoints — no authentication required"
@@ -645,6 +1481,22 @@
     {
       "name": "Email Templates",
       "description": "Gmail OAuth connection and automated candidate communication via email templates"
+    },
+    {
+      "name": "Interviews",
+      "description": "Interview form capture and retrieval"
+    },
+    {
+      "name": "Candidacy Notes",
+      "description": "Internal notes attached to applications"
+    },
+    {
+      "name": "Calendar",
+      "description": "Google Calendar OAuth and employee calendar link management"
+    },
+    {
+      "name": "Development / Seeds",
+      "description": "Emulator-oriented seed utilities and development helpers"
     }
   ],
   "paths": {
@@ -664,8 +1516,14 @@
                   "type": "object",
                   "required": ["status", "timestamp", "uptime"],
                   "properties": {
-                    "status": { "type": "string", "example": "healthy" },
-                    "timestamp": { "type": "string", "format": "date-time" },
+                    "status": {
+                      "type": "string",
+                      "example": "healthy"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
                     "uptime": {
                       "type": "number",
                       "description": "Process uptime in seconds"
@@ -692,7 +1550,9 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/Job" }
+                  "items": {
+                    "$ref": "#/components/schemas/Job"
+                  }
                 }
               }
             }
@@ -701,7 +1561,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -720,7 +1582,9 @@
             "name": "jobId",
             "in": "query",
             "required": true,
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "Firestore document ID of the job"
           }
         ],
@@ -729,7 +1593,9 @@
             "description": "Job detail",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Job" }
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
               }
             }
           },
@@ -737,7 +1603,9 @@
             "description": "Missing or invalid jobId",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -745,7 +1613,9 @@
             "description": "Job not found",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -753,7 +1623,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -770,31 +1642,43 @@
           {
             "name": "search",
             "in": "query",
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "Full-text search term applied to title and department"
           },
           {
             "name": "status",
             "in": "query",
-            "schema": { "$ref": "#/components/schemas/JobStatus" },
+            "schema": {
+              "$ref": "#/components/schemas/JobStatus"
+            },
             "description": "Filter by job status"
           },
           {
             "name": "location",
             "in": "query",
-            "schema": { "$ref": "#/components/schemas/JobLocation" },
+            "schema": {
+              "$ref": "#/components/schemas/JobLocation"
+            },
             "description": "Filter by work location modality"
           },
           {
             "name": "department",
             "in": "query",
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "Filter by department name"
           },
           {
             "name": "page",
             "in": "query",
-            "schema": { "type": "integer", "default": 1, "minimum": 1 }
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
           },
           {
             "name": "limit",
@@ -834,11 +1718,19 @@
                   "properties": {
                     "jobs": {
                       "type": "array",
-                      "items": { "$ref": "#/components/schemas/Job" }
+                      "items": {
+                        "$ref": "#/components/schemas/Job"
+                      }
                     },
-                    "total": { "type": "integer" },
-                    "page": { "type": "integer" },
-                    "totalPages": { "type": "integer" }
+                    "total": {
+                      "type": "integer"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "totalPages": {
+                      "type": "integer"
+                    }
                   }
                 }
               }
@@ -848,7 +1740,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -856,7 +1750,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -876,7 +1772,9 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "type": "string" },
+                  "items": {
+                    "type": "string"
+                  },
                   "example": ["Engineering", "Product", "Design"]
                 }
               }
@@ -886,7 +1784,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -894,7 +1794,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -912,7 +1814,9 @@
             "name": "id",
             "in": "query",
             "required": true,
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "Firestore document ID of the position"
           }
         ],
@@ -921,7 +1825,9 @@
             "description": "Full job detail",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/Job" }
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
               }
             }
           },
@@ -929,7 +1835,9 @@
             "description": "Missing id parameter",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -937,7 +1845,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -945,7 +1855,9 @@
             "description": "Position not found",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -953,7 +1865,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -984,35 +1898,66 @@
                   "benefits"
                 ],
                 "properties": {
-                  "title": { "type": "string" },
-                  "department": { "type": "string" },
-                  "seniority": { "type": "string" },
-                  "location": { "$ref": "#/components/schemas/JobLocation" },
-                  "city": { "type": "string" },
-                  "description": { "type": "string" },
+                  "title": {
+                    "type": "string"
+                  },
+                  "department": {
+                    "type": "string"
+                  },
+                  "seniority": {
+                    "type": "string"
+                  },
+                  "location": {
+                    "$ref": "#/components/schemas/JobLocation"
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
                   "skills": {
                     "type": "array",
-                    "items": { "$ref": "#/components/schemas/Skill" }
+                    "items": {
+                      "$ref": "#/components/schemas/Skill"
+                    }
                   },
                   "requirements": {
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                      "type": "string"
+                    }
                   },
-                  "observations": { "type": "string" },
+                  "observations": {
+                    "type": "string"
+                  },
                   "additionalCriteria": {
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                      "type": "string"
+                    }
                   },
-                  "slug": { "type": "string" },
-                  "type": { "type": "string", "example": "Full-time" },
-                  "status": { "$ref": "#/components/schemas/JobStatus" },
+                  "slug": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string",
+                    "example": "Full-time"
+                  },
+                  "status": {
+                    "$ref": "#/components/schemas/JobStatus"
+                  },
                   "responsabilities": {
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                      "type": "string"
+                    }
                   },
                   "benefits": {
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -1041,7 +1986,9 @@
             "description": "Validation error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1049,7 +1996,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1057,7 +2006,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -1082,34 +2033,62 @@
                     "type": "string",
                     "description": "Firestore document ID of the position"
                   },
-                  "title": { "type": "string" },
-                  "department": { "type": "string" },
-                  "seniority": { "type": "string" },
-                  "location": { "$ref": "#/components/schemas/JobLocation" },
-                  "city": { "type": "string" },
-                  "description": { "type": "string" },
+                  "title": {
+                    "type": "string"
+                  },
+                  "department": {
+                    "type": "string"
+                  },
+                  "seniority": {
+                    "type": "string"
+                  },
+                  "location": {
+                    "$ref": "#/components/schemas/JobLocation"
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
                   "skills": {
                     "type": "array",
-                    "items": { "$ref": "#/components/schemas/Skill" }
+                    "items": {
+                      "$ref": "#/components/schemas/Skill"
+                    }
                   },
                   "requirements": {
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                      "type": "string"
+                    }
                   },
-                  "observations": { "type": "string" },
+                  "observations": {
+                    "type": "string"
+                  },
                   "additionalCriteria": {
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                      "type": "string"
+                    }
                   },
-                  "slug": { "type": "string" },
-                  "type": { "type": "string" },
+                  "slug": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
                   "responsabilities": {
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                      "type": "string"
+                    }
                   },
                   "benefits": {
                     "type": "array",
-                    "items": { "type": "string" }
+                    "items": {
+                      "type": "string"
+                    }
                   }
                 }
               }
@@ -1123,7 +2102,12 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": { "ok": { "type": "boolean", "example": true } }
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
                 }
               }
             }
@@ -1132,7 +2116,9 @@
             "description": "Validation error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1140,7 +2126,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1148,7 +2136,9 @@
             "description": "Position not found",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1156,7 +2146,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -1181,7 +2173,9 @@
                     "type": "string",
                     "description": "Firestore document ID of the position"
                   },
-                  "status": { "$ref": "#/components/schemas/JobStatus" }
+                  "status": {
+                    "$ref": "#/components/schemas/JobStatus"
+                  }
                 }
               }
             }
@@ -1194,7 +2188,12 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": { "ok": { "type": "boolean", "example": true } }
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
                 }
               }
             }
@@ -1203,7 +2202,9 @@
             "description": "Validation error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1211,7 +2212,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1219,7 +2222,9 @@
             "description": "Position not found",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1227,7 +2232,89 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/deletePosition": {
+      "delete": {
+        "tags": ["Jobs (Internal)"],
+        "operationId": "deletePosition",
+        "summary": "Delete a position",
+        "description": "Deletes a position/job by id. Requires an authenticated Firebase user.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeletePositionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Position deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletePositionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Position not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -1246,7 +2333,9 @@
             "application/json": {
               "schema": {
                 "allOf": [
-                  { "$ref": "#/components/schemas/CandidatePostulationBase" },
+                  {
+                    "$ref": "#/components/schemas/CandidatePostulationBase"
+                  },
                   {
                     "type": "object",
                     "required": ["jobId"],
@@ -1276,8 +2365,12 @@
                     "applicationStatus"
                   ],
                   "properties": {
-                    "candidateId": { "type": "string" },
-                    "applicationId": { "type": "string" },
+                    "candidateId": {
+                      "type": "string"
+                    },
+                    "applicationId": {
+                      "type": "string"
+                    },
                     "cvParseStatus": {
                       "$ref": "#/components/schemas/CvParseStatus"
                     },
@@ -1293,7 +2386,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1301,7 +2396,9 @@
             "description": "Candidate already registered for this job",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1309,7 +2406,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -1354,8 +2453,12 @@
                     "applicationStatus"
                   ],
                   "properties": {
-                    "candidateId": { "type": "string" },
-                    "applicationId": { "type": "string" },
+                    "candidateId": {
+                      "type": "string"
+                    },
+                    "applicationId": {
+                      "type": "string"
+                    },
                     "uploadBasePath": {
                       "type": "string",
                       "description": "Firebase Storage base path where the CV must be uploaded, e.g. cvs/{candidateId}"
@@ -1375,7 +2478,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1383,7 +2488,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -1401,13 +2508,17 @@
             "name": "candidateId",
             "in": "query",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "applicationId",
             "in": "query",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1426,8 +2537,12 @@
                     "profile"
                   ],
                   "properties": {
-                    "candidateId": { "type": "string" },
-                    "applicationId": { "type": "string" },
+                    "candidateId": {
+                      "type": "string"
+                    },
+                    "applicationId": {
+                      "type": "string"
+                    },
                     "cvParseStatus": {
                       "$ref": "#/components/schemas/CvParseStatus"
                     },
@@ -1451,7 +2566,9 @@
             "description": "Missing required fields",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1459,7 +2576,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1467,7 +2586,9 @@
             "description": "Application does not belong to candidate",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1475,7 +2596,9 @@
             "description": "Candidate or application not found",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1483,7 +2606,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -1504,7 +2629,9 @@
                 "type": "object",
                 "required": ["candidateId", "profile"],
                 "properties": {
-                  "candidateId": { "type": "string" },
+                  "candidateId": {
+                    "type": "string"
+                  },
                   "applicationId": {
                     "type": "string",
                     "description": "Optional. Links the confirmation to an existing application."
@@ -1526,8 +2653,12 @@
                   "type": "object",
                   "required": ["candidateId", "profileStatus"],
                   "properties": {
-                    "candidateId": { "type": "string" },
-                    "applicationId": { "type": "string" },
+                    "candidateId": {
+                      "type": "string"
+                    },
+                    "applicationId": {
+                      "type": "string"
+                    },
                     "profileStatus": {
                       "type": "string",
                       "enum": ["completed"]
@@ -1552,7 +2683,9 @@
             "description": "Missing required fields",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1560,7 +2693,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1568,7 +2703,9 @@
             "description": "Candidate not found",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1576,7 +2713,109 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/discardCandidateDraft": {
+      "post": {
+        "tags": ["Candidates"],
+        "operationId": "discardCandidateDraft",
+        "summary": "Discard a candidate draft application",
+        "description": "Discards a draft CV-based application before profile confirmation. Requires an authenticated Firebase user.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiscardCandidateDraftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Draft discarded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscardCandidateDraftResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Application does not belong to candidate",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Candidate or application not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Draft cannot be discarded in its current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -1621,9 +2860,15 @@
                     "status"
                   ],
                   "properties": {
-                    "applicationId": { "type": "string" },
-                    "candidateId": { "type": "string" },
-                    "jobId": { "type": "string" },
+                    "applicationId": {
+                      "type": "string"
+                    },
+                    "candidateId": {
+                      "type": "string"
+                    },
+                    "jobId": {
+                      "type": "string"
+                    },
                     "stage": {
                       "$ref": "#/components/schemas/ApplicationStage"
                     },
@@ -1639,7 +2884,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1647,7 +2894,9 @@
             "description": "Candidate or job not found",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1655,7 +2904,9 @@
             "description": "Application already exists for this candidate+job",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1663,7 +2914,9 @@
             "description": "Job is not open for applications",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1671,7 +2924,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -1689,7 +2944,9 @@
             "name": "jobId",
             "in": "query",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "orderBy",
@@ -1710,7 +2967,10 @@
           {
             "name": "limit",
             "in": "query",
-            "schema": { "type": "integer", "minimum": 1 }
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
           }
         ],
         "responses": {
@@ -1731,7 +2991,9 @@
             "description": "Validation error (e.g. missing jobId)",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1739,7 +3001,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1747,7 +3011,9 @@
             "description": "Job not found",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1755,7 +3021,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -1776,13 +3044,19 @@
                 "type": "object",
                 "required": ["applicationId", "stage"],
                 "properties": {
-                  "applicationId": { "type": "string" },
-                  "stage": { "$ref": "#/components/schemas/ApplicationStage" },
+                  "applicationId": {
+                    "type": "string"
+                  },
+                  "stage": {
+                    "$ref": "#/components/schemas/ApplicationStage"
+                  },
                   "rejectionReason": {
                     "type": "string",
                     "description": "Required when stage is `rejected`"
                   },
-                  "notes": { "type": "string" }
+                  "notes": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -1795,7 +3069,12 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": { "ok": { "type": "boolean", "example": true } }
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
                 }
               }
             }
@@ -1804,7 +3083,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1812,7 +3093,9 @@
             "description": "Application not found",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1820,7 +3103,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -1841,10 +3126,14 @@
                 "type": "object",
                 "required": ["applicationId", "fortalezas"],
                 "properties": {
-                  "applicationId": { "type": "string" },
+                  "applicationId": {
+                    "type": "string"
+                  },
                   "fortalezas": {
                     "type": "array",
-                    "items": { "type": "string" },
+                    "items": {
+                      "type": "string"
+                    },
                     "description": "List of candidate strengths as free-text strings"
                   }
                 }
@@ -1861,10 +3150,14 @@
                   "type": "object",
                   "required": ["success", "fortalezas"],
                   "properties": {
-                    "success": { "type": "boolean" },
+                    "success": {
+                      "type": "boolean"
+                    },
                     "fortalezas": {
                       "type": "array",
-                      "items": { "type": "string" }
+                      "items": {
+                        "type": "string"
+                      }
                     }
                   }
                 }
@@ -1875,7 +3168,9 @@
             "description": "Validation error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1883,7 +3178,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1891,7 +3188,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -1909,7 +3208,9 @@
             "name": "applicationId",
             "in": "query",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1919,7 +3220,9 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/StageHistoryEntry" }
+                  "items": {
+                    "$ref": "#/components/schemas/StageHistoryEntry"
+                  }
                 }
               }
             }
@@ -1928,7 +3231,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1936,7 +3241,9 @@
             "description": "Application not found",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1944,7 +3251,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -1962,7 +3271,9 @@
             "name": "applicationId",
             "in": "query",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1987,7 +3298,9 @@
             "description": "Missing applicationId",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -1995,7 +3308,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2003,7 +3318,9 @@
             "description": "Application not found or candidate has no CV",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2011,7 +3328,457 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/saveInterviewForm": {
+      "post": {
+        "tags": ["Interviews"],
+        "operationId": "saveInterviewForm",
+        "summary": "Save an interview form",
+        "description": "Stores an HR or technical interview form for an application. Requires an authenticated Firebase user.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveInterviewFormRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Interview form saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveInterviewFormResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Application not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Application stage transition conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/getInterviewForms": {
+      "get": {
+        "tags": ["Interviews"],
+        "operationId": "getInterviewForms",
+        "summary": "Get interview forms for an application",
+        "description": "Returns all interview forms associated with an application. Requires an authenticated Firebase user.",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Application id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Interview forms",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InterviewForm"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid applicationId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Application not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/saveCandidacyNote": {
+      "post": {
+        "tags": ["Candidacy Notes"],
+        "operationId": "saveCandidacyNote",
+        "summary": "Save a candidacy note",
+        "description": "Creates a note attached to an application. Requires an authenticated Firebase user.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveCandidacyNoteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Note saved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveCandidacyNoteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Application or note not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/getCandidacyNotes": {
+      "get": {
+        "tags": ["Candidacy Notes"],
+        "operationId": "getCandidacyNotes",
+        "summary": "Get candidacy notes for an application",
+        "description": "Returns notes attached to an application. Requires an authenticated Firebase user.",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Application id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Candidacy notes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CandidacyNote"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid applicationId",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Application not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/updateCandidacyNote": {
+      "patch": {
+        "tags": ["Candidacy Notes"],
+        "operationId": "updateCandidacyNote",
+        "summary": "Update a candidacy note",
+        "description": "Updates the text of an existing note. Requires an authenticated Firebase user.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCandidacyNoteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated note",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidacyNote"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Application or note not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -2024,7 +3791,11 @@
         "operationId": "createOfferDraft",
         "summary": "Create an offer letter draft",
         "description": "Creates an Offer in `draft` status for an active, non-terminal application. Candidate/job data is denormalized, the offer letter HTML is generated from the default template and persisted in Storage. Compensation, modality and benefits can be overridden; otherwise job defaults are used when available.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2050,7 +3821,9 @@
             "description": "Validation error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2058,7 +3831,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2066,7 +3841,9 @@
             "description": "Forbidden or application is draft/terminal",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2074,7 +3851,9 @@
             "description": "Application not found",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2082,7 +3861,9 @@
             "description": "Offer cannot be created for the current data state",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2090,10 +3871,84 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
+        }
+      }
+    },
+    "/updateOfferDraft": {
+      "put": {
+        "tags": ["Offers"],
+        "operationId": "updateOfferDraft",
+        "summary": "Update an offer letter draft",
+        "description": "Updates editable fields of an Offer in `draft` status, regenerates the stored HTML document and recalculates its hash.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOfferDraftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Offer draft updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateOfferDraftResponse"
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation error" },
+          "401": { "description": "Unauthenticated" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Offer not found" },
+          "409": { "description": "Offer is not in draft status" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
+    "/previewOffer": {
+      "post": {
+        "tags": ["Offers"],
+        "operationId": "previewOffer",
+        "summary": "Preview an offer letter draft",
+        "description": "Returns the generated HTML for an Offer in `draft` status without publishing it, generating a token or changing state.",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PreviewOfferRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Generated offer preview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewOfferResponse"
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation error" },
+          "401": { "description": "Unauthenticated" },
+          "403": { "description": "Forbidden" },
+          "404": { "description": "Offer not found" },
+          "409": { "description": "Offer is not in draft status" },
+          "500": { "description": "Internal server error" }
         }
       }
     },
@@ -2103,12 +3958,20 @@
         "operationId": "sendOffer",
         "summary": "Publish/send an offer and generate a secure link",
         "description": "Moves an Offer from `draft` to `sent`, generates a random public token, stores only its SHA-256 hash with an expiration date, updates the application to `stage: offer_sent`, and writes stageHistory atomically. The current implementation prepares the communication/link; real outbound email delivery is handled separately.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Generates a secure public link, resolves the configured `offer` email template, sends it through the recruiter's connected Gmail account, and records the attempt in emailLogs. Only after Gmail confirms delivery does it move the Offer from `draft` to `sent`, store the token hash, update the application to `stage: offer_sent`, and write stageHistory atomically.",
         "security": [{ "bearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/SendOfferRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/SendOfferRequest"
+              }
             }
           }
         },
@@ -2117,7 +3980,9 @@
             "description": "Offer published and secure link generated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/SendOfferResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/SendOfferResponse"
+                }
               }
             }
           },
@@ -2125,7 +3990,9 @@
             "description": "Validation error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2133,7 +4000,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2141,7 +4010,9 @@
             "description": "Forbidden or application is draft/terminal",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2149,7 +4020,9 @@
             "description": "Offer or associated application not found",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2157,7 +4030,9 @@
             "description": "Offer is not in draft status or cannot be sent",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2165,7 +4040,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -2178,13 +4055,19 @@
         "operationId": "getOfferByApplication",
         "summary": "Get the latest offer linked to an application",
         "description": "Internal endpoint used by recruiter/manager dashboards to retrieve the latest Offer associated with an application. Returns `offer: null` when the application exists but no offer has been created yet.",
-        "security": [{ "bearerAuth": [] }],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "applicationId",
             "in": "query",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2202,7 +4085,9 @@
             "description": "Validation error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2210,7 +4095,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2218,7 +4105,9 @@
             "description": "Forbidden",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2226,7 +4115,9 @@
             "description": "Application not found",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2234,7 +4125,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -2252,7 +4145,9 @@
             "name": "token",
             "in": "query",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -2260,7 +4155,9 @@
             "description": "Public offer payload",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/PublicOfferResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/PublicOfferResponse"
+                }
               }
             }
           },
@@ -2268,7 +4165,9 @@
             "description": "Validation error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2276,7 +4175,9 @@
             "description": "Offer not found or token is invalid",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2284,7 +4185,9 @@
             "description": "Offer is unavailable, already answered or expired",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2292,7 +4195,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -2309,7 +4214,9 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/RespondOfferRequest" }
+              "schema": {
+                "$ref": "#/components/schemas/RespondOfferRequest"
+              }
             }
           }
         },
@@ -2318,7 +4225,9 @@
             "description": "Offer response recorded",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/RespondOfferResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/RespondOfferResponse"
+                }
               }
             }
           },
@@ -2326,7 +4235,9 @@
             "description": "Validation error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2334,7 +4245,9 @@
             "description": "Offer not found or token is invalid",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2342,7 +4255,9 @@
             "description": "Offer is unavailable, already answered or expired",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2350,7 +4265,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -2371,8 +4288,13 @@
                 "type": "object",
                 "required": ["email"],
                 "properties": {
-                  "email": { "type": "string", "format": "email" },
-                  "displayName": { "type": "string" },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "displayName": {
+                    "type": "string"
+                  },
                   "photoURL": {
                     "type": "string",
                     "format": "uri",
@@ -2405,7 +4327,9 @@
             "description": "Missing email field",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2413,7 +4337,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2421,7 +4347,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -2446,7 +4374,9 @@
                     "type": "string",
                     "description": "Firebase Auth UID of the target user"
                   },
-                  "role": { "$ref": "#/components/schemas/EmployeeRole" }
+                  "role": {
+                    "$ref": "#/components/schemas/EmployeeRole"
+                  }
                 }
               }
             }
@@ -2461,7 +4391,10 @@
                   "type": "object",
                   "required": ["success"],
                   "properties": {
-                    "success": { "type": "boolean", "example": true }
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    }
                   }
                 }
               }
@@ -2471,7 +4404,9 @@
             "description": "Missing or invalid uid/role",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2479,7 +4414,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2487,7 +4424,9 @@
             "description": "Caller does not have admin role",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2495,7 +4434,79 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/setUserRoleOnboarding": {
+      "post": {
+        "tags": ["Auth / Admin"],
+        "operationId": "setUserRoleOnboarding",
+        "summary": "Self-assign onboarding role",
+        "description": "Allows a newly authenticated user to self-assign one of the onboarding roles (`hr` or `area_leader`) when no role has been assigned yet.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetUserRoleOnboardingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Role assigned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BooleanSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid role or role already assigned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -2539,7 +4550,10 @@
                   "type": "object",
                   "required": ["ok"],
                   "properties": {
-                    "ok": { "type": "boolean", "example": true }
+                    "ok": {
+                      "type": "boolean",
+                      "example": true
+                    }
                   }
                 }
               }
@@ -2549,7 +4563,9 @@
             "description": "Missing or invalid code / redirectUri",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2557,7 +4573,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2565,7 +4583,149 @@
             "description": "Google token exchange failed or internal error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exchangeCalendarCode": {
+      "post": {
+        "tags": ["Calendar"],
+        "operationId": "exchangeCalendarCode",
+        "summary": "Exchange Google Calendar OAuth code",
+        "description": "Exchanges a Google OAuth authorization code for Calendar credentials and stores them for the authenticated employee.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExchangeOAuthCodeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Calendar credential stored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BooleanOkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Google Calendar connection failed or internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/updateEmployeeCalendarLink": {
+      "post": {
+        "tags": ["Calendar"],
+        "operationId": "updateEmployeeCalendarLink",
+        "summary": "Update employee calendar link",
+        "description": "Stores or clears the authenticated employee scheduling link. Non-empty links must start with https://.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCalendarLinkRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Calendar link updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BooleanSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid calendarLink",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthenticated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -2583,7 +4743,9 @@
             "name": "candidateId",
             "in": "query",
             "required": true,
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "description": "Firestore document ID of the candidate"
           }
         ],
@@ -2598,7 +4760,9 @@
                   "properties": {
                     "logs": {
                       "type": "array",
-                      "items": { "$ref": "#/components/schemas/EmailLog" }
+                      "items": {
+                        "$ref": "#/components/schemas/EmailLog"
+                      }
                     }
                   }
                 }
@@ -2609,7 +4773,9 @@
             "description": "Missing candidateId",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2617,7 +4783,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2625,7 +4793,9 @@
             "description": "Internal server error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -2664,7 +4834,10 @@
                   "type": "object",
                   "required": ["ok"],
                   "properties": {
-                    "ok": { "type": "boolean", "example": true }
+                    "ok": {
+                      "type": "boolean",
+                      "example": true
+                    }
                   }
                 }
               }
@@ -2674,7 +4847,9 @@
             "description": "Missing logId",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2682,7 +4857,9 @@
             "description": "Unauthenticated",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2690,7 +4867,9 @@
             "description": "EmailLog not found",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           },
@@ -2698,7 +4877,226 @@
             "description": "Gmail send failed or internal error",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/seedJobs": {
+      "post": {
+        "tags": ["Development / Seeds"],
+        "operationId": "seedJobs",
+        "summary": "Run seedJobs",
+        "description": "Development seed endpoint. Enabled only when running against Firebase emulators.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Seed completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seed endpoint is only enabled in emulators",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Seed failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/seedEmailTemplates": {
+      "post": {
+        "tags": ["Development / Seeds"],
+        "operationId": "seedEmailTemplates",
+        "summary": "Run seedEmailTemplates",
+        "description": "Development seed endpoint. Enabled only when running against Firebase emulators.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Seed completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seed endpoint is only enabled in emulators",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Seed failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/seedEmailLogs": {
+      "post": {
+        "tags": ["Development / Seeds"],
+        "operationId": "seedEmailLogs",
+        "summary": "Run seedEmailLogs",
+        "description": "Development seed endpoint. Enabled only when running against Firebase emulators.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Seed completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Seed endpoint is only enabled in emulators",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Seed failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/seedGmailCredential": {
+      "post": {
+        "tags": ["Development / Seeds"],
+        "operationId": "seedGmailCredential",
+        "summary": "Seed a Gmail credential for development",
+        "description": "Stores Gmail OAuth tokens for a user. Used by local seed scripts.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeedGmailCredentialRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Credential stored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["ok", "uid"],
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "uid": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing uid/accessToken/refreshToken",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method not allowed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
               }
             }
           }
@@ -2707,7 +5105,7 @@
     }
   },
   "x-callable-functions": {
-    "description": "The following functions use the Firebase onCall protocol (not plain HTTP). They are invoked via the Firebase client SDK (`httpsCallable`) and are not directly callable with curl/fetch. They are documented here for completeness.",
+    "description": "The following functions use the Firebase onCall protocol (not plain HTTP). They are invoked via the Firebase client SDK (`httpsCallable`) and are documented here with their logical payload/response shapes.",
     "functions": [
       {
         "name": "getApplicationsByCandidate",
@@ -2715,7 +5113,7 @@
         "auth": "required",
         "request": {
           "candidateId": "string (required)",
-          "jobId": "string (optional) — if provided, returns only the application for that job"
+          "jobId": "string (optional)"
         },
         "response": "ApplicationWithCandidateDTO[]"
       },
@@ -2736,6 +5134,22 @@
           "jobId": "string (required)"
         },
         "response": "Job"
+      },
+      {
+        "name": "seedCandidates",
+        "description": "Development seed callable for candidate data.",
+        "auth": "not required by handler",
+        "request": {},
+        "response": "implementation-defined seed result"
+      },
+      {
+        "name": "seedEmployees",
+        "description": "Emulator-only development seed callable for employees.",
+        "auth": "not required by handler",
+        "request": {
+          "employees": "SeedEmployeeInput[] (required)"
+        },
+        "response": "{ processed: number }"
       }
     ]
   }

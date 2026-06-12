@@ -7,7 +7,10 @@ import {
   retryEmailSend,
 } from '@/shared/api/emailLogsApi';
 
-const emailLogsQueryKey = (candidateId: string) => ['email-logs', candidateId];
+export const emailLogsQueryKey = (candidateId: string) => [
+  'email-logs',
+  candidateId,
+];
 
 export function useEmailLogs(candidateId: string) {
   return useQuery({
@@ -17,7 +20,7 @@ export function useEmailLogs(candidateId: string) {
   });
 }
 
-const failedEmailLogsQueryKey = (applicationId: string) => [
+export const failedEmailLogsQueryKey = (applicationId: string) => [
   'email-logs-failed',
   applicationId,
 ];

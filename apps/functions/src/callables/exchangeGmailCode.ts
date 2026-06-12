@@ -20,6 +20,7 @@ const userRepository = new UserRepository();
 const exchangeGmailCodeService = new ExchangeGmailCodeService(
   userRepository,
   oauth2Client,
+  new EmployeeRepository(),
 );
 
 export const exchangeGmailCode = onRequest(
