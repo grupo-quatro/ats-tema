@@ -7,6 +7,7 @@ export interface ResolverContext {
   recruiterEmail: string;
   calendarLink: string;
   companyName: string;
+  offerLink: string;
 }
 
 type VariableKeyToContextKey = {
@@ -20,6 +21,7 @@ const VARIABLE_TO_CONTEXT_KEY: VariableKeyToContextKey = {
   RECRUITER_EMAIL: 'recruiterEmail',
   CALENDAR_LINK: 'calendarLink',
   COMPANY_NAME: 'companyName',
+  OFFER_LINK: 'offerLink',
 } as const;
 
 export class TemplateResolverService {

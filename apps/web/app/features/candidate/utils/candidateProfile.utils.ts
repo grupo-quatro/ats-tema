@@ -86,6 +86,10 @@ export function getCandidateStageLabel(stage: ApplicationStage): string {
   return stageKey ? STAGE_LABELS[stageKey] : STAGE_LABELS.postulacion_recibida;
 }
 
+export function isGenericStageChangeOption(stage: ApplicationStage): boolean {
+  return stage !== 'send_offer' && stage !== 'hired';
+}
+
 export function getInitials(name?: string): string {
   if (!name) return '?';
   return name

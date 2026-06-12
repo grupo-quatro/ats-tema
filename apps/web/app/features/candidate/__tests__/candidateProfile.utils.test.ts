@@ -3,6 +3,7 @@ import type { ApplicationWithCandidateDTO } from '@ats/shared-types';
 import {
   getInitials,
   buildStageHistory,
+  isGenericStageChangeOption,
   mapApplicationToProfile,
   STAGE_ORDER,
 } from '../utils/candidateProfile.utils';
@@ -93,6 +94,18 @@ describe('buildStageHistory', () => {
     expect(lastEntry.status).toBe('current');
     expect(lastEntry.key).toBe('contratado');
     expect(nonPending.length).toBe(history.length);
+  });
+});
+
+describe('isGenericStageChangeOption', () => {
+  it('excluye acciones gestionadas desde Carta oferta', () => {
+    expect(isGenericStageChangeOption('send_offer')).toBe(false);
+    expect(isGenericStageChangeOption('hired')).toBe(false);
+  });
+
+  it('mantiene disponibles las etapas manuales del pipeline', () => {
+    expect(isGenericStageChangeOption('screening')).toBe(true);
+    expect(isGenericStageChangeOption('schedule_hr_1')).toBe(true);
   });
 });
 

@@ -18,7 +18,7 @@ export class PipelineServiceError extends Error {
 }
 
 export class PipelineService {
-  constructor(private readonly repo: IApplicationRepository) {}
+  constructor(private readonly repo: IApplicationRepository) { }
 
   async getCandidatesByJob(
     jobId: string,

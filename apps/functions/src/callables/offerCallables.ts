@@ -5,27 +5,61 @@ import {
   EMPLOYEE_ROLES,
   type CreateOfferDraftPayload,
   type EmployeeRole,
+  type PreviewOfferPayload,
   type RespondOfferPayload,
   type SendOfferPayload,
+  type UpdateOfferDraftPayload,
 } from '@ats/shared-types';
+import { OAuth2Client } from 'google-auth-library';
 
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
+import { EmailLogRepository } from '../repositories/emailLogRepository';
+import { EmailTemplateRepository } from '../repositories/emailTemplateRepository';
+import { EmployeeRepository } from '../repositories/employeeRepository';
+import { OrgConfigRepository } from '../repositories/orgConfigRepository';
+import { UserRepository } from '../repositories/userRepository';
+import { GmailSenderService } from '../services/gmailSenderService';
 import {
+  OfferEmailSendError,
   OfferInvalidStateError,
   OfferNotFoundError,
   OfferService,
   OfferUnauthorizedStateError,
 } from '../services/offerService';
+import { StageEmailService } from '../services/stageEmailService';
+import { TemplateResolverService } from '../services/templateResolverService';
 import {
   OfferValidationError,
   validateCreateOfferDraftPayload,
   validateGetOfferByApplicationPayload,
   validateGetOfferByTokenPayload,
+  validatePreviewOfferPayload,
   validateRespondOfferPayload,
   validateSendOfferPayload,
+  validateUpdateOfferDraftPayload,
 } from '../validators/offerValidator';
 
-const offerService = new OfferService();
+const oauth2Client = new OAuth2Client(
+  process.env.GOOGLE_OAUTH_CLIENT_ID,
+  process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+);
+const offerService = new OfferService(
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  new StageEmailService(
+    new EmailTemplateRepository(),
+    new EmailLogRepository(),
+    new UserRepository(),
+    new OrgConfigRepository(),
+    new TemplateResolverService(),
+    new GmailSenderService(),
+    oauth2Client,
+    new EmployeeRepository(),
+  ),
+);
 const OFFER_MANAGER_ROLES: EmployeeRole[] = [
   EMPLOYEE_ROLES.ADMIN,
   EMPLOYEE_ROLES.HR,
@@ -69,6 +103,46 @@ export const sendOffer = onRequest(async (request, response) => {
     response.status(200).json(result);
   } catch (error) {
     handleOfferError(response, error, '[sendOffer]');
+  }
+});
+
+export const updateOfferDraft = onRequest(async (request, response) => {
+  try {
+    if (request.method !== 'PUT') {
+      response.status(405).json({ error: 'Method Not Allowed.' });
+      return;
+    }
+
+    const { role } = await requireAuthenticatedUser(request);
+    assertCanManageOffers(role);
+
+    const payload = request.body as Partial<UpdateOfferDraftPayload>;
+    validateUpdateOfferDraftPayload(payload);
+
+    const result = await offerService.updateDraft(payload);
+    response.status(200).json(result);
+  } catch (error) {
+    handleOfferError(response, error, '[updateOfferDraft]');
+  }
+});
+
+export const previewOffer = onRequest(async (request, response) => {
+  try {
+    if (request.method !== 'POST') {
+      response.status(405).json({ error: 'Method Not Allowed.' });
+      return;
+    }
+
+    const { role } = await requireAuthenticatedUser(request);
+    assertCanManageOffers(role);
+
+    const payload = request.body as Partial<PreviewOfferPayload>;
+    validatePreviewOfferPayload(payload);
+
+    const result = await offerService.previewOffer(payload);
+    response.status(200).json(result);
+  } catch (error) {
+    handleOfferError(response, error, '[previewOffer]');
   }
 });
 
@@ -176,6 +250,11 @@ function handleOfferError(
 
   if (error instanceof OfferInvalidStateError) {
     response.status(409).json({ error: error.message });
+    return;
+  }
+
+  if (error instanceof OfferEmailSendError) {
+    response.status(502).json({ error: error.message });
     return;
   }
 

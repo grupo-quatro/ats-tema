@@ -5,7 +5,6 @@ import type { ApplicationStage } from '@ats/shared-types';
 import { db } from '../core/firebaseAdmin';
 
 const APPLICATIONS_COLLECTION = 'applications';
-const EMAIL_OUTBOX_COLLECTION = 'emailOutbox';
 const OFFERS_COLLECTION = 'offers';
 
 export interface SendOfferWorkflowInput {
@@ -15,13 +14,6 @@ export interface SendOfferWorkflowInput {
   sentByEmail: string;
   tokenHash: string;
   tokenExpiresAt: Date;
-  email: {
-    to: string;
-    subject: string;
-    html: string;
-    text: string;
-    metadata: Record<string, string>;
-  };
 }
 
 export class OfferWorkflowRepositoryError extends Error {
@@ -45,7 +37,6 @@ export class OfferWorkflowRepository {
         .doc(input.applicationId);
       const stageHistoryRef = applicationRef.collection('stageHistory').doc();
       const offerRef = db.collection(OFFERS_COLLECTION).doc(input.offerId);
-      const emailRef = db.collection(EMAIL_OUTBOX_COLLECTION).doc();
 
       batch.update(applicationRef, {
         stage,
@@ -60,14 +51,6 @@ export class OfferWorkflowRepository {
         changedBy: input.sentBy,
         changedByEmail: input.sentByEmail,
         changedAt: now,
-      });
-
-      batch.set(emailRef, {
-        id: emailRef.id,
-        ...input.email,
-        status: 'pending',
-        createdAt: now,
-        updatedAt: now,
       });
 
       batch.update(offerRef, {
