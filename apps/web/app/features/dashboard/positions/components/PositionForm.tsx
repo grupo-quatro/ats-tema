@@ -127,7 +127,6 @@ export default function PositionForm({
         name: mandatorySkillForm.name,
         weight: parseInt(mandatorySkillForm.weight),
         type: 'mandatory',
-        yearsOfExperience: 0,
       },
     ]);
 
@@ -149,7 +148,6 @@ export default function PositionForm({
         name: desirableSkillForm.name,
         weight: parseInt(desirableSkillForm.weight),
         type: 'desirable',
-        yearsOfExperience: 0,
       },
     ]);
 

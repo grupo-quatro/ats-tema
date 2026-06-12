@@ -63,13 +63,10 @@
       },
       "Skill": {
         "type": "object",
-        "required": ["name", "yearsOfExperience", "weight", "type"],
+        "required": ["name", "weight", "type"],
         "properties": {
           "name": {
             "type": "string"
-          },
-          "yearsOfExperience": {
-            "type": "number"
           },
           "weight": {
             "type": "number",

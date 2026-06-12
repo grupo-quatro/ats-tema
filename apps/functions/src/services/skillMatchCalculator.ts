@@ -43,7 +43,7 @@ export function buildCandidateSkillSet(rawSkills: unknown[]): Set<string> {
  * Parsea el array `job.skills` desde Firestore de forma defensiva.
  * Soporta el modelo actual (Skill[]) y datos legacy (string[]).
  *
- * Datos legacy → weight=1, type='desirable', yearsOfExperience=0.
+ * Datos legacy → weight=1, type='desirable'.
  */
 export function parseJobSkills(rawSkills: unknown[]): Skill[] {
   return rawSkills.reduce<Skill[]>((acc, s) => {
@@ -51,7 +51,6 @@ export function parseJobSkills(rawSkills: unknown[]): Skill[] {
       acc.push({
         name: s.trim(),
         weight: 1,
-        yearsOfExperience: 0,
         type: 'desirable',
       });
     } else if (s && typeof s === 'object' && 'name' in s) {
@@ -62,10 +61,6 @@ export function parseJobSkills(rawSkills: unknown[]): Skill[] {
           name,
           weight:
             typeof raw.weight === 'number' && raw.weight > 0 ? raw.weight : 1,
-          yearsOfExperience:
-            typeof raw.yearsOfExperience === 'number'
-              ? raw.yearsOfExperience
-              : 0,
           type:
             raw.type === 'mandatory' || raw.type === 'desirable'
               ? (raw.type as SkillType)

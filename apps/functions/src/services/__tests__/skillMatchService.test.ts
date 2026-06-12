@@ -45,13 +45,11 @@ const makeJob = (overrides: Partial<Job> = {}): Job => ({
   skills: [
     {
       name: 'React',
-      yearsOfExperience: 2,
       weight: 3,
       type: 'mandatory',
     },
     {
       name: 'TypeScript',
-      yearsOfExperience: 2,
       weight: 1,
       type: 'desirable',
     },

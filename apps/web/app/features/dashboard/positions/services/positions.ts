@@ -14,17 +14,16 @@ export const JOBS_DATA: Job[] = [
     description:
       'Sumate para escalar microservicios y optimizar bases de datos en MongoDB. Valoramos conocimientos en arquitecturas limpias.',
     skills: [
-      { name: 'Node.js', yearsOfExperience: 5, weight: 5, type: 'mandatory' },
-      { name: 'Express', yearsOfExperience: 3, weight: 4, type: 'mandatory' },
-      { name: 'MongoDB', yearsOfExperience: 3, weight: 5, type: 'mandatory' },
+      { name: 'Node.js', weight: 5, type: 'mandatory' },
+      { name: 'Express', weight: 4, type: 'mandatory' },
+      { name: 'MongoDB', weight: 5, type: 'mandatory' },
       {
         name: 'TypeScript',
-        yearsOfExperience: 4,
         weight: 4,
         type: 'mandatory',
       },
-      { name: 'Docker', yearsOfExperience: 1, weight: 3, type: 'desirable' },
-      { name: 'AWS', yearsOfExperience: 1, weight: 2, type: 'desirable' },
+      { name: 'Docker', weight: 3, type: 'desirable' },
+      { name: 'AWS', weight: 2, type: 'desirable' },
     ],
     salaryMin: 2500,
     salaryMax: 4000,
@@ -68,18 +67,16 @@ export const JOBS_DATA: Job[] = [
     description:
       'Diseñá interfaces modernas y funcionales. Trabajo codo a codo con el equipo de front para asegurar la fidelidad de los mockups de Figma.',
     skills: [
-      { name: 'Figma', yearsOfExperience: 3, weight: 5, type: 'mandatory' },
-      { name: 'Adobe XD', yearsOfExperience: 2, weight: 4, type: 'mandatory' },
+      { name: 'Figma', weight: 5, type: 'mandatory' },
+      { name: 'Adobe XD', weight: 4, type: 'mandatory' },
       {
         name: 'Design Systems',
-        yearsOfExperience: 2,
         weight: 4,
         type: 'mandatory',
       },
-      { name: 'Framer', yearsOfExperience: 1, weight: 2, type: 'desirable' },
+      { name: 'Framer', weight: 2, type: 'desirable' },
       {
         name: 'Prototyping',
-        yearsOfExperience: 2,
         weight: 3,
         type: 'desirable',
       },
@@ -116,13 +113,12 @@ export const JOBS_DATA: Job[] = [
     description:
       'Buscamos un perfil versátil que pueda manejar el frontend en React y servicios de inteligencia artificial en Python.',
     skills: [
-      { name: 'React', yearsOfExperience: 4, weight: 5, type: 'mandatory' },
-      { name: 'Python', yearsOfExperience: 4, weight: 5, type: 'mandatory' },
-      { name: 'FastAPI', yearsOfExperience: 2, weight: 4, type: 'mandatory' },
-      { name: 'GraphQL', yearsOfExperience: 1, weight: 3, type: 'desirable' },
+      { name: 'React', weight: 5, type: 'mandatory' },
+      { name: 'Python', weight: 5, type: 'mandatory' },
+      { name: 'FastAPI', weight: 4, type: 'mandatory' },
+      { name: 'GraphQL', weight: 3, type: 'desirable' },
       {
         name: 'Machine Learning',
-        yearsOfExperience: 1,
         weight: 2,
         type: 'desirable',
       },
@@ -159,21 +155,19 @@ export const JOBS_DATA: Job[] = [
     description:
       'Responsable de asegurar la calidad mediante tests automatizados (Cypress/Playwright). Implementación de CI/CD.',
     skills: [
-      { name: 'Cypress', yearsOfExperience: 3, weight: 5, type: 'mandatory' },
+      { name: 'Cypress', weight: 5, type: 'mandatory' },
       {
         name: 'JavaScript',
-        yearsOfExperience: 3,
         weight: 4,
         type: 'mandatory',
       },
-      { name: 'Selenium', yearsOfExperience: 2, weight: 4, type: 'mandatory' },
+      { name: 'Selenium', weight: 4, type: 'mandatory' },
       {
         name: 'Playwright',
-        yearsOfExperience: 2,
         weight: 4,
         type: 'desirable',
       },
-      { name: 'Jenkins', yearsOfExperience: 1, weight: 3, type: 'desirable' },
+      { name: 'Jenkins', weight: 3, type: 'desirable' },
     ],
     salaryMin: 2400,
     salaryMax: 3600,
@@ -203,12 +197,12 @@ export const JOBS_DATA: Job[] = [
     description:
       'Análisis de grandes volúmenes de datos para la toma de decisiones estratégicas. Experiencia en SQL y visualización de datos.',
     skills: [
-      { name: 'SQL', yearsOfExperience: 4, weight: 5, type: 'mandatory' },
-      { name: 'Python', yearsOfExperience: 3, weight: 4, type: 'mandatory' },
-      { name: 'PowerBI', yearsOfExperience: 2, weight: 4, type: 'mandatory' },
-      { name: 'Tableau', yearsOfExperience: 2, weight: 4, type: 'mandatory' },
-      { name: 'R', yearsOfExperience: 1, weight: 2, type: 'desirable' },
-      { name: 'BigQuery', yearsOfExperience: 1, weight: 3, type: 'desirable' },
+      { name: 'SQL', weight: 5, type: 'mandatory' },
+      { name: 'Python', weight: 4, type: 'mandatory' },
+      { name: 'PowerBI', weight: 4, type: 'mandatory' },
+      { name: 'Tableau', weight: 4, type: 'mandatory' },
+      { name: 'R', weight: 2, type: 'desirable' },
+      { name: 'BigQuery', weight: 3, type: 'desirable' },
     ],
     salaryMin: 2200,
     salaryMax: 3800,

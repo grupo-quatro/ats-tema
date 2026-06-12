@@ -4,11 +4,11 @@ import type { Skill } from '@ats/shared-types';
 import {
   buildCandidateSkillSet,
   computeWeightedMatch,
+  parseJobSkills,
 } from '../skillMatchCalculator';
 
 const mandatorySkill = (name: string): Skill => ({
   name,
-  yearsOfExperience: 0,
   weight: 1,
   type: 'mandatory',
 });
@@ -69,5 +69,18 @@ describe('skillMatchCalculator normalizado', () => {
         candidateSkillSet,
       ).scoreTotal,
     ).toBe(100);
+  });
+
+  it('ignora yearsOfExperience de skills históricas', () => {
+    expect(
+      parseJobSkills([
+        {
+          name: 'React',
+          yearsOfExperience: 3,
+          weight: 5,
+          type: 'mandatory',
+        },
+      ]),
+    ).toEqual([{ name: 'React', weight: 5, type: 'mandatory' }]);
   });
 });

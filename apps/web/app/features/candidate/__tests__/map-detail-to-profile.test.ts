@@ -24,9 +24,7 @@ const makeDetail = (
   job: {
     id: 'job-1',
     title: 'Frontend Developer',
-    skills: [
-      { name: 'React', weight: 5, type: 'mandatory', yearsOfExperience: 2 },
-    ],
+    skills: [{ name: 'React', weight: 5, type: 'mandatory' }],
   },
   ...overrides,
 });

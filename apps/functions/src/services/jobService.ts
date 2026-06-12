@@ -138,7 +138,6 @@ export class JobService {
         description: payload.description.trim(),
         skills: payload.skills.map((skill) => ({
           name: skill.name.trim(),
-          yearsOfExperience: skill.yearsOfExperience,
           weight: skill.weight,
           type: skill.type,
         })),
@@ -370,7 +369,6 @@ export class JobService {
       benefits: payload.benefits?.map((item) => item.trim()),
       skills: payload.skills?.map((skill) => ({
         name: skill.name.trim(),
-        yearsOfExperience: skill.yearsOfExperience,
         weight: skill.weight,
         type: skill.type,
       })),
