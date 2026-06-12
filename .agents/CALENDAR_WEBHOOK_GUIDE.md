@@ -179,25 +179,30 @@ Esta lógica ya existe en `STAGE_CONFIG` — usar `findNextStageForTrigger(curre
 Al igual que con Gmail, el `refreshToken` de Calendar puede ser revocado por el recruiter o invalidado por Google (+6 meses sin uso). Implementar el mismo patrón que ya existe en `stageEmailService.ts`:
 
 **shared-types — `packages/shared-types/src/models/employee.ts`:**
+
 ```typescript
 // Agregar junto a gmailStatus:
 calendarStatus?: GmailStatus; // reutilizar el mismo tipo y GMAIL_STATUS
 ```
 
 **`employeeRepository.ts` — `apps/functions/src/repositories/employeeRepository.ts`:**
+
 ```typescript
 setCalendarStatus(uid: string, status: GmailStatus): Promise<void>;
 ```
 
 **`calendarWebhook.ts`** — en el `catch` del refresh del token (paso 4):
+
 ```typescript
-const isRevoked = error instanceof Error && error.message.includes('invalid_grant');
+const isRevoked =
+  error instanceof Error && error.message.includes('invalid_grant');
 if (isRevoked) {
   await employeeRepository.setCalendarStatus(uid, GMAIL_STATUS.DISCONNECTED);
 }
 ```
 
 **`exchangeCalendarCodeService.ts`** — al reconectar exitosamente:
+
 ```typescript
 await employeeRepository?.setCalendarStatus(uid, GMAIL_STATUS.CONNECTED);
 ```

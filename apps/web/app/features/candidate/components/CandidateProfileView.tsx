@@ -419,7 +419,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                   variant="body2"
                   sx={{ fontWeight: 600, color: 'text.secondary' }}
                 >
-                  Scoring Inicial de IA
+                  Matching de Skills
                 </Typography>
               </Box>
 
@@ -446,7 +446,9 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                     lineHeight: 1,
                   }}
                 >
-                  {candidate.fitScore}%
+                  {candidate.fitScore === undefined
+                    ? 'No disponible'
+                    : `${candidate.fitScore}%`}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   compatibilidad general con la posición
@@ -466,7 +468,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                     color="text.secondary"
                     sx={{ fontWeight: 600, display: 'block', mb: 1 }}
                   >
-                    Skills detectadas
+                    Skills del candidato
                   </Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
                     {candidate.detectedSkills.map((skill) => (

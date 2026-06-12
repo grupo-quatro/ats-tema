@@ -191,6 +191,15 @@ export default function CandidatePipeline({
         return matchesSearch && matchesStatus;
       })
       .sort((left, right) => {
+        if (sortField === 'fitScore') {
+          // Un FIT no disponible no equivale a 0 y queda al final en ambos sentidos.
+          if (left.fitScore === undefined && right.fitScore === undefined) {
+            return 0;
+          }
+          if (left.fitScore === undefined) return 1;
+          if (right.fitScore === undefined) return -1;
+        }
+
         const result = compareValues(left, right, sortField);
         return sortDirection === 'asc' ? result : -result;
       });
@@ -263,7 +272,7 @@ export default function CandidatePipeline({
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
             <TextField
               fullWidth
-              placeholder="Buscar por nombre o habilidades..."
+              placeholder="Buscar por nombre o email..."
               value={searchTerm}
               onChange={(event) => {
                 setSearchTerm(event.target.value);
@@ -399,7 +408,7 @@ export default function CandidatePipeline({
 
               {!isLoading
                 ? paginatedCandidates.map((candidate) => {
-                    const score = candidate.fitScore ?? 0;
+                    const score = candidate.fitScore;
                     return (
                       <TableRow
                         key={candidate.id}
@@ -445,12 +454,17 @@ export default function CandidatePipeline({
                         <TableCell>
                           <Typography
                             sx={{
-                              color: getScoreColor(score),
+                              color:
+                                score === undefined
+                                  ? '#64748b'
+                                  : getScoreColor(score),
                               fontSize: '1rem',
                               fontWeight: 600,
                             }}
                           >
-                            {score}%
+                            {score === undefined
+                              ? 'No disponible'
+                              : `${score}%`}
                           </Typography>
                         </TableCell>
                         <TableCell>

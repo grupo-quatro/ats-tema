@@ -1,4 +1,3 @@
-// branch: fb-50-57
 import type { SkillMatchStats } from './skillMatch';
 
 export type ApplicationStage =
@@ -43,19 +42,20 @@ export interface Application {
   stage: ApplicationStage;
   status: ApplicationStatus;
 
-  fitScore?: number; // 0-100, generado por AI tras parsear CV
+  /** 0-100 cuando existe un cálculo válido; ausente no equivale a 0. */
+  fitScore?: number;
   coverLetter?: string;
 
   /**
-   * Estadísticas de match de skills calculadas automáticamente por Cloud Function
-   * al momento de crear la postulación. Usa los pesos (weight) y tipos (type)
-   * de Job.skills para ponderar el score.
+   * Estadísticas de match de skills calculadas automáticamente por Cloud
+   * Functions al crear la postulación y al cambiar sus insumos. Usa los pesos
+   * (weight) y tipos (type) de Job.skills para ponderar el score.
    */
   skillMatchStats?: SkillMatchStats;
 
   rejectionReason?: string;
   notes?: string;
-  /** Fortalezas de la candidatura evaluadas por el reclutador. Editable desde el perfil del candidato. */ // branch: fb-50-57
+  /** Fortalezas de la candidatura evaluadas por el reclutador. Editable desde el perfil del candidato. */
   fortalezas?: string[];
 
   createdAt: Date;

@@ -77,7 +77,7 @@ export class GetApplicationsByJobService {
       candidateEmail: application.candidateEmail,
       notes: application.notes,
       rejectionReason: application.rejectionReason,
-      skillMatchStats: application.skillMatchStats, // branch: fb-50-57
+      skillMatchStats: application.skillMatchStats,
       createdAt: application.createdAt,
       updatedAt: application.updatedAt,
       stageUpdatedAt: application.stageUpdatedAt,

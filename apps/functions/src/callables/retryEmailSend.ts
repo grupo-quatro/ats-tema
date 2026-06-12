@@ -63,10 +63,10 @@ export const retryEmailSend = onRequest(
         return;
       }
 
-    if (error instanceof OfferEmailRetryUnsupportedError) {
-      response.status(409).json({ error: error.message });
-      return;
-    }
+      if (error instanceof OfferEmailRetryUnsupportedError) {
+        response.status(409).json({ error: error.message });
+        return;
+      }
 
       logger.error(
         '[retryEmailSend] Error inesperado al reintentar envío de email',

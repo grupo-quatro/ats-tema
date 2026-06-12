@@ -127,7 +127,6 @@ export default function PositionForm({
         name: mandatorySkillForm.name,
         weight: parseInt(mandatorySkillForm.weight),
         type: 'mandatory',
-        yearsOfExperience: 0,
       },
     ]);
 
@@ -149,7 +148,6 @@ export default function PositionForm({
         name: desirableSkillForm.name,
         weight: parseInt(desirableSkillForm.weight),
         type: 'desirable',
-        yearsOfExperience: 0,
       },
     ]);
 
@@ -222,7 +220,7 @@ export default function PositionForm({
       <Stack spacing={3}>
         {formError ? <Alert severity="error">{formError}</Alert> : null}
 
-        {/* ALERTA IA */}
+        {/* Resumen del cálculo automático de matching */}
         <Alert
           icon={<Sparkles size={16} />}
           sx={{
@@ -235,12 +233,11 @@ export default function PositionForm({
           }}
         >
           <Typography sx={{ fontWeight: 600, fontSize: '0.82rem' }}>
-            Matching Automático con IA
+            Matching Automático por Skills
           </Typography>
           <Typography sx={{ fontSize: '0.75rem', mt: 0.5 }}>
-            La configuración que realices será utilizada por la IA para evaluar,
-            rankear y sugerir los mejores candidatos. Los pesos asignados a cada
-            skill determinarán la relevancia en el scoring final.
+            Las skills y sus pesos se utilizarán para calcular un FIT%
+            determinístico y ordenar candidatos compatibles.
           </Typography>
         </Alert>
 

@@ -1,4 +1,3 @@
-// branch: fb-50-57
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 
 import type {
@@ -228,6 +227,42 @@ export class ApplicationsRepository {
     }
   }
 
+  /**
+   * Persiste un resultado válido o elimina el anterior cuando todavía no hay
+   * información suficiente para calcularlo.
+   */
+  async updateSkillMatch(
+    applicationId: string,
+    skillMatchStats: Omit<SkillMatchStats, 'actualizadoEn'> | null,
+  ): Promise<void> {
+    try {
+      const applicationRef = this.collection.doc(applicationId);
+
+      if (skillMatchStats === null) {
+        await applicationRef.update({
+          fitScore: FieldValue.delete(),
+          skillMatchStats: FieldValue.delete(),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+        return;
+      }
+
+      await applicationRef.update({
+        fitScore: skillMatchStats.scoreTotal,
+        skillMatchStats: {
+          ...skillMatchStats,
+          actualizadoEn: FieldValue.serverTimestamp(),
+        },
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    } catch (error) {
+      throw new ApplicationsRepositoryError(
+        `No se pudo actualizar el matching de la postulación ${applicationId}.`,
+        error,
+      );
+    }
+  }
+
   async delete(id: string): Promise<void> {
     try {
       const applicationRef = this.collection.doc(id);
@@ -305,9 +340,9 @@ export class ApplicationsRepository {
       // Convertir el Timestamp anidado dentro de skillMatchStats (si existe)
       skillMatchStats: application.skillMatchStats
         ? {
-          ...application.skillMatchStats,
-          actualizadoEn: application.skillMatchStats.actualizadoEn.toDate(),
-        }
+            ...application.skillMatchStats,
+            actualizadoEn: application.skillMatchStats.actualizadoEn.toDate(),
+          }
         : undefined,
     };
   }

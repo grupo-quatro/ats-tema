@@ -1,4 +1,3 @@
-// branch: fb-50-57
 import type { SkillType } from './job';
 
 /**
@@ -6,7 +5,7 @@ import type { SkillType } from './job';
  * Se usa tanto para coincidentes como para faltantes.
  */
 export interface SkillMatchDetail {
-  /** Nombre normalizado de la skill (lowercase). */
+  /** Nombre original de la skill requerida por la posición. */
   name: string;
   /** Peso relativo de la skill dentro del puesto (tal como viene de Job.skills.weight). */
   weight: number;
@@ -28,8 +27,8 @@ export interface SkillMatchStats {
    * Fórmula:
    *   scoreTotal = (Σ weight_i * matched_i) / (Σ weight_i) * 100
    *
-   * Es el número principal para ordenar y mostrar la barra de progreso
-   * en el listado de candidatos.
+   * Es el número principal para ordenar y mostrar el FIT en el listado
+   * de candidatos.
    */
   scoreTotal: number;
 
@@ -54,8 +53,8 @@ export interface SkillMatchStats {
 
   /**
    * true si el candidato tiene el 100 % de las skills de tipo 'mandatory'.
-   * Sirve para filtrado duro en el frontend (excluir candidatos que no
-   * cumplen los requisitos mínimos) antes de ordenar por scoreTotal.
+   * Permite mostrar o filtrar el cumplimiento de requisitos mínimos sin
+   * modificar la fórmula de scoreTotal.
    */
   tieneTodosLosMandatorios: boolean;
 

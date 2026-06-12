@@ -125,11 +125,11 @@ describe('mapApplicationToProfile', () => {
     expect(profile.fitScore).toBe(92);
   });
 
-  it('usa 0 como fitScore cuando no está definido', () => {
+  it('conserva fitScore sin definir cuando no está disponible', () => {
     const profile = mapApplicationToProfile(
       makeApplication({ fitScore: undefined }),
     );
-    expect(profile.fitScore).toBe(0);
+    expect(profile.fitScore).toBeUndefined();
   });
 
   it('retorna strengths vacío', () => {
