@@ -32,6 +32,10 @@ export {
 export { getStageHistory } from './callables/getStageHistory';
 export { onCVUploaded } from './triggers/onCvUploaded';
 export { onApplicationCreated } from './triggers/onApplicationCreated';
+export {
+  onCandidateMatchingInputsUpdated,
+  onJobMatchingInputsUpdated,
+} from './triggers/onMatchingInputsUpdated';
 export { onUserCreated } from './triggers/onUserCreated';
 export { submitApplication } from './callables/submitApplication';
 export { getCvSignedUrl } from './callables/getCvSignedUrl';

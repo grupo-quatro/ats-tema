@@ -1,11 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import type { ApplicationWithCandidateDTO } from '@ats/shared-types';
+import { PIPELINE_ORDER } from '@ats/shared-types';
 import {
   getInitials,
   buildStageHistory,
   isGenericStageChangeOption,
   mapApplicationToProfile,
-  STAGE_ORDER,
+  getAvailableRecruiterStages,
+  getInterviewDecisionOptions,
+  isTerminalApplicationStage,
 } from '../utils/candidateProfile.utils';
 
 const makeApplication = (
@@ -82,9 +85,9 @@ describe('buildStageHistory', () => {
     expect(history[0]!.status).toBe('current');
   });
 
-  it('retorna una entrada por cada stage del orden (excluyendo rejected/withdrawn)', () => {
+  it('retorna una entrada por cada stage del orden excepto profile_pending (sistema-solo)', () => {
     const history = buildStageHistory('screening');
-    expect(history.length).toBe(STAGE_ORDER.length);
+    expect(history.length).toBe(PIPELINE_ORDER.length - 1);
   });
 
   it('cuando el stage es hired todas las etapas anteriores son completed', () => {
@@ -125,11 +128,11 @@ describe('mapApplicationToProfile', () => {
     expect(profile.fitScore).toBe(92);
   });
 
-  it('usa 0 como fitScore cuando no está definido', () => {
+  it('conserva fitScore sin definir cuando no está disponible', () => {
     const profile = mapApplicationToProfile(
       makeApplication({ fitScore: undefined }),
     );
-    expect(profile.fitScore).toBe(0);
+    expect(profile.fitScore).toBeUndefined();
   });
 
   it('retorna strengths vacío', () => {
@@ -185,5 +188,74 @@ describe('mapApplicationToProfile', () => {
       makeApplication({ stage: 'rejected' }),
     );
     expect(profile.currentStage).toBe('Descartado');
+  });
+});
+
+// ─── getAvailableRecruiterStages ─────────────────────────────────────────────
+
+describe('getAvailableRecruiterStages', () => {
+  it('incluye solo stages recruiter_action válidos desde screening', () => {
+    const stages = getAvailableRecruiterStages('screening');
+    const keys = stages.map((s) => s.key);
+
+    expect(keys).toContain('contacto_entrevista_rrhh_1');
+    expect(keys).toContain('cv_presentado_area');
+    expect(keys).not.toContain('entrevista_rrhh_1_agendada');
+    expect(keys).not.toContain('descartado');
+  });
+
+  it('incluye send_offer como jump stage desde cualquier etapa activa', () => {
+    const stages = getAvailableRecruiterStages('hr_1_done');
+    expect(stages.map((s) => s.key)).toContain('enviar_oferta');
+  });
+
+  it('retorna vacío si no hay stage actual', () => {
+    expect(getAvailableRecruiterStages(null)).toEqual([]);
+  });
+});
+
+// ─── getInterviewDecisionOptions ─────────────────────────────────────────────
+
+describe('getInterviewDecisionOptions', () => {
+  it('incluye las tres opciones de decisión desde cualquier etapa', () => {
+    const options = getInterviewDecisionOptions('hr_1_done');
+    const labels = options.map((o) => o.label);
+
+    expect(labels).toContain('Avanzar a siguiente etapa');
+    expect(labels).toContain('Avanzar y mantener en consideración');
+    expect(labels).toContain('No avanzar - Rechazado');
+    expect(labels.length).toBe(3);
+  });
+
+  it('incluye las tres opciones de decisión', () => {
+    const options = getInterviewDecisionOptions('hr_1_done');
+    const labels = options.map((o) => o.label);
+
+    expect(labels).toContain('Avanzar a siguiente etapa');
+    expect(labels).toContain('Avanzar y mantener en consideración');
+    expect(labels).toContain('No avanzar - Rechazado');
+    expect(labels.length).toBe(3);
+  });
+
+  it('retorna vacío si no hay stage actual', () => {
+    expect(getInterviewDecisionOptions(null)).toEqual([]);
+  });
+
+  it('no incluye opciones en etapas terminales', () => {
+    const options = getInterviewDecisionOptions('hired');
+    expect(options.length).toBeGreaterThan(0);
+  });
+});
+
+describe('isTerminalApplicationStage', () => {
+  it('retorna true para hired y rejected', () => {
+    expect(isTerminalApplicationStage('hired')).toBe(true);
+    expect(isTerminalApplicationStage('rejected')).toBe(true);
+  });
+
+  it('retorna false para etapas activas y null', () => {
+    expect(isTerminalApplicationStage('screening')).toBe(false);
+    expect(isTerminalApplicationStage('offer_sent')).toBe(false);
+    expect(isTerminalApplicationStage(null)).toBe(false);
   });
 });

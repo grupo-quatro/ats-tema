@@ -63,13 +63,10 @@
       },
       "Skill": {
         "type": "object",
-        "required": ["name", "yearsOfExperience", "weight", "type"],
+        "required": ["name", "weight", "type"],
         "properties": {
           "name": {
             "type": "string"
-          },
-          "yearsOfExperience": {
-            "type": "number"
           },
           "weight": {
             "type": "number",
@@ -565,10 +562,19 @@
           "applied",
           "screening",
           "cv_submitted",
-          "interview_1_scheduled",
-          "interview_1_done",
-          "interview_2_scheduled",
-          "interview_2_done",
+          "schedule_hr_1",
+          "hr_1_scheduled",
+          "hr_1_done",
+          "schedule_hr_2",
+          "hr_2_scheduled",
+          "hr_2_done",
+          "schedule_tech_1",
+          "tech_1_scheduled",
+          "tech_1_done",
+          "schedule_tech_2",
+          "tech_2_scheduled",
+          "tech_2_done",
+          "send_offer",
           "offer_sent",
           "hired",
           "rejected",
@@ -583,24 +589,69 @@
         "type": "string",
         "enum": ["not_required", "pending", "processing", "done", "failed"]
       },
+      "SkillMatchDetail": {
+        "type": "object",
+        "required": ["name", "weight", "type"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Original name of the skill required by the position"
+          },
+          "weight": {
+            "type": "number",
+            "description": "Relative weight configured for the position"
+          },
+          "type": {
+            "$ref": "#/components/schemas/SkillType"
+          }
+        }
+      },
       "SkillMatchStats": {
         "type": "object",
-        "description": "Weighted skill match statistics calculated by Cloud Function on application creation",
+        "description": "Deterministic weighted skill match calculated when an application is created and recalculated when candidate or position skills change",
+        "required": [
+          "scoreTotal",
+          "scoreMandatory",
+          "scoreDesirable",
+          "tieneTodosLosMandatorios",
+          "skillsCoincidentes",
+          "skillsFaltantes",
+          "actualizadoEn"
+        ],
         "properties": {
-          "matched": {
+          "scoreTotal": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "scoreMandatory": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "scoreDesirable": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "tieneTodosLosMandatorios": {
+            "type": "boolean"
+          },
+          "skillsCoincidentes": {
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/SkillMatchDetail"
             }
           },
-          "missing": {
+          "skillsFaltantes": {
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/SkillMatchDetail"
             }
           },
-          "score": {
-            "type": "number"
+          "actualizadoEn": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },
@@ -635,7 +686,8 @@
           "fitScore": {
             "type": "number",
             "minimum": 0,
-            "maximum": 100
+            "maximum": 100,
+            "description": "Deterministic total score. Omitted while no valid calculation is available; 0 means a valid calculation with no matches."
           },
           "coverLetter": {
             "type": "string"
@@ -758,19 +810,24 @@
             "type": "string"
           },
           "phone": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[0-9]+$",
+            "description": "Canonical phone number persisted using digits only."
           },
           "location": {
             "type": "string"
           },
           "yearsOfExperience": {
-            "type": "number"
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60
           },
           "education": {
             "type": "string"
           },
           "technicalSkills": {
             "type": "array",
+            "uniqueItems": true,
             "items": {
               "type": "string"
             }
@@ -822,7 +879,8 @@
           "fitScore": {
             "type": "number",
             "minimum": 0,
-            "maximum": 100
+            "maximum": 100,
+            "description": "Deterministic total score. Omitted while no valid calculation is available; 0 means a valid calculation with no matches."
           },
           "skillMatchStats": {
             "$ref": "#/components/schemas/SkillMatchStats"
@@ -883,10 +941,12 @@
           },
           "email": {
             "type": "string",
-            "format": "email"
+            "format": "email",
+            "description": "Normalized to lowercase and persisted without spaces."
           },
           "phone": {
-            "type": "string"
+            "type": "string",
+            "description": "Accepts formatted input; the backend persists digits only."
           },
           "location": {
             "type": "string"
@@ -895,13 +955,15 @@
             "type": "string"
           },
           "yearsOfExperience": {
-            "type": "number"
+            "type": "number",
+            "description": "Values outside this range or non-integer values are omitted."
           },
           "education": {
             "type": "string"
           },
           "technicalSkills": {
             "type": "array",
+            "description": "Trimmed and deduplicated by the backend.",
             "items": {
               "type": "string"
             }
@@ -935,22 +997,28 @@
           },
           "email": {
             "type": "string",
-            "format": "email"
+            "format": "email",
+            "description": "Normalized to lowercase and persisted without spaces."
           },
           "phone": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[0-9]+$",
+            "description": "Canonical phone number persisted using digits only."
           },
           "location": {
             "type": "string"
           },
           "yearsOfExperience": {
-            "type": "number"
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60
           },
           "education": {
             "type": "string"
           },
           "technicalSkills": {
             "type": "array",
+            "uniqueItems": true,
             "items": {
               "type": "string"
             }
@@ -2951,6 +3019,7 @@
           {
             "name": "orderBy",
             "in": "query",
+            "description": "Field used by Firestore for ordering. Ordering by fitScore excludes applications where the score is not available; the pipeline requests createdAt and orders by FIT in memory to include them.",
             "schema": {
               "type": "string",
               "enum": ["createdAt", "fitScore"]

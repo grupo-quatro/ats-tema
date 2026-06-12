@@ -272,17 +272,6 @@ function validateSkill(skill: Skill): void {
   }
 
   if (
-    typeof skill.yearsOfExperience !== 'number' ||
-    !Number.isFinite(skill.yearsOfExperience) ||
-    skill.yearsOfExperience < 0
-  ) {
-    throw new HttpsError(
-      'invalid-argument',
-      'Los años de experiencia de cada skill deben ser un número mayor o igual a 0.',
-    );
-  }
-
-  if (
     typeof skill.weight !== 'number' ||
     !Number.isFinite(skill.weight) ||
     skill.weight < 1 ||

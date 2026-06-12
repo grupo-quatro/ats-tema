@@ -45,14 +45,14 @@ describe('PipelineService.getCandidatesByJob', () => {
     expect(result).toEqual(candidates);
   });
 
-  it('llama al repositorio con jobId y ordenamiento por fitScore desc por defecto', async () => {
+  it('consulta por fecha para incluir postulaciones sin fitScore', async () => {
     vi.mocked(mockRepo.getApplicationsByJob).mockResolvedValue([]);
 
     await service.getCandidatesByJob('job-1');
 
     expect(mockRepo.getApplicationsByJob).toHaveBeenCalledWith({
       jobId: 'job-1',
-      orderBy: 'fitScore',
+      orderBy: 'createdAt',
       orderDirection: 'desc',
       limit: undefined,
     });

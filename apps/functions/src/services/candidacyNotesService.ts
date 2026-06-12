@@ -1,4 +1,5 @@
 import type {
+  Application,
   CandidacyNote,
   CandidacyNoteDTO,
   EmployeeRole,
@@ -29,6 +30,15 @@ export class CandidacyNoteForbiddenError extends Error {
   }
 }
 
+export class CandidacyNoteTerminalStageError extends Error {
+  constructor() {
+    super(
+      'No se pueden agregar ni editar notas cuando el candidato está contratado o rechazado.',
+    );
+    this.name = 'CandidacyNoteTerminalStageError';
+  }
+}
+
 const ROLE_LABELS: Record<EmployeeRole, string> = {
   hr: 'Recursos Humanos',
   tech_lead: 'Líder técnico',
@@ -56,6 +66,8 @@ export class CandidacyNotesService {
       throw new ApplicationNotFoundError(applicationId);
     }
 
+    this.assertCanManageNotes(application);
+
     return this.createNote(applicationId, text, source, caller);
   }
 
@@ -72,6 +84,8 @@ export class CandidacyNotesService {
     if (!application) {
       throw new ApplicationNotFoundError(applicationId);
     }
+
+    this.assertCanManageNotes(application);
 
     const note = await this.updateNote(applicationId, noteId, text, caller);
     return this.toCandidacyNoteDTO(note);
@@ -90,6 +104,12 @@ export class CandidacyNotesService {
       await this.candidacyNotesRepository.findByApplicationId(applicationId);
 
     return notes.map(this.toCandidacyNoteDTO);
+  }
+
+  private assertCanManageNotes(application: Application): void {
+    if (application.stage === 'hired' || application.stage === 'rejected') {
+      throw new CandidacyNoteTerminalStageError();
+    }
   }
 
   private async createNote(

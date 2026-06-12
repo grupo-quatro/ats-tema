@@ -10,6 +10,7 @@ import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
 import {
   CandidacyNoteForbiddenError,
   CandidacyNoteNotFoundError,
+  CandidacyNoteTerminalStageError,
   CandidacyNotesService,
 } from '../services/candidacyNotesService';
 import { ApplicationNotFoundError } from '../services/updateApplicationService';
@@ -63,6 +64,11 @@ export const saveCandidacyNote = onRequest(async (request, response) => {
 
     if (error instanceof CandidacyNoteForbiddenError) {
       response.status(403).json({ error: error.message });
+      return;
+    }
+
+    if (error instanceof CandidacyNoteTerminalStageError) {
+      response.status(409).json({ error: error.message });
       return;
     }
 
@@ -155,6 +161,11 @@ export const updateCandidacyNote = onRequest(async (request, response) => {
 
     if (error instanceof CandidacyNoteForbiddenError) {
       response.status(403).json({ error: error.message });
+      return;
+    }
+
+    if (error instanceof CandidacyNoteTerminalStageError) {
+      response.status(409).json({ error: error.message });
       return;
     }
 

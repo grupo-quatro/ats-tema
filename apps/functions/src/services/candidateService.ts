@@ -29,6 +29,7 @@ import { CandidatesRepository } from '../repositories/candidateRepository';
 import { ApplicationRegistrationService } from './applicationRegistrationService';
 import { ApplicationsRepository } from '../repositories/applicationRepository';
 import { storage } from '../core/firebaseAdmin';
+import { normalizeCandidateProfile } from './candidateProfileNormalizer';
 
 export class CandidateRegistrationCVServiceError extends Error {
   constructor(
@@ -151,8 +152,10 @@ export class CandidateRegistrationService {
     const candidateId = this.candidatesRepository.createId();
 
     try {
+      const normalizedProfile = normalizeCandidateProfile(payload);
+      const normalizedEmail = normalizedProfile.email ?? '';
       const existingCandidates =
-        await this.candidatesRepository.findManyByEmail(payload.email.trim());
+        await this.candidatesRepository.findManyByEmail(normalizedEmail);
 
       for (const existingCandidate of existingCandidates) {
         const existingApplication =
@@ -171,21 +174,21 @@ export class CandidateRegistrationService {
       const registrationType = this.resolveRegistrationType(payload.jobId);
       const cvParseStatus: CvParseStatus = 'not_required';
 
-      const firstName = payload.firstName.trim();
-      const lastName = payload.lastName.trim();
+      const firstName = normalizedProfile.firstName ?? '';
+      const lastName = normalizedProfile.lastName ?? '';
       const fullName = `${firstName} ${lastName}`;
 
       const candidateData: CreateCandidateDTO = {
         firstName,
         lastName,
         fullName,
-        email: payload.email.trim(),
-        phone: payload.phone.trim(),
-        location: payload.location?.trim(),
-        yearsOfExperience: payload.yearsOfExperience,
-        education: payload.education?.trim(),
-        technicalSkills: payload.technicalSkills ?? [],
-        professionalSummary: payload.professionalSummary?.trim(),
+        email: normalizedEmail,
+        phone: normalizedProfile.phone,
+        location: normalizedProfile.location,
+        yearsOfExperience: normalizedProfile.yearsOfExperience,
+        education: normalizedProfile.education,
+        technicalSkills: normalizedProfile.technicalSkills ?? [],
+        professionalSummary: normalizedProfile.professionalSummary,
         profileStatus: 'completed',
         registrationType,
         registrationSource: 'manual',
@@ -296,7 +299,11 @@ export class CandidateRegistrationService {
     payload: ConfirmCandidateProfilePayload,
   ): Promise<ConfirmCandidateProfileResponse> {
     const { candidateId, applicationId, profile } = payload;
-    const fullName = `${profile.firstName} ${profile.lastName}`.trim();
+    const normalizedProfile = normalizeCandidateProfile(profile);
+    const normalizedEmail = normalizedProfile.email ?? '';
+    const firstName = normalizedProfile.firstName ?? '';
+    const lastName = normalizedProfile.lastName ?? '';
+    const fullName = `${firstName} ${lastName}`.trim();
 
     const currentCandidate =
       await this.candidatesRepository.findById(candidateId);
@@ -324,7 +331,7 @@ export class CandidateRegistrationService {
 
     if (currentApplication) {
       const existingCandidates =
-        await this.candidatesRepository.findManyByEmail(profile.email.trim());
+        await this.candidatesRepository.findManyByEmail(normalizedEmail);
 
       for (const existingCandidate of existingCandidates) {
         if (existingCandidate.id === candidateId) {
@@ -346,16 +353,16 @@ export class CandidateRegistrationService {
     }
 
     await this.candidatesRepository.update(candidateId, {
-      firstName: profile.firstName,
-      lastName: profile.lastName,
+      firstName,
+      lastName,
       fullName,
-      email: profile.email,
-      phone: profile.phone,
-      location: profile.location,
-      yearsOfExperience: profile.yearsOfExperience,
-      education: profile.education,
-      technicalSkills: profile.technicalSkills,
-      professionalSummary: profile.professionalSummary,
+      email: normalizedEmail,
+      phone: normalizedProfile.phone,
+      location: normalizedProfile.location,
+      yearsOfExperience: normalizedProfile.yearsOfExperience,
+      education: normalizedProfile.education,
+      technicalSkills: normalizedProfile.technicalSkills,
+      professionalSummary: normalizedProfile.professionalSummary,
       parsedCv: {
         experience: profile.parsedExperience ?? [],
         education: profile.parsedEducation ?? [],
@@ -373,7 +380,7 @@ export class CandidateRegistrationService {
         stage: 'applied',
         status: 'active',
         candidateName: fullName,
-        candidateEmail: profile.email,
+        candidateEmail: normalizedEmail,
       });
 
       const stageHistory =
@@ -386,7 +393,7 @@ export class CandidateRegistrationService {
         await this.applicationRepository.addStageHistoryEntry(applicationId, {
           stage: 'applied',
           changedBy: candidateId,
-          changedByEmail: profile.email,
+          changedByEmail: normalizedEmail,
           notes: 'Perfil confirmado por el candidato.',
         });
       }

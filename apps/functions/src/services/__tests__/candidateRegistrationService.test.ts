@@ -108,6 +108,42 @@ describe('CandidateRegistrationService.registerCandidate', () => {
     });
   });
 
+  it('normaliza los datos ingresados manualmente antes de persistirlos', async () => {
+    await service.registerCandidate(
+      'auth-uid',
+      makePayload({
+        firstName: ' Ana   María ',
+        lastName: ' Pérez ',
+        email: ' Ana.Perez @Example.COM ',
+        phone: '(011) 2938-8293',
+        location: ' Buenos   Aires ',
+        yearsOfExperience: 61,
+        education: ' Analista   de Sistemas ',
+        technicalSkills: [' React ', 'react', '', ' TypeScript '],
+        professionalSummary: ' Desarrolladora   frontend. ',
+      }),
+    );
+
+    expect(mockCandidatesRepo.findManyByEmail).toHaveBeenCalledWith(
+      'ana.perez@example.com',
+    );
+    expect(mockCandidatesRepo.createOrUpdateCandidate).toHaveBeenCalledWith(
+      'cand-1',
+      expect.objectContaining({
+        firstName: 'Ana María',
+        lastName: 'Pérez',
+        fullName: 'Ana María Pérez',
+        email: 'ana.perez@example.com',
+        phone: '01129388293',
+        location: 'Buenos Aires',
+        yearsOfExperience: undefined,
+        education: 'Analista de Sistemas',
+        technicalSkills: ['React', 'TypeScript'],
+        professionalSummary: 'Desarrolladora frontend.',
+      }),
+    );
+  });
+
   it('genera un candidateId nuevo en lugar de usar el uid autenticado', async () => {
     mockCandidatesRepo.createId.mockReturnValue('cand-generated');
 
@@ -566,6 +602,42 @@ describe('CandidateRegistrationService.confirmCandidateProfile', () => {
       changedByEmail: 'ana@example.com',
       notes: 'Perfil confirmado por el candidato.',
     });
+  });
+
+  it('normaliza los datos confirmados antes de persistirlos', async () => {
+    await service.confirmCandidateProfile({
+      candidateId: 'cand-1',
+      applicationId: 'app-1',
+      profile: {
+        firstName: ' Ana ',
+        lastName: ' Loria ',
+        email: ' ANA@Example.COM ',
+        phone: '+54 (11) 2233-4455',
+        technicalSkills: [' React ', 'react', ' TypeScript '],
+      },
+    });
+
+    expect(mockCandidatesRepo.findManyByEmail).toHaveBeenCalledWith(
+      'ana@example.com',
+    );
+    expect(mockCandidatesRepo.update).toHaveBeenCalledWith(
+      'cand-1',
+      expect.objectContaining({
+        firstName: 'Ana',
+        lastName: 'Loria',
+        fullName: 'Ana Loria',
+        email: 'ana@example.com',
+        phone: '541122334455',
+        technicalSkills: ['React', 'TypeScript'],
+      }),
+    );
+    expect(mockAppRepo.update).toHaveBeenCalledWith(
+      'app-1',
+      expect.objectContaining({
+        candidateName: 'Ana Loria',
+        candidateEmail: 'ana@example.com',
+      }),
+    );
   });
 
   it('bloquea la confirmación si el email ya tiene postulación para el mismo job', async () => {

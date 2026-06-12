@@ -30,12 +30,8 @@ export class SeedJobsServiceError extends Error {
 const PUBLISHED_AT = new Date('2026-05-16T12:00:00.000Z');
 
 function buildSkills(
-  mandatory: Array<{ name: string; yearsOfExperience: number; weight: number }>,
-  desirable: Array<{
-    name: string;
-    yearsOfExperience: number;
-    weight: number;
-  }> = [],
+  mandatory: Array<{ name: string; weight: number }>,
+  desirable: Array<{ name: string; weight: number }> = [],
 ): Skill[] {
   return [
     ...mandatory.map((skill) => ({
@@ -83,15 +79,15 @@ const JOB_SEEDS: SeedJobDefinition[] = [
       'Buscamos un perfil frontend con foco en SSR, experiencia en React y buen criterio para interfaces de producto.',
     skills: buildSkills(
       [
-        { name: 'React', yearsOfExperience: 4, weight: 5 },
-        { name: 'Next.js', yearsOfExperience: 3, weight: 5 },
-        { name: 'TypeScript', yearsOfExperience: 3, weight: 4 },
-        { name: 'SSR', yearsOfExperience: 2, weight: 4 },
+        { name: 'React', weight: 5 },
+        { name: 'Next.js', weight: 5 },
+        { name: 'TypeScript', weight: 4 },
+        { name: 'SSR', weight: 4 },
       ],
       [
-        { name: 'Firebase', yearsOfExperience: 1, weight: 2 },
-        { name: 'Testing Library', yearsOfExperience: 1, weight: 2 },
-        { name: 'MUI', yearsOfExperience: 1, weight: 1 },
+        { name: 'Firebase', weight: 2 },
+        { name: 'Testing Library', weight: 2 },
+        { name: 'MUI', weight: 1 },
       ],
     ),
     salaryMin: 1800,
@@ -115,15 +111,15 @@ const JOB_SEEDS: SeedJobDefinition[] = [
       'Rol orientado a Cloud Functions, Firestore y diseño de servicios backend para soportar flujos ATS.',
     skills: buildSkills(
       [
-        { name: 'Node.js', yearsOfExperience: 5, weight: 5 },
-        { name: 'TypeScript', yearsOfExperience: 4, weight: 4 },
-        { name: 'Firebase Functions', yearsOfExperience: 3, weight: 5 },
-        { name: 'Firestore', yearsOfExperience: 3, weight: 4 },
+        { name: 'Node.js', weight: 5 },
+        { name: 'TypeScript', weight: 4 },
+        { name: 'Firebase Functions', weight: 5 },
+        { name: 'Firestore', weight: 4 },
       ],
       [
-        { name: 'OpenAI API', yearsOfExperience: 1, weight: 2 },
-        { name: 'Vitest', yearsOfExperience: 1, weight: 2 },
-        { name: 'Emulator Suite', yearsOfExperience: 1, weight: 2 },
+        { name: 'OpenAI API', weight: 2 },
+        { name: 'Vitest', weight: 2 },
+        { name: 'Emulator Suite', weight: 2 },
       ],
     ),
     salaryMin: 2000,
@@ -148,13 +144,13 @@ const JOB_SEEDS: SeedJobDefinition[] = [
       'Posición para gestionar búsquedas IT, screening inicial y coordinación con líderes técnicos.',
     skills: buildSkills(
       [
-        { name: 'Reclutamiento IT', yearsOfExperience: 4, weight: 5 },
-        { name: 'Entrevistas iniciales', yearsOfExperience: 3, weight: 4 },
-        { name: 'Seguimiento de pipeline', yearsOfExperience: 2, weight: 4 },
+        { name: 'Reclutamiento IT', weight: 5 },
+        { name: 'Entrevistas iniciales', weight: 4 },
+        { name: 'Seguimiento de pipeline', weight: 4 },
       ],
       [
-        { name: 'ATS', yearsOfExperience: 1, weight: 2 },
-        { name: 'LinkedIn Recruiter', yearsOfExperience: 1, weight: 2 },
+        { name: 'ATS', weight: 2 },
+        { name: 'LinkedIn Recruiter', weight: 2 },
       ],
     ),
     salaryMin: 1500,
@@ -178,14 +174,14 @@ const JOB_SEEDS: SeedJobDefinition[] = [
       'Perfil QA con experiencia en automatización, armado de suites de prueba y validación de flujos críticos.',
     skills: buildSkills(
       [
-        { name: 'Testing funcional', yearsOfExperience: 3, weight: 4 },
-        { name: 'Automatización', yearsOfExperience: 3, weight: 5 },
-        { name: 'APIs', yearsOfExperience: 2, weight: 3 },
+        { name: 'Testing funcional', weight: 4 },
+        { name: 'Automatización', weight: 5 },
+        { name: 'APIs', weight: 3 },
       ],
       [
-        { name: 'Playwright', yearsOfExperience: 2, weight: 3 },
-        { name: 'Cypress', yearsOfExperience: 1, weight: 2 },
-        { name: 'CI/CD', yearsOfExperience: 1, weight: 2 },
+        { name: 'Playwright', weight: 3 },
+        { name: 'Cypress', weight: 2 },
+        { name: 'CI/CD', weight: 2 },
       ],
     ),
     salaryMin: 1700,
@@ -209,14 +205,14 @@ const JOB_SEEDS: SeedJobDefinition[] = [
       'Diseño de experiencias de producto con foco en claridad operativa, handoff a desarrollo y consistencia visual.',
     skills: buildSkills(
       [
-        { name: 'Figma', yearsOfExperience: 3, weight: 5 },
-        { name: 'Diseño UX', yearsOfExperience: 3, weight: 4 },
-        { name: 'Diseño UI', yearsOfExperience: 3, weight: 4 },
+        { name: 'Figma', weight: 5 },
+        { name: 'Diseño UX', weight: 4 },
+        { name: 'Diseño UI', weight: 4 },
       ],
       [
-        { name: 'Research', yearsOfExperience: 1, weight: 2 },
-        { name: 'Prototipado', yearsOfExperience: 1, weight: 2 },
-        { name: 'Accesibilidad', yearsOfExperience: 1, weight: 1 },
+        { name: 'Research', weight: 2 },
+        { name: 'Prototipado', weight: 2 },
+        { name: 'Accesibilidad', weight: 1 },
       ],
     ),
     salaryMin: 1600,

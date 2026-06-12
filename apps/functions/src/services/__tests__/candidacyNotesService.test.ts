@@ -7,6 +7,7 @@ import {
 import {
   CandidacyNoteForbiddenError,
   CandidacyNoteNotFoundError,
+  CandidacyNoteTerminalStageError,
   CandidacyNotesService,
 } from '../candidacyNotesService';
 import { ApplicationNotFoundError } from '../updateApplicationService';
@@ -20,7 +21,9 @@ vi.mock('../../core/firebaseAdmin', () => ({
   },
 }));
 
-const makeApplication = (): Application => ({
+const makeApplication = (
+  overrides: Partial<Application> = {},
+): Application => ({
   id: 'app-1',
   jobId: 'job-1',
   candidateId: 'cand-1',
@@ -29,6 +32,7 @@ const makeApplication = (): Application => ({
   createdAt: new Date(),
   updatedAt: new Date(),
   stageUpdatedAt: new Date(),
+  ...overrides,
 });
 
 const makeNote = (overrides: Partial<CandidacyNote> = {}): CandidacyNote => ({
@@ -88,6 +92,32 @@ describe('CandidacyNotesService.saveCandidacyNote', () => {
         { uid: 'uid-hr', role: EMPLOYEE_ROLES.HR },
       ),
     ).rejects.toThrow(ApplicationNotFoundError);
+  });
+
+  it('lanza CandidacyNoteTerminalStageError si el candidato está contratado', async () => {
+    mockAppsRepo.findById.mockResolvedValue(
+      makeApplication({ stage: 'hired' }),
+    );
+
+    await expect(
+      service.saveCandidacyNote(
+        { applicationId: 'app-1', text: 'Nota' },
+        { uid: 'uid-hr', role: 'hr' },
+      ),
+    ).rejects.toThrow(CandidacyNoteTerminalStageError);
+  });
+
+  it('lanza CandidacyNoteTerminalStageError si el candidato está rechazado', async () => {
+    mockAppsRepo.findById.mockResolvedValue(
+      makeApplication({ stage: 'rejected' }),
+    );
+
+    await expect(
+      service.saveCandidacyNote(
+        { applicationId: 'app-1', text: 'Nota' },
+        { uid: 'uid-hr', role: 'hr' },
+      ),
+    ).rejects.toThrow(CandidacyNoteTerminalStageError);
   });
 });
 
@@ -154,7 +184,7 @@ describe('CandidacyNotesService.updateCandidacyNote', () => {
 
     expect(mockNotesRepo.update).toHaveBeenCalled();
   });
-
+  
   it('no permite editar notas generadas por entrevistas', async () => {
     mockNotesRepo.findById.mockResolvedValue(makeNote({ source: 'interview' }));
 
@@ -165,7 +195,35 @@ describe('CandidacyNotesService.updateCandidacyNote', () => {
       ),
     ).rejects.toThrow(CandidacyNoteForbiddenError);
   });
+
+  it('lanza CandidacyNoteTerminalStageError si el candidato está contratado', async () => {
+    mockAppsRepo.findById.mockResolvedValue(
+      makeApplication({ stage: 'hired' }),
+    );
+
+    await expect(
+      service.updateCandidacyNote(
+        { applicationId: 'app-1', id: 'note-1', text: 'Actualizada' },
+        { uid: 'uid-hr', role: 'hr' },
+      ),
+    ).rejects.toThrow(CandidacyNoteTerminalStageError);
+  });
+
+  it('lanza CandidacyNoteTerminalStageError si el candidato está rechazado', async () => {
+    mockAppsRepo.findById.mockResolvedValue(
+      makeApplication({ stage: 'rejected' }),
+    );
+
+    await expect(
+      service.updateCandidacyNote(
+        { applicationId: 'app-1', id: 'note-1', text: 'Actualizada' },
+        { uid: 'uid-hr', role: 'hr' },
+      ),
+    ).rejects.toThrow(CandidacyNoteTerminalStageError);
+  });
 });
+
+
 
 describe('CandidacyNotesService.getCandidacyNotes', () => {
   let service: CandidacyNotesService;

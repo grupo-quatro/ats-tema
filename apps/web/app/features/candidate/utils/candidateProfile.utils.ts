@@ -3,33 +3,18 @@ import type {
   ApplicationWithCandidateDTO,
   ApplicationStage,
 } from '@ats/shared-types';
+import {
+  JUMP_STAGES,
+  PIPELINE_ORDER,
+  STAGE_CONFIG,
+  isValidTransition,
+} from '@ats/shared-types';
 import type {
   CandidateMockProfile,
   CandidateStageEntry,
   CandidateStageKey,
 } from '../mock/candidateMock';
 import { STAGE_LABELS } from '../mock/candidateMock';
-
-export const STAGE_ORDER: ApplicationStage[] = [
-  'applied',
-  'screening',
-  'schedule_hr_1',
-  'hr_1_scheduled',
-  'hr_1_done',
-  'cv_submitted',
-  'schedule_tech_1',
-  'tech_1_scheduled',
-  'tech_1_done',
-  'schedule_tech_2',
-  'tech_2_scheduled',
-  'tech_2_done',
-  'schedule_hr_2',
-  'hr_2_scheduled',
-  'hr_2_done',
-  'send_offer',
-  'offer_sent',
-  'hired',
-];
 
 export const STAGE_KEY_MAP: Partial<
   Record<ApplicationStage, CandidateStageKey>
@@ -79,6 +64,9 @@ export const CANDIDATE_STAGE_TO_APP_STAGE: Record<
   oferta_enviada: 'offer_sent',
   contratado: 'hired',
   descartado: 'rejected',
+  avanza_siguiente: 'applied',
+  avanza_considera: 'applied',
+  no_avanza_rechazado: 'rejected',
 };
 
 export function getCandidateStageLabel(stage: ApplicationStage): string {
@@ -88,6 +76,58 @@ export function getCandidateStageLabel(stage: ApplicationStage): string {
 
 export function isGenericStageChangeOption(stage: ApplicationStage): boolean {
   return stage !== 'send_offer' && stage !== 'hired';
+}
+
+export function isTerminalApplicationStage(
+  stage: ApplicationStage | null,
+): boolean {
+  return stage === 'hired' || stage === 'rejected';
+}
+
+export interface InterviewDecisionOption {
+  key: CandidateStageKey;
+  label: string;
+}
+
+export function getInterviewDecisionOptions(
+  currentStage: ApplicationStage | null,
+): InterviewDecisionOption[] {
+  if (!currentStage) return [];
+  
+  return [
+    { key: 'avanza_siguiente', label: STAGE_LABELS.avanza_siguiente },
+    { key: 'avanza_considera', label: STAGE_LABELS.avanza_considera },
+    { key: 'no_avanza_rechazado', label: STAGE_LABELS.no_avanza_rechazado },
+  ];
+}
+
+export function getAvailableRecruiterStages(
+  currentStage: ApplicationStage | null,
+): CandidateStageEntry[] {
+  if (!currentStage) return [];
+
+  const recruiterStages = (
+    Object.keys(STAGE_CONFIG) as ApplicationStage[]
+  ).filter((stage) => {
+    if (stage === currentStage) return false;
+    if (stage === 'rejected' || stage === 'withdrawn') return false;
+    if (STAGE_CONFIG[stage].transitionMode !== 'recruiter_action') return false;
+    return isValidTransition(currentStage, stage);
+  });
+
+  const sortIndex = (stage: ApplicationStage) => {
+    const pipelineIdx = PIPELINE_ORDER.indexOf(stage);
+    return JUMP_STAGES.includes(stage) ? 1000 + pipelineIdx : pipelineIdx;
+  };
+
+  return recruiterStages
+    .sort((a, b) => sortIndex(a) - sortIndex(b))
+    .map((stage) => {
+      const key = STAGE_KEY_MAP[stage];
+      if (!key) return null;
+      return { key, status: 'pending' as const };
+    })
+    .filter(Boolean) as CandidateStageEntry[];
 }
 
 export function getInitials(name?: string): string {
@@ -104,9 +144,9 @@ export function getInitials(name?: string): string {
 export function buildStageHistory(
   currentStage: ApplicationStage,
 ): CandidateStageEntry[] {
-  const currentIndex = STAGE_ORDER.indexOf(currentStage);
+  const currentIndex = PIPELINE_ORDER.indexOf(currentStage);
 
-  return STAGE_ORDER.map((stage, index) => {
+  return PIPELINE_ORDER.map((stage, index) => {
     const key = STAGE_KEY_MAP[stage];
     if (!key) return null;
 
@@ -166,7 +206,7 @@ export function mapApplicationToProfile(
     professionalSummary: undefined,
     experience: [],
     education: [],
-    fitScore: application.fitScore ?? 0,
+    fitScore: application.fitScore,
     detectedSkills: [],
     gapSkills: [],
     jobSkills: [],
@@ -201,7 +241,7 @@ export function mapDetailToProfile(
         period: formatPeriod(exp.startDate, exp.endDate),
       })) ?? [],
     education: mapEducation(candidate),
-    fitScore: detail.fitScore ?? 0,
+    fitScore: detail.fitScore,
     detectedSkills: candidate.technicalSkills ?? [],
     gapSkills: skillMatchStats?.skillsFaltantes.map((s) => s.name) ?? [],
     jobSkills: detail.job.skills,

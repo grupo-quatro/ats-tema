@@ -1,21 +1,14 @@
-// branch: fb-50-57
-import { FieldValue } from 'firebase-admin/firestore';
-
-import { db } from '../core/firebaseAdmin';
 import {
   buildCandidateSkillSet,
   computeWeightedMatch,
   parseJobSkills,
 } from './skillMatchCalculator';
+import { ApplicationsRepository } from '../repositories/applicationRepository';
+import { CandidatesRepository } from '../repositories/candidateRepository';
+import { JobsRepository } from '../repositories/jobsRepository';
 
-// ─── Tipos internos ────────────────────────────────────────────────────────────
-
-import type { SkillMatchStats } from '@ats/shared-types';
-
-/** Versión lista para Firestore: actualizadoEn es FieldValue en vez de Date. */
-type FirestoreSkillMatchStats = Omit<SkillMatchStats, 'actualizadoEn'> & {
-  actualizadoEn: ReturnType<typeof FieldValue.serverTimestamp>;
-};
+// Limita la concurrencia para evitar picos de lecturas y escrituras en Firestore.
+const RECALCULATION_BATCH_SIZE = 20;
 
 // ─── Error personalizado ───────────────────────────────────────────────────────
 
@@ -32,9 +25,15 @@ export class SkillMatchServiceError extends Error {
 // ─── Servicio ─────────────────────────────────────────────────────────────────
 
 export class SkillMatchService {
+  constructor(
+    private readonly applicationsRepository: ApplicationsRepository = new ApplicationsRepository(),
+    private readonly candidatesRepository: CandidatesRepository = new CandidatesRepository(),
+    private readonly jobsRepository: JobsRepository = new JobsRepository(),
+  ) {}
+
   /**
    * Calcula el match ponderado de skills para una postulación y persiste
-   * el resultado en el mismo documento que disparó el trigger.
+   * el resultado en su documento de aplicación.
    *
    * Lecturas Firestore: 3 en total (application → candidate + job en paralelo).
    * Escritura Firestore: 1 (.update sobre application).
@@ -42,20 +41,16 @@ export class SkillMatchService {
    * @param applicationId  ID del documento en la colección `applications`.
    */
   async calculateAndPersist(applicationId: string): Promise<void> {
-    // ── 1. Leer la postulación ─────────────────────────────────────────────────
-    const applicationRef = db.collection('applications').doc(applicationId);
-    const applicationSnap = await applicationRef.get();
+    const application =
+      await this.applicationsRepository.findById(applicationId);
 
-    if (!applicationSnap.exists) {
+    if (!application) {
       throw new SkillMatchServiceError(
         `Postulación no encontrada: ${applicationId}`,
       );
     }
 
-    const { candidateId, jobId } = applicationSnap.data() as {
-      candidateId?: string;
-      jobId?: string;
-    };
+    const { candidateId, jobId } = application;
 
     if (!candidateId || !jobId) {
       throw new SkillMatchServiceError(
@@ -63,51 +58,73 @@ export class SkillMatchService {
       );
     }
 
-    // ── 2. Leer candidato y puesto en paralelo ─────────────────────────────────
-    const [candidateSnap, jobSnap] = await Promise.all([
-      db.collection('candidates').doc(candidateId).get(),
-      db.collection('jobs').doc(jobId).get(),
+    const [candidate, job] = await Promise.all([
+      this.candidatesRepository.findById(candidateId),
+      this.jobsRepository.findById(jobId),
     ]);
 
-    if (!candidateSnap.exists) {
+    if (!candidate) {
       throw new SkillMatchServiceError(
         `Candidato no encontrado: ${candidateId}`,
       );
     }
 
-    if (!jobSnap.exists) {
+    if (!job) {
       throw new SkillMatchServiceError(`Puesto no encontrado: ${jobId}`);
     }
 
-    // ── 3. Parsear skills ──────────────────────────────────────────────────────
-    const candidateData = candidateSnap.data()!;
-    const jobData = jobSnap.data()!;
-
     const rawCandidateSkills: unknown[] = Array.isArray(
-      candidateData.technicalSkills,
+      candidate.technicalSkills,
     )
-      ? candidateData.technicalSkills
+      ? candidate.technicalSkills
       : [];
-    const rawJobSkills: unknown[] = Array.isArray(jobData.skills)
-      ? jobData.skills
-      : [];
+    const rawJobSkills: unknown[] = Array.isArray(job.skills) ? job.skills : [];
 
-    const candidateSkillSet = buildCandidateSkillSet(rawCandidateSkills);
     const jobSkills = parseJobSkills(rawJobSkills);
 
-    // ── 4. Calcular match ponderado (lógica pura, sin I/O) ─────────────────────
+    // Un draft por CV todavía no fue confirmado. Calcularlo como 0 mezclaría
+    // "sin datos disponibles" con "sin coincidencias".
+    if (candidate.profileStatus !== 'completed' || jobSkills.length === 0) {
+      await this.applicationsRepository.updateSkillMatch(applicationId, null);
+      return;
+    }
+
+    const candidateSkillSet = buildCandidateSkillSet(rawCandidateSkills);
     const matchResult = computeWeightedMatch(jobSkills, candidateSkillSet);
 
-    const skillMatchStats: FirestoreSkillMatchStats = {
-      ...matchResult,
-      actualizadoEn: FieldValue.serverTimestamp(),
-    };
+    await this.applicationsRepository.updateSkillMatch(
+      applicationId,
+      matchResult,
+    );
+  }
 
-    // ── 5. Persistir ───────────────────────────────────────────────────────────
-    await applicationRef.update({
-      skillMatchStats,
-      fitScore: matchResult.scoreTotal, // campo existente en Application → compatibilidad
-      updatedAt: FieldValue.serverTimestamp(),
-    });
+  async recalculateForCandidate(candidateId: string): Promise<void> {
+    const applications =
+      await this.applicationsRepository.findByCandidateId(candidateId);
+    await this.recalculateApplications(applications.map(({ id }) => id));
+  }
+
+  async recalculateForJob(jobId: string): Promise<void> {
+    const applications = await this.applicationsRepository.findByJobId(jobId);
+    await this.recalculateApplications(applications.map(({ id }) => id));
+  }
+
+  private async recalculateApplications(
+    applicationIds: string[],
+  ): Promise<void> {
+    // Cada lote corre en paralelo; los lotes se procesan secuencialmente.
+    for (
+      let index = 0;
+      index < applicationIds.length;
+      index += RECALCULATION_BATCH_SIZE
+    ) {
+      const batch = applicationIds.slice(
+        index,
+        index + RECALCULATION_BATCH_SIZE,
+      );
+      await Promise.all(
+        batch.map((applicationId) => this.calculateAndPersist(applicationId)),
+      );
+    }
   }
 }

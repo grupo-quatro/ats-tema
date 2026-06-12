@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Box,
   Button,
@@ -7,34 +7,51 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import type { ApplicationStage } from '@ats/shared-types';
 import { saveCandidacyNote } from '../../../shared/api/candidacyNotesApi';
 import { saveInterviewForm } from '../../../shared/api/interviewFormsApi';
 import AppSnackbar from '@/shared/components/AppSnackbar';
+import { getInterviewDecisionOptions } from '../utils/candidateProfile.utils';
+import type { CandidateStageKey } from '../mock/candidateMock';
+import InterviewDecisionSelect from './InterviewDecisionSelect';
 
 interface Props {
   applicationId: string;
+  applicationStage: ApplicationStage | null;
   onClose: () => void;
   onSave?: () => void | Promise<void>;
 }
 
-export function HrInterviewForm({ applicationId, onClose, onSave }: Props) {
+export function HrInterviewForm({
+  applicationId,
+  applicationStage,
+  onClose,
+  onSave,
+}: Props) {
   const [communication, setCommunication] = useState<number>(0);
   const [teamwork, setTeamwork] = useState<number>(0);
   const [salaryExpectation, setSalaryExpectation] = useState('');
-  const [decision, setDecision] = useState('');
+  const [decision, setDecision] = useState<CandidateStageKey | ''>('');
   const [comments, setComments] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
+  const decisionOptions = useMemo(
+    () => getInterviewDecisionOptions(applicationStage),
+    [applicationStage],
+  );
+
   const trimmedComments = comments.trim();
-  const trimmedDecision = decision.trim();
+  const decisionLabel =
+    decisionOptions.find((option) => option.key === decision)?.label ?? '';
   const trimmedSalaryExpectation = salaryExpectation.trim();
   const isFormValid =
     communication >= 1 &&
     teamwork >= 1 &&
     trimmedSalaryExpectation.length > 0 &&
-    trimmedDecision.length > 0 &&
-    trimmedComments.length > 0;
+    decision !== '' &&
+    trimmedComments.length > 0 &&
+    decisionOptions.some((option) => option.key === decision);
 
   const handleSave = async () => {
     if (!communication || !teamwork) {
@@ -47,7 +64,7 @@ export function HrInterviewForm({ applicationId, onClose, onSave }: Props) {
       return;
     }
 
-    if (!trimmedDecision) {
+    if (!decisionLabel) {
       setErrorMessage('La decisión recomendada es obligatoria.');
       return;
     }
@@ -68,7 +85,7 @@ export function HrInterviewForm({ applicationId, onClose, onSave }: Props) {
         type: 'hr',
         title: 'Evaluación RRHH – Entrevista',
         overallRating,
-        decision: trimmedDecision,
+        decision: decisionLabel,
         questions: [
           {
             question: 'Comunicación y claridad al expresarse',
@@ -86,7 +103,7 @@ export function HrInterviewForm({ applicationId, onClose, onSave }: Props) {
           },
           {
             question: 'Decisión recomendada',
-            answer: trimmedDecision,
+            answer: decisionLabel,
           },
           {
             question: 'Comentarios y observaciones',
@@ -188,18 +205,11 @@ export function HrInterviewForm({ applicationId, onClose, onSave }: Props) {
         }
       />
 
-      <TextField
-        label="Decisión Recomendada"
+      <InterviewDecisionSelect
         value={decision}
-        onChange={(e) => setDecision(e.target.value)}
-        fullWidth
-        required
-        sx={{ mb: 2 }}
+        onChange={setDecision}
+        options={decisionOptions}
         disabled={isSaving}
-        error={Boolean(decision && !trimmedDecision)}
-        helperText={
-          decision && !trimmedDecision ? 'La decisión no puede estar vacía' : ''
-        }
       />
 
       <TextField

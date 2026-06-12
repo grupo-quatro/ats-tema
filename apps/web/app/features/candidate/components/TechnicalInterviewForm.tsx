@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Box,
   Button,
@@ -9,13 +9,17 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import type { Skill } from '@ats/shared-types';
+import type { ApplicationStage, Skill } from '@ats/shared-types';
 import { saveCandidacyNote } from '../../../shared/api/candidacyNotesApi';
 import { saveInterviewForm } from '../../../shared/api/interviewFormsApi';
 import AppSnackbar from '@/shared/components/AppSnackbar';
+import { getInterviewDecisionOptions } from '../utils/candidateProfile.utils';
+import type { CandidateStageKey } from '../mock/candidateMock';
+import InterviewDecisionSelect from './InterviewDecisionSelect';
 
 interface Props {
   applicationId: string;
+  applicationStage: ApplicationStage | null;
   skills: Skill[];
   onClose: () => void;
   onSave?: () => void | Promise<void>;
@@ -23,6 +27,7 @@ interface Props {
 
 export function TechnicalInterviewForm({
   applicationId,
+  applicationStage,
   skills,
   onClose,
   onSave,
@@ -33,24 +38,31 @@ export function TechnicalInterviewForm({
   const [ratings, setRatings] =
     useState<Record<string, number>>(initialRatings);
   const [overall, setOverall] = useState<number>(0);
-  const [decision, setDecision] = useState('');
+  const [decision, setDecision] = useState<CandidateStageKey | ''>('');
   const [comments, setComments] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const decisionOptions = useMemo(
+    () => getInterviewDecisionOptions(applicationStage),
+    [applicationStage],
+  );
 
   const mandatory = skills.filter((s) => s.type === 'mandatory');
   const desirable = skills.filter((s) => s.type === 'desirable');
 
   const trimmedComments = comments.trim();
-  const trimmedDecision = decision.trim();
+  const decisionLabel =
+    decisionOptions.find((option) => option.key === decision)?.label ?? '';
   const unratedSkills = skills.filter(
     (skill) => (ratings[skill.name] ?? 0) < 1,
   );
   const isFormValid =
     overall >= 1 &&
-    trimmedDecision.length > 0 &&
+    decision !== '' &&
     trimmedComments.length > 0 &&
-    unratedSkills.length === 0;
+    unratedSkills.length === 0 &&
+    decisionOptions.some((option) => option.key === decision);
 
   const handleSave = async () => {
     if (unratedSkills.length > 0) {
@@ -65,7 +77,7 @@ export function TechnicalInterviewForm({
       return;
     }
 
-    if (!trimmedDecision) {
+    if (!decisionLabel) {
       setErrorMessage('La decisión recomendada es obligatoria.');
       return;
     }
@@ -90,7 +102,7 @@ export function TechnicalInterviewForm({
         type: 'tech',
         title: 'Evaluación técnica – Entrevista',
         overallRating: overall,
-        decision: trimmedDecision,
+        decision: decisionLabel,
         questions: [
           ...skillQuestions,
           {
@@ -100,7 +112,7 @@ export function TechnicalInterviewForm({
           },
           {
             question: 'Decisión recomendada',
-            answer: trimmedDecision,
+            answer: decisionLabel,
           },
           {
             question: 'Comentarios y observaciones',
@@ -215,18 +227,11 @@ export function TechnicalInterviewForm({
         />
       </Box>
 
-      <TextField
-        label="Decisión Recomendada"
+      <InterviewDecisionSelect
         value={decision}
-        onChange={(e) => setDecision(e.target.value)}
-        fullWidth
-        required
-        sx={{ mb: 2 }}
+        onChange={setDecision}
+        options={decisionOptions}
         disabled={isSaving}
-        error={Boolean(decision && !trimmedDecision)}
-        helperText={
-          decision && !trimmedDecision ? 'La decisión no puede estar vacía' : ''
-        }
       />
 
       <TextField

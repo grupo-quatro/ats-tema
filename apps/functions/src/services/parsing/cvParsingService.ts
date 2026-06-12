@@ -7,6 +7,7 @@ import {
   CvParsingError,
   serializeError,
 } from '../../core/errors/cvParsingError';
+import { normalizeCandidateProfile } from '../candidateProfileNormalizer';
 import { CV_PARSER_JSON_SCHEMA } from './cvParserSchema';
 
 const MODEL_ID = process.env.CV_PARSER_MODEL ?? 'gemini-2.5-flash';
@@ -91,7 +92,7 @@ export class CvParsingService {
       logger.info(
         '[CvParsingService] Mock habilitado. Se omite la llamada a Vertex AI.',
       );
-      return { ...MOCK_PARSED_PROFILE };
+      return normalizeCandidateProfile({ ...MOCK_PARSED_PROFILE });
     }
 
     return this.parseWithRetry(fileBuffer, mimeType);
@@ -178,7 +179,10 @@ export class CvParsingService {
       throw new CvParsingError('Vertex AI devolvio una respuesta vacia.');
     }
 
-    const parsed = this.parseJsonResponse(responseText);
+    // El schema orienta al modelo, pero su respuesta sigue siendo input externo.
+    const parsed = this.sanitizeParsedProfile(
+      this.parseJsonResponse(responseText),
+    );
 
     if (!this.isValidParsedProfile(parsed)) {
       throw new CvParsingError(
@@ -200,7 +204,7 @@ export class CvParsingService {
       .filter(Boolean)
       .join(' ');
 
-    return {
+    return normalizeCandidateProfile({
       ...parsed,
       ...normalizedName,
       fullName:
@@ -217,7 +221,7 @@ export class CvParsingService {
       technicalSkills,
       skills: parsed.skills ?? technicalSkills,
       parserVersion: PARSER_VERSION,
-    };
+    });
   }
 
   private buildContents(
@@ -309,11 +313,11 @@ export class CvParsingService {
     return project;
   }
 
-  private parseJsonResponse(responseText: string): ParsedCandidateProfileData {
+  private parseJsonResponse(responseText: string): unknown {
     const normalizedText = this.extractJsonObject(responseText);
 
     try {
-      return JSON.parse(normalizedText) as ParsedCandidateProfileData;
+      return JSON.parse(normalizedText);
     } catch (error) {
       logger.warn('[CvParsingService] Vertex AI devolvio JSON invalido.', {
         responsePreview: this.getResponsePreview(responseText),
@@ -323,6 +327,90 @@ export class CvParsingService {
 
       throw new CvParsingError('Vertex AI devolvio JSON invalido.', error);
     }
+  }
+
+  private sanitizeParsedProfile(data: unknown): ParsedCandidateProfileData {
+    if (!this.isRecord(data)) {
+      return {};
+    }
+
+    return {
+      firstName: this.readString(data.firstName),
+      lastName: this.readString(data.lastName),
+      fullName: this.readString(data.fullName),
+      email: this.readString(data.email),
+      phone: this.readString(data.phone),
+      location: this.readString(data.location),
+      summary: this.readString(data.summary),
+      professionalSummary: this.readString(data.professionalSummary),
+      yearsOfExperience: this.readNumber(data.yearsOfExperience),
+      education: this.readString(data.education),
+      technicalSkills: this.readStringArray(data.technicalSkills),
+      skills: this.readStringArray(data.skills),
+      hardSkills: this.readStringArray(data.hardSkills),
+      parsedExperience: this.readObjectArray(data.parsedExperience, [
+        'company',
+        'role',
+        'startDate',
+        'endDate',
+        'description',
+      ]),
+      parsedEducation: this.readObjectArray(data.parsedEducation, [
+        'institution',
+        'degree',
+        'startDate',
+        'endDate',
+      ]),
+    };
+  }
+
+  private readString(value: unknown): string | undefined {
+    return typeof value === 'string' && value.trim() ? value : undefined;
+  }
+
+  private readNumber(value: unknown): number | undefined {
+    return typeof value === 'number' && Number.isFinite(value)
+      ? value
+      : undefined;
+  }
+
+  private readStringArray(value: unknown): string[] | undefined {
+    if (!Array.isArray(value)) {
+      return undefined;
+    }
+
+    return value.filter(
+      (item): item is string =>
+        typeof item === 'string' && Boolean(item.trim()),
+    );
+  }
+
+  private readObjectArray(
+    value: unknown,
+    allowedKeys: string[],
+  ): Record<string, string>[] | undefined {
+    if (!Array.isArray(value)) {
+      return undefined;
+    }
+
+    return value.flatMap((item) => {
+      if (!this.isRecord(item)) {
+        return [];
+      }
+
+      const sanitizedItem = Object.fromEntries(
+        allowedKeys.flatMap((key) => {
+          const fieldValue = this.readString(item[key]);
+          return fieldValue === undefined ? [] : [[key, fieldValue]];
+        }),
+      );
+
+      return Object.keys(sanitizedItem).length > 0 ? [sanitizedItem] : [];
+    });
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
   }
 
   private extractJsonObject(responseText: string): string {
@@ -599,6 +687,7 @@ export class CvParsingService {
       parsed.lastName ||
       parsed.fullName ||
       parsed.email ||
+      parsed.phone?.replace(/\D/g, '') ||
       (parsed.technicalSkills?.length ?? 0) > 0 ||
       (parsed.hardSkills?.length ?? 0) > 0 ||
       (parsed.skills?.length ?? 0) > 0,

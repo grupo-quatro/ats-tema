@@ -162,6 +162,21 @@ si no hay texto suficiente, fallback multimodal con PDF
 
 Esto reduce tokens de entrada, baja costo y evita depender siempre del parsing visual de Gemini.
 
+### Sanitización Y Normalización Del Perfil
+
+La respuesta estructurada de Gemini se trata como input externo antes de persistirla:
+
+- se aceptan solamente campos conocidos y con el tipo esperado;
+- se descartan campos o elementos inválidos conservando los datos utilizables;
+- una respuesta completamente inutilizable marca el parsing como `failed`;
+- `phone` se guarda solamente con dígitos;
+- `email` se guarda en minúsculas y sin espacios;
+- nombres, ubicación y textos eliminan espacios sobrantes;
+- skills vacías o duplicadas se eliminan;
+- `yearsOfExperience` se conserva solamente si es un entero entre `0` y `60`.
+
+Las mismas reglas de normalización se aplican al registro manual y a la confirmación del perfil para que el formato no dependa del origen del dato.
+
 ## Estados de Parsing
 
 ```txt
@@ -417,7 +432,20 @@ Cubre:
 - mock en emulator sin llamar IA;
 - extracción local mockeada;
 - llamada mockeada a `@google/genai`;
-- normalización de `hardSkills`/`skills` hacia `technicalSkills`.
+- normalización de teléfono, email, skills y años de experiencia;
+- descarte de campos y elementos con tipos inválidos;
+- conservación de respuestas parcialmente válidas;
+- rechazo de respuestas completamente inutilizables.
+
+### Normalización De Perfil
+
+Cubre:
+
+- teléfono con espacios, paréntesis y guiones;
+- email con mayúsculas y espacios;
+- skills vacías o duplicadas;
+- años de experiencia fuera de rango o no enteros;
+- aplicación de las mismas reglas en registro manual y confirmación.
 
 También se corrigió un test existente de `updateApplicationService` para mockear `firebaseAdmin` con el casing correcto en Linux/CI.
 

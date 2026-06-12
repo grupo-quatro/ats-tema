@@ -74,6 +74,7 @@ describe('CvParsingService.parseFromBuffer', () => {
       firstName: 'Sofia',
       lastName: 'Demo',
       email: 'candidata.demo@example.com',
+      phone: '541155551234',
       technicalSkills: [
         'TypeScript',
         'React',
@@ -116,8 +117,10 @@ describe('CvParsingService.parseFromBuffer', () => {
       text: `\`\`\`json
 {
   "fullName": "Sofia Loria",
-  "email": "sofia@example.com",
-  "hardSkills": ["TypeScript", "Firebase"],
+  "email": " Sofia@Example.COM ",
+  "phone": "(011) 29388293",
+  "yearsOfExperience": 80,
+  "hardSkills": [" TypeScript ", "Firebase", "typescript", ""],
   "parsedExperience": [
     {
       "company": "Acme",
@@ -164,9 +167,11 @@ describe('CvParsingService.parseFromBuffer', () => {
       lastName: 'Loria',
       fullName: 'Sofia Loria',
       email: 'sofia@example.com',
+      phone: '01129388293',
       education: 'Analista en Sistemas, ORT Argentina',
       technicalSkills: ['TypeScript', 'Firebase'],
       skills: ['TypeScript', 'Firebase'],
+      hardSkills: ['TypeScript', 'Firebase'],
       parsedExperience: [
         {
           company: 'Acme',
@@ -183,6 +188,7 @@ describe('CvParsingService.parseFromBuffer', () => {
       ],
       parserVersion: 'cv-parser/1.0+gemini-2.5-flash',
     });
+    expect(result.yearsOfExperience).toBeUndefined();
   });
 
   it('completa nombre, experiencia y educacion desde el texto cuando IA omite esos campos', async () => {
@@ -245,5 +251,63 @@ Tecnicatura Superior en Análisis de Sistemas ORT Argentina
         },
       ],
     });
+  });
+
+  it('descarta campos y elementos inválidos conservando los datos utilizables', async () => {
+    process.env.CV_PARSING_FORCE_REAL_AI = 'true';
+    process.env.GCP_PROJECT = 'ats-tema-ort';
+    mocks.generateContent.mockResolvedValue({
+      text: JSON.stringify({
+        fullName: 'Sofia Loria',
+        email: 123,
+        phone: { value: '11223344' },
+        yearsOfExperience: '5',
+        technicalSkills: ['TypeScript', 123, null, 'React'],
+        parsedExperience: [
+          null,
+          { company: 'Acme', role: 123, unknownField: 'ignored' },
+          { role: 'Developer', description: false },
+          {},
+        ],
+        parsedEducation: 'ORT',
+        unknownRootField: 'ignored',
+      }),
+    });
+
+    const service = new CvParsingService();
+
+    const result = await service.parseFromBuffer(Buffer.from('pdf'));
+
+    expect(result).toMatchObject({
+      firstName: 'Sofia',
+      lastName: 'Loria',
+      fullName: 'Sofia Loria',
+      technicalSkills: ['TypeScript', 'React'],
+      parsedExperience: [{ company: 'Acme' }, { role: 'Developer' }],
+    });
+    expect(result.email).toBeUndefined();
+    expect(result.phone).toBeUndefined();
+    expect(result.yearsOfExperience).toBeUndefined();
+    expect(result).not.toHaveProperty('unknownRootField');
+  });
+
+  it('rechaza una respuesta estructurada completamente inutilizable', async () => {
+    process.env.CV_PARSING_FORCE_REAL_AI = 'true';
+    process.env.GCP_PROJECT = 'ats-tema-ort';
+    mocks.generateContent.mockResolvedValue({
+      text: JSON.stringify({
+        fullName: 123,
+        email: false,
+        phone: null,
+        technicalSkills: 'TypeScript',
+        parsedExperience: [{ company: 'Acme' }],
+      }),
+    });
+
+    const service = new CvParsingService();
+
+    await expect(service.parseFromBuffer(Buffer.from('pdf'))).rejects.toThrow(
+      'No se pudo parsear el CV con Vertex AI.',
+    );
   });
 });

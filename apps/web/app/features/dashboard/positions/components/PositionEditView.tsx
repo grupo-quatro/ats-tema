@@ -53,9 +53,7 @@ import AppSnackbar, {
   type AppSnackbarState,
 } from '@/shared/components/AppSnackbar';
 
-type EditableSkill = Skill & {
-  years: number;
-};
+type EditableSkill = Skill;
 
 type SkillDraft = {
   name: string;
@@ -104,9 +102,8 @@ function serializeFormValue(value: Record<string, unknown>): string {
 
 function serializeSkills(skills: EditableSkill[]): string {
   return JSON.stringify(
-    skills.map(({ name, years, weight, type }) => ({
+    skills.map(({ name, weight, type }) => ({
       name,
-      years,
       weight,
       type,
     })),
@@ -499,20 +496,10 @@ export default function PositionEditView({ job, onSave }: Props) {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const statusStyle = getJobStatusStyle(status);
   const [mandatorySkills, setMandatorySkills] = useState<EditableSkill[]>(() =>
-    job.skills
-      .filter((skill) => skill.type === 'mandatory')
-      .map((skill) => ({
-        ...skill,
-        years: skill.yearsOfExperience,
-      })),
+    job.skills.filter((skill) => skill.type === 'mandatory'),
   );
   const [desirableSkills, setDesirableSkills] = useState<EditableSkill[]>(() =>
-    job.skills
-      .filter((skill) => skill.type === 'desirable')
-      .map((skill) => ({
-        ...skill,
-        years: skill.yearsOfExperience,
-      })),
+    job.skills.filter((skill) => skill.type === 'desirable'),
   );
   const [mandatoryDraft, setMandatoryDraft] = useState<SkillDraft>({
     name: '',
@@ -538,18 +525,8 @@ export default function PositionEditView({ job, onSave }: Props) {
   };
   const defaultFormValueKey = serializeFormValue(defaultFormValues);
   const defaultSkillsKey = serializeSkills([
-    ...job.skills
-      .filter((skill) => skill.type === 'mandatory')
-      .map((skill) => ({
-        ...skill,
-        years: skill.yearsOfExperience,
-      })),
-    ...job.skills
-      .filter((skill) => skill.type === 'desirable')
-      .map((skill) => ({
-        ...skill,
-        years: skill.yearsOfExperience,
-      })),
+    ...job.skills.filter((skill) => skill.type === 'mandatory'),
+    ...job.skills.filter((skill) => skill.type === 'desirable'),
   ]);
   const currentSkillsKey = serializeSkills([
     ...mandatorySkills,
@@ -625,14 +602,7 @@ export default function PositionEditView({ job, onSave }: Props) {
         observations: value.observations.trim() || undefined,
         ...(requirements.length > 0 && { requirements }),
         ...(additionalCriteria.length > 0 && { additionalCriteria }),
-        skills: [...mandatorySkills, ...desirableSkills].map(
-          ({ name, years, weight, type }) => ({
-            name,
-            yearsOfExperience: years,
-            weight,
-            type,
-          }),
-        ),
+        skills: [...mandatorySkills, ...desirableSkills],
       };
 
       try {
@@ -681,8 +651,6 @@ export default function PositionEditView({ job, onSave }: Props) {
       ...current,
       {
         name: draft.name.trim(),
-        years: 0,
-        yearsOfExperience: 0,
         weight: Math.min(10, Math.max(1, Number(draft.weight) || 1)),
         type,
       },
@@ -705,8 +673,6 @@ export default function PositionEditView({ job, onSave }: Props) {
         itemIndex === index
           ? {
               name: draft.name.trim(),
-              years: skill.years,
-              yearsOfExperience: skill.yearsOfExperience,
               weight: Math.min(10, Math.max(1, Number(draft.weight) || 1)),
               type,
             }
@@ -906,7 +872,7 @@ export default function PositionEditView({ job, onSave }: Props) {
               <Typography
                 sx={{ fontWeight: 700, fontSize: '0.86rem', color: '#2563eb' }}
               >
-                Matching Automático con IA
+                Matching Automático por Skills
               </Typography>
               <Typography
                 sx={{ fontSize: '0.78rem', color: '#2563eb', mt: 0.4 }}

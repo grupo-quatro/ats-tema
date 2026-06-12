@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import { X } from 'lucide-react';
 import type { Skill } from '@ats/shared-types';
+import type { ApplicationStage } from '@ats/shared-types';
 import TechnicalInterviewForm from './TechnicalInterviewForm';
 import HrInterviewForm from './HrInterviewForm';
 
@@ -17,6 +18,7 @@ interface InterviewModalProps {
   onClose: () => void;
   applicationId: string;
   candidateName: string;
+  applicationStage: ApplicationStage | null;
   type?: 'tech' | 'hr';
   skills?: Skill[];
   onSave?: () => void | Promise<void>;
@@ -27,6 +29,7 @@ export function InterviewModal({
   onClose,
   applicationId,
   candidateName,
+  applicationStage,
   type = 'tech',
   skills = [],
   onSave,
@@ -70,6 +73,7 @@ export function InterviewModal({
         {type === 'tech' ? (
           <TechnicalInterviewForm
             applicationId={applicationId}
+            applicationStage={applicationStage}
             skills={skills}
             onClose={onClose}
             onSave={onSave}
@@ -77,6 +81,7 @@ export function InterviewModal({
         ) : (
           <HrInterviewForm
             applicationId={applicationId}
+            applicationStage={applicationStage}
             onClose={onClose}
             onSave={onSave}
           />

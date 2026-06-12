@@ -40,15 +40,18 @@ export type CandidateStageKey =
   | 'enviar_oferta'
   | 'oferta_enviada'
   | 'contratado'
-  | 'descartado';
+  | 'descartado'
+  | 'avanza_siguiente'
+  | 'avanza_considera'
+  | 'no_avanza_rechazado';
 
 export const STAGE_ORDER: CandidateStageKey[] = [
   'postulacion_recibida',
   'en_revision',
+  'cv_presentado_area',
   'contacto_entrevista_rrhh_1',
   'entrevista_rrhh_1_agendada',
   'entrevista_rrhh_1_realizada',
-  'cv_presentado_area',
   'contacto_entrevista_tecnica_1',
   'entrevista_tecnica_1_agendada',
   'entrevista_tecnica_1_realizada',
@@ -85,6 +88,9 @@ export const STAGE_LABELS: Record<CandidateStageKey, string> = {
   oferta_enviada: 'Oferta enviada',
   contratado: 'Contratado',
   descartado: 'Descartado',
+  avanza_siguiente: 'Avanzar a siguiente etapa',
+  avanza_considera: 'Avanzar y mantener en consideración',
+  no_avanza_rechazado: 'No avanzar - Rechazado',
 };
 
 export interface CandidateStageEntry {
@@ -108,7 +114,7 @@ export interface CandidateMockProfile {
   professionalSummary?: string;
   experience: CandidateExperience[];
   education: CandidateEducation[];
-  fitScore: number;
+  fitScore?: number;
   detectedSkills: string[];
   gapSkills: string[];
   jobSkills: Skill[];
@@ -188,8 +194,14 @@ export const CANDIDATES_MOCK: CandidateMockProfile[] = [
         description: 'Perfil evaluado por el equipo de Recursos Humanos.',
       },
       {
-        key: 'contacto_entrevista_rrhh_1',
+        key: 'cv_presentado_area',
         date: '19/03/2026',
+        status: 'completed',
+        description: 'CV presentado al área técnica para evaluación.',
+      },
+      {
+        key: 'contacto_entrevista_rrhh_1',
+        date: '20/03/2026',
         status: 'completed',
         description:
           'Se contactó al candidato para agendar la 1ª entrevista RRHH.',
@@ -206,18 +218,33 @@ export const CANDIDATES_MOCK: CandidateMockProfile[] = [
         description: 'Entrevista RRHH realizada con Carlos Méndez.',
       },
       {
-        key: 'contacto_entrevista_rrhh_2',
-        date: '05/04/2026',
-        status: 'current',
-        description: 'Contactando para agendar la 2ª entrevista RRHH.',
+        key: 'contacto_entrevista_tecnica_1',
+        date: '02/04/2026',
+        status: 'completed',
+        description: 'Se contactó al candidato para agendar la 1ª entrevista técnica.',
       },
+      {
+        key: 'entrevista_tecnica_1_agendada',
+        date: '04/04/2026',
+        status: 'completed',
+      },
+      {
+        key: 'entrevista_tecnica_1_realizada',
+        date: '08/04/2026',
+        status: 'completed',
+        description: 'Entrevista técnica completada.',
+      },
+      { key: 'contacto_entrevista_tecnica_2', date: '10/04/2026', status: 'current' },
+      { key: 'entrevista_tecnica_2_agendada', status: 'pending' },
+      { key: 'entrevista_tecnica_2_realizada', status: 'pending' },
+      { key: 'contacto_entrevista_rrhh_2', status: 'pending' },
       { key: 'entrevista_rrhh_2_agendada', status: 'pending' },
       { key: 'entrevista_rrhh_2_realizada', status: 'pending' },
-      { key: 'cv_presentado_area', status: 'pending' },
+      { key: 'enviar_oferta', status: 'pending' },
       { key: 'oferta_enviada', status: 'pending' },
       { key: 'contratado', status: 'pending' },
     ],
-    currentStage: 'Contactamos para agendar 2ª Entrevista RRHH',
+    currentStage: 'Contactamos para agendar 2ª Entrevista Técnica',
     jobSkills: [],
     cvMockUrl: null,
   },

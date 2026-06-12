@@ -1,4 +1,3 @@
-// branch: fb-50-57
 import { logger } from 'firebase-functions';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 

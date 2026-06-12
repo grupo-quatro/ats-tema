@@ -1,4 +1,3 @@
-// branch: fb-50-57
 /**
  * Módulo de cálculo puro de match de skills.
  * No tiene dependencias de Firestore ni de firebase-admin.
@@ -7,6 +6,7 @@
 
 import type { Skill, SkillType } from '@ats/shared-types';
 import type { SkillMatchDetail } from '@ats/shared-types';
+import { getSkillComparisonKeys } from './skillNormalizer';
 
 // ─── Tipos exportados ─────────────────────────────────────────────────────────
 
@@ -22,28 +22,27 @@ export interface SkillMatchResult {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Normaliza un nombre de skill a lowercase sin espacios extra. */
-export function normalizeSkillName(name: string): string {
-  return name.trim().toLowerCase();
-}
-
 /**
- * Convierte el array de skills del candidato (string[]) a un Set normalizado.
+ * Convierte el array de skills del candidato (string[]) a un Set de claves
+ * normalizadas y compactas.
  * Filtra valores no-string y cadenas vacías de forma defensiva.
  */
 export function buildCandidateSkillSet(rawSkills: unknown[]): Set<string> {
-  return new Set(
-    rawSkills
-      .filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
-      .map(normalizeSkillName),
-  );
+  const skillKeys = new Set<string>();
+
+  for (const skill of rawSkills) {
+    if (typeof skill !== 'string' || skill.trim().length === 0) continue;
+    getSkillComparisonKeys(skill).forEach((key) => skillKeys.add(key));
+  }
+
+  return skillKeys;
 }
 
 /**
  * Parsea el array `job.skills` desde Firestore de forma defensiva.
  * Soporta el modelo actual (Skill[]) y datos legacy (string[]).
  *
- * Datos legacy → weight=1, type='desirable', yearsOfExperience=0.
+ * Datos legacy → weight=1, type='desirable'.
  */
 export function parseJobSkills(rawSkills: unknown[]): Skill[] {
   return rawSkills.reduce<Skill[]>((acc, s) => {
@@ -51,7 +50,6 @@ export function parseJobSkills(rawSkills: unknown[]): Skill[] {
       acc.push({
         name: s.trim(),
         weight: 1,
-        yearsOfExperience: 0,
         type: 'desirable',
       });
     } else if (s && typeof s === 'object' && 'name' in s) {
@@ -62,10 +60,6 @@ export function parseJobSkills(rawSkills: unknown[]): Skill[] {
           name,
           weight:
             typeof raw.weight === 'number' && raw.weight > 0 ? raw.weight : 1,
-          yearsOfExperience:
-            typeof raw.yearsOfExperience === 'number'
-              ? raw.yearsOfExperience
-              : 0,
           type:
             raw.type === 'mandatory' || raw.type === 'desirable'
               ? (raw.type as SkillType)
@@ -102,7 +96,7 @@ export function round2(value: number): number {
  * │  scoreDesirable = (Σ w_i · m_i | D)   / (Σ w_i | D)   · 100            │
  * │                                                                          │
  * │  Casos borde:                                                            │
- * │  • sin skills en el puesto      → scoreTotal = 0                        │
+ * │  • sin skills en el puesto      → scoreTotal = 0 (convención interna)   │
  * │  • sin mandatory                → scoreMandatory = 100 (vacío = cumple) │
  * │  • sin desirable                → scoreDesirable = 0                    │
  * └──────────────────────────────────────────────────────────────────────────┘
@@ -122,10 +116,11 @@ export function computeWeightedMatch(
   const skillsFaltantes: SkillMatchDetail[] = [];
 
   for (const skill of jobSkills) {
-    const normalizedName = normalizeSkillName(skill.name);
-    const isMatched = candidateSkillSet.has(normalizedName);
+    const isMatched = getSkillComparisonKeys(skill.name).some((key) =>
+      candidateSkillSet.has(key),
+    );
     const detail: SkillMatchDetail = {
-      name: normalizedName,
+      name: skill.name,
       weight: skill.weight,
       type: skill.type,
     };
