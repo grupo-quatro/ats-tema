@@ -758,19 +758,24 @@
             "type": "string"
           },
           "phone": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[0-9]+$",
+            "description": "Canonical phone number persisted using digits only."
           },
           "location": {
             "type": "string"
           },
           "yearsOfExperience": {
-            "type": "number"
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60
           },
           "education": {
             "type": "string"
           },
           "technicalSkills": {
             "type": "array",
+            "uniqueItems": true,
             "items": {
               "type": "string"
             }
@@ -883,10 +888,12 @@
           },
           "email": {
             "type": "string",
-            "format": "email"
+            "format": "email",
+            "description": "Normalized to lowercase and persisted without spaces."
           },
           "phone": {
-            "type": "string"
+            "type": "string",
+            "description": "Accepts formatted input; the backend persists digits only."
           },
           "location": {
             "type": "string"
@@ -895,13 +902,15 @@
             "type": "string"
           },
           "yearsOfExperience": {
-            "type": "number"
+            "type": "number",
+            "description": "Values outside this range or non-integer values are omitted."
           },
           "education": {
             "type": "string"
           },
           "technicalSkills": {
             "type": "array",
+            "description": "Trimmed and deduplicated by the backend.",
             "items": {
               "type": "string"
             }
@@ -935,22 +944,28 @@
           },
           "email": {
             "type": "string",
-            "format": "email"
+            "format": "email",
+            "description": "Normalized to lowercase and persisted without spaces."
           },
           "phone": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[0-9]+$",
+            "description": "Canonical phone number persisted using digits only."
           },
           "location": {
             "type": "string"
           },
           "yearsOfExperience": {
-            "type": "number"
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 60
           },
           "education": {
             "type": "string"
           },
           "technicalSkills": {
             "type": "array",
+            "uniqueItems": true,
             "items": {
               "type": "string"
             }

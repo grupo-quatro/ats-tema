@@ -179,6 +179,7 @@ export class CvParsingService {
       throw new CvParsingError('Vertex AI devolvio una respuesta vacia.');
     }
 
+    // El schema orienta al modelo, pero su respuesta sigue siendo input externo.
     const parsed = this.sanitizeParsedProfile(
       this.parseJsonResponse(responseText),
     );
@@ -379,7 +380,8 @@ export class CvParsingService {
     }
 
     return value.filter(
-      (item): item is string => typeof item === 'string' && Boolean(item.trim()),
+      (item): item is string =>
+        typeof item === 'string' && Boolean(item.trim()),
     );
   }
 

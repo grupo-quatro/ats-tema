@@ -33,6 +33,7 @@ export function normalizeSkills(skills?: string[]): string[] | undefined {
     return undefined;
   }
 
+  // Deduplica sin alterar el casing de la primera variante recibida.
   const normalizedSkills = new Map<string, string>();
 
   for (const skill of skills) {
@@ -50,9 +51,7 @@ export function normalizeSkills(skills?: string[]): string[] | undefined {
   return [...normalizedSkills.values()];
 }
 
-export function normalizeYearsOfExperience(
-  value?: number,
-): number | undefined {
+export function normalizeYearsOfExperience(value?: number): number | undefined {
   if (
     value === undefined ||
     !Number.isInteger(value) ||
@@ -65,9 +64,9 @@ export function normalizeYearsOfExperience(
   return value;
 }
 
-export function normalizeCandidateProfile<T extends NormalizableCandidateProfile>(
-  profile: T,
-): T {
+export function normalizeCandidateProfile<
+  T extends NormalizableCandidateProfile,
+>(profile: T): T {
   return {
     ...profile,
     firstName: normalizeText(profile.firstName),
