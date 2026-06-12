@@ -95,6 +95,11 @@ export const registerCalendarWatch = onRequest(async (request, response) => {
         type: 'web_hook',
         address: webhookUrl,
         expiration: String(expiresAt),
+        // Token secreto que Google reenvía en X-Goog-Channel-Token.
+        // Permite que el webhook rechace requests no originados por Google.
+        ...(process.env.CALENDAR_WEBHOOK_SECRET
+          ? { token: process.env.CALENDAR_WEBHOOK_SECRET }
+          : {}),
       },
     });
 

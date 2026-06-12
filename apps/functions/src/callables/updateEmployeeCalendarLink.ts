@@ -5,12 +5,11 @@ import type {
 } from '@ats/shared-types';
 import { db } from '../core/firebaseAdmin';
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
+import { setCorsHeaders } from '../core/cors';
 
 export const updateEmployeeCalendarLink = onRequest(
   async (request, response) => {
-    response.set('Access-Control-Allow-Origin', '*');
-    response.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    response.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    setCorsHeaders(response);
 
     if (request.method === 'OPTIONS') {
       response.status(204).send('');

@@ -13,6 +13,7 @@ service firebase.storage {
           request.auth.token.role == "admin"
           || request.auth.token.role == "recruiter"
           || request.auth.token.role == "hr"
+          || request.auth.token.role == "area_leader"
         );
     }
 
@@ -21,11 +22,7 @@ service firebase.storage {
         && request.resource.size < 10 * 1024 * 1024
         && request.resource.contentType == "application/pdf";
 
-      // TODO (producción): reemplazar por la línea de abajo una vez que los usuarios
-      // del backoffice tengan el custom claim role:'recruiter'|'admin'|'hr' seteado
-      // via Admin SDK (ej: en un onCreate trigger o al asignar rol desde el panel).
-      //   allow read: if isBackoffice() || (isSignedIn() && request.auth.uid == candidateId);
-      allow read: if isSignedIn();
+      allow read: if isBackoffice();
     }
 
     match /{allPaths=**} {

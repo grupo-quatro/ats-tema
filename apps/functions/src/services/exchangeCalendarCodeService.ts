@@ -1,7 +1,9 @@
 import type { OAuth2Client } from 'google-auth-library';
 
+import { GMAIL_STATUS } from '@ats/shared-types';
 import type { GmailCredential } from '@ats/shared-types';
 
+import type { IEmployeeRepository } from '../repositories/employeeRepository';
 import type { IUserRepository } from '../repositories/userRepository';
 
 export class ExchangeCalendarCodeError extends Error {
@@ -18,6 +20,7 @@ export class ExchangeCalendarCodeService {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly oauth2Client: OAuth2Client,
+    private readonly employeeRepository?: IEmployeeRepository,
   ) {}
 
   async exchange(
@@ -57,5 +60,6 @@ export class ExchangeCalendarCodeService {
     };
 
     await this.userRepository.updateCalendarCredential(uid, credential);
+    await this.employeeRepository?.setCalendarStatus(uid, GMAIL_STATUS.CONNECTED);
   }
 }

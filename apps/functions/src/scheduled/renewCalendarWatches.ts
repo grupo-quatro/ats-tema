@@ -22,8 +22,9 @@ const userRepository = new UserRepository();
  * Si falla para un recruiter, se loguea y continúa con el resto.
  */
 export const renewCalendarWatches = onSchedule(
-  // Corre el día 1 de cada mes a las 03:00 AM UTC (< 30 días = dentro del límite de Google)
-  { schedule: '0 3 1 * *', timeZone: 'UTC' },
+  // Corre cada 29 días — los canales de Google duran 30 días, esto garantiza
+  // renovación antes del vencimiento independientemente del día de creación.
+  { schedule: '0 3 */29 * *', timeZone: 'UTC' },
   async () => {
     logger.info('[renewCalendarWatches] Iniciando renovación de canales');
 
@@ -119,6 +120,17 @@ async function renewWatchForUser(
 
   const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
+  // Detener el canal anterior para evitar acumular canales huérfanos en Google.
+  // Si falla (canal ya expirado o desconocido), lo ignoramos y seguimos.
+  await calendar.channels.stop({
+    requestBody: {
+      id: existingWatch.channelId,
+      resourceId: existingWatch.resourceId,
+    },
+  }).catch((err: unknown) => {
+    logger.warn(`[renewCalendarWatches] No se pudo detener canal anterior para ${uid}`, { err });
+  });
+
   const channelId = `${uid}-calendar-watch`;
   const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
 
@@ -129,6 +141,9 @@ async function renewWatchForUser(
       type: 'web_hook',
       address: webhookUrl,
       expiration: String(expiresAt),
+      ...(process.env.CALENDAR_WEBHOOK_SECRET
+        ? { token: process.env.CALENDAR_WEBHOOK_SECRET }
+        : {}),
     },
   });
 

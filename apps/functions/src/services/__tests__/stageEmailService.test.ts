@@ -133,6 +133,8 @@ const makeOAuth2Client = (): OAuth2Client =>
 
 const makeEmployeeRepo = (): IEmployeeRepository => ({
   getCalendarLink: vi.fn().mockResolvedValue(null),
+  setGmailStatus: vi.fn().mockResolvedValue(undefined),
+  setCalendarStatus: vi.fn().mockResolvedValue(undefined),
 });
 
 // --- Helper para construir el servicio ---
@@ -358,7 +360,7 @@ describe('StageEmailService.sendIfTemplateExists', () => {
       expect.anything(),
       expect.objectContaining({
         calendarLink:
-          'https://calendar.google.com/calendar/appointments/schedules/test123',
+          'https://calendar.google.com/calendar/appointments/schedules/test123?description=ats-app-app-1',
       }),
     );
   });
