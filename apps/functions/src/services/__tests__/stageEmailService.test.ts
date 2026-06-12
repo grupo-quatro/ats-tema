@@ -131,6 +131,7 @@ const makeOAuth2Client = (): OAuth2Client =>
 
 const makeEmployeeRepo = (): IEmployeeRepository => ({
   getCalendarLink: vi.fn().mockResolvedValue(null),
+  setGmailStatus: vi.fn().mockResolvedValue(undefined),
 });
 
 // --- Helper para construir el servicio ---
@@ -238,6 +239,50 @@ describe('StageEmailService.sendIfTemplateExists', () => {
     expect(sender.send).not.toHaveBeenCalled();
   });
 
+  it('no envía la plantilla offer cuando no se recibió el link público de la carta', async () => {
+    await service.sendIfTemplateExists(
+      application,
+      candidate,
+      job,
+      'send_offer',
+      'recruiter-1',
+      'recruiter@example.com',
+    );
+
+    expect(templateRepo.findByStage).not.toHaveBeenCalled();
+    expect(logRepo.create).not.toHaveBeenCalled();
+    expect(sender.send).not.toHaveBeenCalled();
+  });
+
+  it('pasa el link público de la carta al resolver para la plantilla offer', async () => {
+    vi.mocked(templateRepo.findByStage).mockResolvedValue(
+      makeTemplate({ stage: 'offer' }),
+    );
+    vi.mocked(userRepo.getGmailCredential).mockResolvedValue(validCredential);
+    vi.mocked(sender.send).mockResolvedValue(undefined);
+
+    await service.sendIfTemplateExists(
+      application,
+      candidate,
+      job,
+      'send_offer',
+      'recruiter-1',
+      'recruiter@example.com',
+      'https://ats.example.com/offer/public-token',
+      'offer-1',
+    );
+
+    expect(resolver.resolve).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        offerLink: 'https://ats.example.com/offer/public-token',
+      }),
+    );
+    expect(logRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({ offerId: 'offer-1', stage: 'send_offer' }),
+    );
+  });
+
   it('ejecuta el flujo completo con éxito: EmailLog pending → sent', async () => {
     vi.mocked(templateRepo.findByStage).mockResolvedValue(makeTemplate());
     vi.mocked(userRepo.getGmailCredential).mockResolvedValue(validCredential);
@@ -264,6 +309,10 @@ describe('StageEmailService.sendIfTemplateExists', () => {
         accessToken: validCredential.accessToken,
         to: 'ana@example.com',
       }),
+    );
+    expect(resolver.resolve).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ offerLink: '' }),
     );
 
     expect(logRepo.updateStatus).toHaveBeenCalledWith('log-id-1', {

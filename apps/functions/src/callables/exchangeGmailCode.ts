@@ -4,6 +4,7 @@ import { OAuth2Client } from 'google-auth-library';
 
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
 import { setCorsHeaders } from '../core/cors';
+import { EmployeeRepository } from '../repositories/employeeRepository';
 import { UserRepository } from '../repositories/userRepository';
 import { ExchangeGmailCodeService } from '../services/exchangeGmailCodeService';
 import {
@@ -20,6 +21,7 @@ const userRepository = new UserRepository();
 const exchangeGmailCodeService = new ExchangeGmailCodeService(
   userRepository,
   oauth2Client,
+  new EmployeeRepository(),
 );
 
 export const exchangeGmailCode = onRequest(

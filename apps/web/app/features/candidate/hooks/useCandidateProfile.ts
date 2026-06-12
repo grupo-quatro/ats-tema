@@ -18,7 +18,10 @@ import {
   getStageHistory,
   updateApplicationStage,
 } from '@/shared/api/applicationsApi';
-import { CANDIDATE_STAGE_TO_APP_STAGE } from '../utils/candidateProfile.utils';
+import {
+  CANDIDATE_STAGE_TO_APP_STAGE,
+  isGenericStageChangeOption,
+} from '../utils/candidateProfile.utils';
 import {
   PIPELINE_ORDER,
   STAGE_CONFIG,
@@ -170,6 +173,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
       | ApplicationStage
       | undefined;
     if (!appStage) return false;
+    if (!isGenericStageChangeOption(appStage)) return false;
     if (STAGE_CONFIG[appStage]?.transitionMode !== 'recruiter_action')
       return false;
     if (!currentApplicationStage) return false;

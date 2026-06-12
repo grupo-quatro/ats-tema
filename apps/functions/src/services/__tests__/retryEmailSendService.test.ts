@@ -9,6 +9,7 @@ vi.mock('firebase-functions', () => ({
 import {
   RetryEmailSendService,
   EmailLogNotFoundError,
+  OfferEmailRetryUnsupportedError,
 } from '../retryEmailSendService';
 import type { IEmailLogRepository } from '../../repositories/emailLogRepository';
 import type { IUserRepository } from '../../repositories/userRepository';
@@ -101,6 +102,19 @@ describe('RetryEmailSendService.retry', () => {
       service.retry('log-inexistente', 'recruiter-1'),
     ).rejects.toThrow(EmailLogNotFoundError);
     expect(emailLogRepo.updateStatus).not.toHaveBeenCalled();
+  });
+
+  it('bloquea el reintento genérico de emails asociados a una oferta', async () => {
+    vi.mocked(emailLogRepo.findById).mockResolvedValue(
+      makeEmailLog({ offerId: 'offer-1', stage: 'send_offer' }),
+    );
+
+    await expect(service.retry('log-1', 'recruiter-1')).rejects.toThrow(
+      OfferEmailRetryUnsupportedError,
+    );
+
+    expect(emailLogRepo.updateStatus).not.toHaveBeenCalled();
+    expect(gmailSender.send).not.toHaveBeenCalled();
   });
 
   it('marca el log como failed y lanza error cuando el usuario no tiene Gmail conectado', async () => {

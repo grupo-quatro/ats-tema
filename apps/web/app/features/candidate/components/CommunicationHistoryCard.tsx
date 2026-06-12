@@ -123,7 +123,7 @@ export function CommunicationHistoryCard({
                       sx={{ fontSize: 11, height: 22 }}
                     />
 
-                    {log.status === 'failed' && (
+                    {log.status === 'failed' && !log.offerId && (
                       <Tooltip title="Reenviar email">
                         <span>
                           <IconButton
@@ -182,6 +182,18 @@ export function CommunicationHistoryCard({
                     }}
                   >
                     {log.error}
+                  </Typography>
+                )}
+                {log.status === 'failed' && log.offerId && (
+                  <Typography
+                    sx={{
+                      fontSize: 11,
+                      color: 'text.secondary',
+                      mt: 0.5,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    Reintentá el envío desde la gestión de la carta oferta.
                   </Typography>
                 )}
               </Box>

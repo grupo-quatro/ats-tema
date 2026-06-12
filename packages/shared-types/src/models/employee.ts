@@ -7,6 +7,13 @@ export const EMPLOYEE_ROLES = {
 
 export type EmployeeRole = (typeof EMPLOYEE_ROLES)[keyof typeof EMPLOYEE_ROLES];
 
+export const GMAIL_STATUS = {
+  CONNECTED: 'connected',
+  DISCONNECTED: 'disconnected',
+} as const;
+
+export type GmailStatus = (typeof GMAIL_STATUS)[keyof typeof GMAIL_STATUS];
+
 export interface Employee {
   id: string; // mismo uid que Firebase Auth
   name: string;
@@ -15,6 +22,7 @@ export interface Employee {
   department: string;
   active: boolean;
   calendarLink?: string;
+  gmailStatus?: GmailStatus;
   createdAt: Date;
   updatedAt: Date;
 }

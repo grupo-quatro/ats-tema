@@ -353,8 +353,9 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
                                 aria-label="Evento del calendario"
                                 style={{ flexShrink: 0 }}
                               />
-                            ) : STAGE_CONFIG[entry.stage]
-                                ?.emailTemplateStage !== null ? (
+                            ) : entry.stage === 'offer_sent' ||
+                              STAGE_CONFIG[entry.stage]?.emailTemplateStage !==
+                                null ? (
                               <Mail
                                 size={12}
                                 color="#64748b"
@@ -541,6 +542,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
             {canManageOffer ? (
               <OfferManagementCard
                 applicationId={candidate.applicationId}
+                candidateId={candidate.id}
                 disabled={isTerminalStage}
                 isMarkingHired={profile.isUpdatingStage}
                 onOfferSent={profile.handleOfferSent}

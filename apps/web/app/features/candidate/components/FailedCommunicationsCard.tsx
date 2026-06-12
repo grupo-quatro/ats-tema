@@ -103,22 +103,24 @@ export function FailedCommunicationsCard({
                     </Typography>
                   </Box>
 
-                  <Tooltip title="Reintentar envío">
-                    <span>
-                      <IconButton
-                        size="small"
-                        onClick={() => retryMutation.mutate(log.id)}
-                        disabled={isRetrying}
-                        aria-label="Reintentar envío"
-                      >
-                        {isRetrying ? (
-                          <CircularProgress size={14} color="inherit" />
-                        ) : (
-                          <RefreshCw size={14} />
-                        )}
-                      </IconButton>
-                    </span>
-                  </Tooltip>
+                  {!log.offerId && (
+                    <Tooltip title="Reintentar envío">
+                      <span>
+                        <IconButton
+                          size="small"
+                          onClick={() => retryMutation.mutate(log.id)}
+                          disabled={isRetrying}
+                          aria-label="Reintentar envío"
+                        >
+                          {isRetrying ? (
+                            <CircularProgress size={14} color="inherit" />
+                          ) : (
+                            <RefreshCw size={14} />
+                          )}
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
                 </Box>
 
                 <Box
@@ -159,6 +161,18 @@ export function FailedCommunicationsCard({
                     }}
                   >
                     {log.error}
+                  </Typography>
+                )}
+                {log.offerId && (
+                  <Typography
+                    sx={{
+                      fontSize: 11,
+                      color: 'text.secondary',
+                      mt: 0.5,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    Reintentá el envío desde la gestión de la carta oferta.
                   </Typography>
                 )}
               </Box>

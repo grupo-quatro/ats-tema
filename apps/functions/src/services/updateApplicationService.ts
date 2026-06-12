@@ -85,7 +85,7 @@ export class UpdateApplicationStageService {
 
     // Enviar email de notificación al candidato — el fallo nunca bloquea el resultado
     let emailSent = false;
-    if (this.stageEmailService) {
+    if (this.stageEmailService && stage !== 'send_offer') {
       try {
         const [candidate, job] = await Promise.all([
           this.candidatesRepository.findById(application.candidateId),
