@@ -7,6 +7,7 @@
 
 import type { Skill, SkillType } from '@ats/shared-types';
 import type { SkillMatchDetail } from '@ats/shared-types';
+import { getSkillComparisonKeys } from './skillNormalizer';
 
 // ─── Tipos exportados ─────────────────────────────────────────────────────────
 
@@ -22,21 +23,20 @@ export interface SkillMatchResult {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Normaliza un nombre de skill a lowercase sin espacios extra. */
-export function normalizeSkillName(name: string): string {
-  return name.trim().toLowerCase();
-}
-
 /**
- * Convierte el array de skills del candidato (string[]) a un Set normalizado.
+ * Convierte el array de skills del candidato (string[]) a un Set de claves
+ * normalizadas y compactas.
  * Filtra valores no-string y cadenas vacías de forma defensiva.
  */
 export function buildCandidateSkillSet(rawSkills: unknown[]): Set<string> {
-  return new Set(
-    rawSkills
-      .filter((s): s is string => typeof s === 'string' && s.trim().length > 0)
-      .map(normalizeSkillName),
-  );
+  const skillKeys = new Set<string>();
+
+  for (const skill of rawSkills) {
+    if (typeof skill !== 'string' || skill.trim().length === 0) continue;
+    getSkillComparisonKeys(skill).forEach((key) => skillKeys.add(key));
+  }
+
+  return skillKeys;
 }
 
 /**
@@ -122,10 +122,11 @@ export function computeWeightedMatch(
   const skillsFaltantes: SkillMatchDetail[] = [];
 
   for (const skill of jobSkills) {
-    const normalizedName = normalizeSkillName(skill.name);
-    const isMatched = candidateSkillSet.has(normalizedName);
+    const isMatched = getSkillComparisonKeys(skill.name).some((key) =>
+      candidateSkillSet.has(key),
+    );
     const detail: SkillMatchDetail = {
-      name: normalizedName,
+      name: skill.name,
       weight: skill.weight,
       type: skill.type,
     };

@@ -6,7 +6,7 @@ import type { SkillType } from './job';
  * Se usa tanto para coincidentes como para faltantes.
  */
 export interface SkillMatchDetail {
-  /** Nombre normalizado de la skill (lowercase). */
+  /** Nombre original de la skill requerida por la posición. */
   name: string;
   /** Peso relativo de la skill dentro del puesto (tal como viene de Job.skills.weight). */
   weight: number;
