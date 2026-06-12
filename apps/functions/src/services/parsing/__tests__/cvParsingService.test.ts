@@ -117,9 +117,10 @@ describe('CvParsingService.parseFromBuffer', () => {
       text: `\`\`\`json
 {
   "fullName": "Sofia Loria",
-  "email": "sofia@example.com",
+  "email": " Sofia@Example.COM ",
   "phone": "(011) 29388293",
-  "hardSkills": ["TypeScript", "Firebase"],
+  "yearsOfExperience": 80,
+  "hardSkills": [" TypeScript ", "Firebase", "typescript", ""],
   "parsedExperience": [
     {
       "company": "Acme",
@@ -170,6 +171,7 @@ describe('CvParsingService.parseFromBuffer', () => {
       education: 'Analista en Sistemas, ORT Argentina',
       technicalSkills: ['TypeScript', 'Firebase'],
       skills: ['TypeScript', 'Firebase'],
+      hardSkills: ['TypeScript', 'Firebase'],
       parsedExperience: [
         {
           company: 'Acme',
@@ -186,6 +188,7 @@ describe('CvParsingService.parseFromBuffer', () => {
       ],
       parserVersion: 'cv-parser/1.0+gemini-2.5-flash',
     });
+    expect(result.yearsOfExperience).toBeUndefined();
   });
 
   it('completa nombre, experiencia y educacion desde el texto cuando IA omite esos campos', async () => {

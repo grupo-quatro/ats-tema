@@ -7,6 +7,7 @@ import {
   CvParsingError,
   serializeError,
 } from '../../core/errors/cvParsingError';
+import { normalizeCandidateProfile } from '../candidateProfileNormalizer';
 import { CV_PARSER_JSON_SCHEMA } from './cvParserSchema';
 
 const MODEL_ID = process.env.CV_PARSER_MODEL ?? 'gemini-2.5-flash';
@@ -91,7 +92,7 @@ export class CvParsingService {
       logger.info(
         '[CvParsingService] Mock habilitado. Se omite la llamada a Vertex AI.',
       );
-      return this.normalizeParsedProfile({ ...MOCK_PARSED_PROFILE });
+      return normalizeCandidateProfile({ ...MOCK_PARSED_PROFILE });
     }
 
     return this.parseWithRetry(fileBuffer, mimeType);
@@ -200,7 +201,7 @@ export class CvParsingService {
       .filter(Boolean)
       .join(' ');
 
-    return this.normalizeParsedProfile({
+    return normalizeCandidateProfile({
       ...parsed,
       ...normalizedName,
       fullName:
@@ -218,17 +219,6 @@ export class CvParsingService {
       skills: parsed.skills ?? technicalSkills,
       parserVersion: PARSER_VERSION,
     });
-  }
-
-  private normalizeParsedProfile(
-    parsed: ParsedCandidateProfileData,
-  ): ParsedCandidateProfileData {
-    const phone = parsed.phone?.replace(/\D/g, '');
-
-    return {
-      ...parsed,
-      phone: phone || undefined,
-    };
   }
 
   private buildContents(
