@@ -91,7 +91,7 @@ export class CvParsingService {
       logger.info(
         '[CvParsingService] Mock habilitado. Se omite la llamada a Vertex AI.',
       );
-      return { ...MOCK_PARSED_PROFILE };
+      return this.normalizeParsedProfile({ ...MOCK_PARSED_PROFILE });
     }
 
     return this.parseWithRetry(fileBuffer, mimeType);
@@ -200,7 +200,7 @@ export class CvParsingService {
       .filter(Boolean)
       .join(' ');
 
-    return {
+    return this.normalizeParsedProfile({
       ...parsed,
       ...normalizedName,
       fullName:
@@ -217,6 +217,17 @@ export class CvParsingService {
       technicalSkills,
       skills: parsed.skills ?? technicalSkills,
       parserVersion: PARSER_VERSION,
+    });
+  }
+
+  private normalizeParsedProfile(
+    parsed: ParsedCandidateProfileData,
+  ): ParsedCandidateProfileData {
+    const phone = parsed.phone?.replace(/\D/g, '');
+
+    return {
+      ...parsed,
+      phone: phone || undefined,
     };
   }
 

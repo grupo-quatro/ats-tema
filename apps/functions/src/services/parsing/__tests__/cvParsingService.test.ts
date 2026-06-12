@@ -74,6 +74,7 @@ describe('CvParsingService.parseFromBuffer', () => {
       firstName: 'Sofia',
       lastName: 'Demo',
       email: 'candidata.demo@example.com',
+      phone: '541155551234',
       technicalSkills: [
         'TypeScript',
         'React',
@@ -117,6 +118,7 @@ describe('CvParsingService.parseFromBuffer', () => {
 {
   "fullName": "Sofia Loria",
   "email": "sofia@example.com",
+  "phone": "(011) 29388293",
   "hardSkills": ["TypeScript", "Firebase"],
   "parsedExperience": [
     {
@@ -164,6 +166,7 @@ describe('CvParsingService.parseFromBuffer', () => {
       lastName: 'Loria',
       fullName: 'Sofia Loria',
       email: 'sofia@example.com',
+      phone: '01129388293',
       education: 'Analista en Sistemas, ORT Argentina',
       technicalSkills: ['TypeScript', 'Firebase'],
       skills: ['TypeScript', 'Firebase'],
