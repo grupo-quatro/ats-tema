@@ -81,7 +81,7 @@ export const STAGE_LABELS: Record<CandidateStageKey, string> = {
     'Contactamos para agendar 2ª Entrevista Técnica',
   entrevista_tecnica_2_agendada: '2ª Entrevista Técnica Agendada',
   entrevista_tecnica_2_realizada: '2ª Entrevista Técnica Realizada',
-  enviar_oferta: 'Enviar Oferta',
+  enviar_oferta: 'Enviamos oferta laboral',
   oferta_enviada: 'Oferta enviada',
   contratado: 'Contratado',
   descartado: 'Descartado',

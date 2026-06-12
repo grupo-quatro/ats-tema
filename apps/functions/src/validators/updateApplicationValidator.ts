@@ -47,6 +47,12 @@ export function validateUpdateApplicationStagePayload(
     );
   }
 
+  if (payload.stage === 'send_offer') {
+    throw new UpdateApplicationValidationError(
+      'La oferta debe gestionarse desde la sección Carta oferta.',
+    );
+  }
+
   const allValidStages: readonly ApplicationStage[] = [
     ...PIPELINE_ORDER.filter((s) => !SYSTEM_ONLY_STAGES.includes(s)),
     ...JUMP_STAGES.filter((s) => !PIPELINE_ORDER.includes(s)),

@@ -13,6 +13,7 @@ import { UserRepository } from '../repositories/userRepository';
 import { GmailSenderService } from '../services/gmailSenderService';
 import {
   EmailLogNotFoundError,
+  OfferEmailRetryUnsupportedError,
   RetryEmailSendService,
 } from '../services/retryEmailSendService';
 
@@ -62,11 +63,15 @@ export const retryEmailSend = onRequest(
         return;
       }
 
-      logger.error(
-        '[retryEmailSend] Error inesperado al reintentar envío de email',
-        error,
-      );
-      response.status(500).json({ error: 'No se pudo reenviar el email.' });
+    if (error instanceof OfferEmailRetryUnsupportedError) {
+      response.status(409).json({ error: error.message });
+      return;
     }
-  },
-);
+
+    logger.error(
+      '[retryEmailSend] Error inesperado al reintentar envío de email',
+      error,
+    );
+    response.status(500).json({ error: 'No se pudo reenviar el email.' });
+  }
+});

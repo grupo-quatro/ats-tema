@@ -4,13 +4,13 @@ import type {
   EmailTemplateStage,
   UpdateEmailTemplateDTO,
 } from '@ats/shared-types';
+import { TEMPLATE_VARIABLES } from '@ats/shared-types';
 
 import { emailTemplateRepository } from '../../repositories';
 
-export const EMAIL_TEMPLATE_VARIABLES = [
-  '[Nombre del Candidato]',
-  '[Nombre de la Posición]',
-] as const;
+export const EMAIL_TEMPLATE_VARIABLES = Object.values(TEMPLATE_VARIABLES).map(
+  ({ label }) => label,
+);
 
 export const EMAIL_TEMPLATE_STAGE_LABELS: Record<EmailTemplateStage, string> = {
   application_received: 'Recibido',

@@ -305,9 +305,9 @@ export class ApplicationsRepository {
       // Convertir el Timestamp anidado dentro de skillMatchStats (si existe)
       skillMatchStats: application.skillMatchStats
         ? {
-            ...application.skillMatchStats,
-            actualizadoEn: application.skillMatchStats.actualizadoEn.toDate(),
-          }
+          ...application.skillMatchStats,
+          actualizadoEn: application.skillMatchStats.actualizadoEn.toDate(),
+        }
         : undefined,
     };
   }

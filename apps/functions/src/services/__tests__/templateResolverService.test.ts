@@ -26,6 +26,7 @@ const makeContext = (
   recruiterEmail: 'carlos@empresa.com',
   calendarLink: 'https://calendar.app/reunion',
   companyName: 'TechCorp SA',
+  offerLink: 'https://ats.example.com/offer/public-token',
   ...overrides,
 });
 
@@ -47,6 +48,7 @@ describe('TemplateResolverService.resolve', () => {
         'Gracias por tu interés en [Nombre de la Posición].',
         'Tu reclutador/a es [Nombre del Reclutador] ([Email del Reclutador]).',
         'Agenda tu entrevista aquí: [Link de Agenda].',
+        'Revisa tu oferta aquí: [Link de Carta Oferta].',
         'Saludos, [Nombre de la Empresa].',
       ].join('\n'),
     });
@@ -67,7 +69,36 @@ describe('TemplateResolverService.resolve', () => {
     expect(body).toContain(
       'Agenda tu entrevista aquí: https://calendar.app/reunion.',
     );
+    expect(body).toContain(
+      'Revisa tu oferta aquí: https://ats.example.com/offer/public-token.',
+    );
     expect(body).toContain('Saludos, TechCorp SA.');
+  });
+
+  it('reemplaza [Link de Carta Oferta] con string vacío cuando no hay link disponible', () => {
+    const template = makeTemplate({
+      subject: 'Carta oferta',
+      body: 'Revisá tu propuesta aquí: [Link de Carta Oferta]',
+    });
+
+    const { body } = service.resolve(template, makeContext({ offerLink: '' }));
+
+    expect(body).toBe('Revisá tu propuesta aquí: ');
+    expect(body).not.toContain('[Link de Carta Oferta]');
+  });
+
+  it('reemplaza múltiples ocurrencias de [Link de Carta Oferta]', () => {
+    const template = makeTemplate({
+      subject: '[Link de Carta Oferta]',
+      body: '[Link de Carta Oferta] - [Link de Carta Oferta]',
+    });
+
+    const { subject, body } = service.resolve(template, makeContext());
+
+    expect(subject).toBe('https://ats.example.com/offer/public-token');
+    expect(body).toBe(
+      'https://ats.example.com/offer/public-token - https://ats.example.com/offer/public-token',
+    );
   });
 
   it('reemplaza placeholder con string vacío cuando el campo del contexto está vacío', () => {

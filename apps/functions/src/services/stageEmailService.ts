@@ -42,6 +42,8 @@ export class StageEmailService {
     newStage: ApplicationStage,
     recruiterId: string,
     recruiterEmail: string,
+    offerLink = '',
+    offerId?: string,
   ): Promise<boolean> {
     try {
       //  Resolver emailTemplateStage si es null no hay comunicaciones para esa etapa
@@ -49,11 +51,19 @@ export class StageEmailService {
       if (emailTemplateStage === null) {
         return false;
       }
+      if (emailTemplateStage === 'offer' && !offerLink) {
+        return false;
+      }
 
       // Busca templates para la etapa.
       const template =
         await this.emailTemplateRepository.findByStage(emailTemplateStage);
       if (!template) {
+        logger.warn('StageEmailService: no hay template configurado', {
+          stage: newStage,
+          emailTemplateStage,
+          applicationId: application.id,
+        });
         return false;
       }
 
@@ -77,6 +87,7 @@ export class StageEmailService {
         recruiterEmail,
         calendarLink: calendarLink ?? '',
         companyName: orgConfig.companyName,
+        offerLink,
       };
 
       const { subject, body } = this.templateResolver.resolve(
@@ -86,6 +97,7 @@ export class StageEmailService {
 
       const candidateEmail = candidate.email ?? '';
       const logDto: CreateEmailLogDTO = {
+        ...(offerId && { offerId }),
         applicationId: application.id,
         candidateId: application.candidateId,
         candidateEmail,

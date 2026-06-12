@@ -88,6 +88,15 @@ describe('validateUpdateApplicationStagePayload', () => {
     ).toThrow(UpdateApplicationValidationError);
   });
 
+  it('rechaza send_offer porque debe gestionarse desde Carta oferta', () => {
+    expect(() =>
+      validateUpdateApplicationStagePayload({
+        applicationId: 'app-1',
+        stage: 'send_offer',
+      }),
+    ).toThrow('Carta oferta');
+  });
+
   it('lanza UpdateApplicationValidationError cuando stage es rejected sin rejectionReason', () => {
     expect(() =>
       validateUpdateApplicationStagePayload({
@@ -128,7 +137,6 @@ describe('validateUpdateApplicationStagePayload', () => {
     'schedule_tech_1',
     'tech_1_scheduled',
     'tech_1_done',
-    'send_offer',
     'hired',
     'withdrawn',
   ] as const)('acepta el stage válido "%s"', (stage) => {

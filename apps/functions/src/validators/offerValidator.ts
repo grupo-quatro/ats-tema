@@ -1,7 +1,9 @@
 import type {
   CreateOfferDraftPayload,
+  PreviewOfferPayload,
   RespondOfferPayload,
   SendOfferPayload,
+  UpdateOfferDraftPayload,
 } from '@ats/shared-types';
 
 export class OfferValidationError extends Error {
@@ -30,6 +32,28 @@ export function validateCreateOfferDraftPayload(
 export function validateSendOfferPayload(
   payload: Partial<SendOfferPayload>,
 ): asserts payload is SendOfferPayload {
+  if (!isNonEmptyString(payload.offerId)) {
+    throw new OfferValidationError('El offerId es obligatorio.');
+  }
+}
+
+export function validateUpdateOfferDraftPayload(
+  payload: Partial<UpdateOfferDraftPayload>,
+): asserts payload is UpdateOfferDraftPayload {
+  validateOfferId(payload);
+
+  if (payload.benefits !== undefined && !Array.isArray(payload.benefits)) {
+    throw new OfferValidationError('El campo benefits debe ser un array.');
+  }
+}
+
+export function validatePreviewOfferPayload(
+  payload: Partial<PreviewOfferPayload>,
+): asserts payload is PreviewOfferPayload {
+  validateOfferId(payload);
+}
+
+function validateOfferId(payload: Partial<{ offerId: string }>): void {
   if (!isNonEmptyString(payload.offerId)) {
     throw new OfferValidationError('El offerId es obligatorio.');
   }
