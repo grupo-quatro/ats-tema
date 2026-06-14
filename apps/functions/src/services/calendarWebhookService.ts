@@ -8,10 +8,12 @@ import {
   STAGE_CONFIG,
 } from '@ats/shared-types';
 
+import { db } from '../core/firebaseAdmin';
 import { ApplicationsRepository } from '../repositories/applicationRepository';
 import { EmailLogRepository } from '../repositories/emailLogRepository';
 import { EmailTemplateRepository } from '../repositories/emailTemplateRepository';
 import { EmployeeRepository } from '../repositories/employeeRepository';
+import { JobsRepository } from '../repositories/jobsRepository';
 import { OrgConfigRepository } from '../repositories/orgConfigRepository';
 import { UserRepository } from '../repositories/userRepository';
 import { GmailSenderService } from './gmailSenderService';
@@ -27,6 +29,7 @@ const SCHEDULING_STAGES = Object.keys(STAGE_CONFIG).filter((stage) =>
 const userRepository = new UserRepository();
 const applicationsRepository = new ApplicationsRepository();
 const employeeRepository = new EmployeeRepository();
+const jobsRepository = new JobsRepository();
 
 // Singleton de módulo — usar .once('tokens') para no acumular listeners entre invocaciones.
 const calendarOauth2Client = new google.auth.OAuth2(
@@ -65,34 +68,75 @@ export async function processCalendarNotification(
     version: 'v3',
     auth: calendarOauth2Client,
   });
-  const updatedMin = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+
+  // Usar syncToken para procesamiento incremental — evita depender de una ventana de tiempo.
+  // Si el token expiró (410), Google requiere un full sync para obtener uno nuevo.
+  const syncToken = await userRepository.getCalendarSyncToken(recruiterUid);
 
   let eventsResponse;
   try {
     eventsResponse = await calendar.events.list({
       calendarId: 'primary',
-      updatedMin,
+      ...(syncToken
+        ? { syncToken }
+        : { updatedMin: new Date(Date.now() - 10 * 60 * 1000).toISOString() }),
       singleEvents: true,
-      orderBy: 'updated',
     });
   } catch (err) {
-    const isRevoked =
-      err instanceof Error && err.message.includes('invalid_grant');
-    if (isRevoked) {
-      logger.warn('[calendarWebhookService] Token revocado para recruiter', {
+    const status =
+      err instanceof Error && 'status' in err
+        ? (err as { status: number }).status
+        : null;
+
+    if (status === 410) {
+      // syncToken expirado — hacer full sync para obtener nuevo token
+      logger.info('[calendarWebhookService] syncToken expirado, full sync', {
         recruiterUid,
       });
-      await employeeRepository.setCalendarStatus(
-        recruiterUid,
-        GMAIL_STATUS.DISCONNECTED,
-      );
+      try {
+        eventsResponse = await calendar.events.list({
+          calendarId: 'primary',
+          updatedMin: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+          singleEvents: true,
+        });
+      } catch (fullSyncErr) {
+        logger.error('[calendarWebhookService] Error en full sync', {
+          recruiterUid,
+          err: fullSyncErr,
+        });
+        return;
+      }
     } else {
-      logger.error('[calendarWebhookService] Error listando eventos', {
-        recruiterUid,
-        err,
-      });
+      const isRevoked =
+        err instanceof Error && err.message.includes('invalid_grant');
+      if (isRevoked) {
+        logger.warn('[calendarWebhookService] Token revocado para recruiter', {
+          recruiterUid,
+        });
+        await employeeRepository.setCalendarStatus(
+          recruiterUid,
+          GMAIL_STATUS.DISCONNECTED,
+        );
+      } else {
+        logger.error('[calendarWebhookService] Error listando eventos', {
+          recruiterUid,
+          err,
+        });
+      }
+      return;
     }
-    return;
+  }
+
+  // Guardar nuevo syncToken para la próxima notificación
+  if (eventsResponse.data.nextSyncToken) {
+    await userRepository
+      .saveCalendarSyncToken(recruiterUid, eventsResponse.data.nextSyncToken)
+      .catch((err) =>
+        logger.error('[calendarWebhookService] Error guardando syncToken', {
+          recruiterUid,
+          err,
+        }),
+      );
   }
 
   const events = eventsResponse.data.items ?? [];
@@ -154,10 +198,38 @@ async function matchAndTransition(params: {
     return;
   }
 
-  const applicationId = application.id;
+  // B3: Verificar que la postulación pertenece al recruiter cuyo calendario
+  // detectó el evento. Evita avanzar postulaciones de otros recruiters.
+  const job = await jobsRepository.findById(application.jobId);
+  if (!job || job.hiringManagerId !== recruiterUid) {
+    logger.info(
+      '[calendarWebhookService] Postulación no pertenece a este recruiter — ignorada',
+      {
+        applicationId: application.id,
+        jobId: application.jobId,
+        recruiterUid,
+        jobHiringManager: job?.hiringManagerId,
+      },
+    );
+    return;
+  }
 
-  if (application.calendarEventId === eventId) {
-    logger.info('[calendarWebhookService] Evento ya procesado', {
+  const applicationId = application.id;
+  const applicationRef = db.collection('applications').doc(applicationId);
+
+  // B6: Idempotencia atómica — solo un webhook puede reclamar el eventId.
+  // La transacción garantiza que dos webhooks concurrentes no procesen el mismo evento.
+  let shouldProcess = false;
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(applicationRef);
+    if (!snap.exists) return;
+    if (snap.data()?.calendarEventId === eventId) return;
+    tx.update(applicationRef, { calendarEventId: eventId });
+    shouldProcess = true;
+  });
+
+  if (!shouldProcess) {
+    logger.info('[calendarWebhookService] Evento ya procesado (idempotencia)', {
       applicationId,
       eventId,
     });
@@ -210,10 +282,6 @@ async function matchAndTransition(params: {
     { applicationId, stage: nextStage },
     recruiterUid,
   );
-
-  await applicationsRepository.update(applicationId, {
-    calendarEventId: eventId,
-  });
 
   logger.info('[calendarWebhookService] Aplicación transicionada', {
     applicationId,

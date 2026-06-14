@@ -16,7 +16,9 @@ const userRepository = new UserRepository();
  *   X-Goog-Resource-State  → 'sync' (setup) | 'exists' (cambio real)
  *   X-Goog-Channel-Token   → token secreto configurado al registrar el canal
  */
-export const calendarWebhook = onRequest(async (request, response) => {
+export const calendarWebhook = onRequest(
+  { secrets: ['OAUTH_ENCRYPTION_KEY', 'CALENDAR_WEBHOOK_SECRET'] },
+  async (request, response) => {
   if (request.method !== 'POST') {
     response.status(405).send('Method Not Allowed');
     return;
@@ -80,4 +82,5 @@ export const calendarWebhook = onRequest(async (request, response) => {
       error: err,
     });
   });
-});
+},
+);

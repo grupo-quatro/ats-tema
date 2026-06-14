@@ -181,6 +181,33 @@ export class UserRepository implements IUserRepository {
    * Calendar para este recruiter. Se llama desde registerCalendarWatch y
    * desde renewCalendarWatches.
    */
+  async saveCalendarSyncToken(uid: string, syncToken: string): Promise<void> {
+    try {
+      await this.collection
+        .doc(uid)
+        .set({ calendarSyncToken: syncToken }, { merge: true });
+    } catch (error) {
+      throw new UserRepositoryError(
+        `No se pudo guardar calendarSyncToken para ${uid}.`,
+        error,
+      );
+    }
+  }
+
+  async getCalendarSyncToken(uid: string): Promise<string | null> {
+    try {
+      const snapshot = await this.collection.doc(uid).get();
+      if (!snapshot.exists) return null;
+      const token = snapshot.data()?.calendarSyncToken as string | undefined;
+      return token ?? null;
+    } catch (error) {
+      throw new UserRepositoryError(
+        `No se pudo obtener calendarSyncToken para ${uid}.`,
+        error,
+      );
+    }
+  }
+
   async saveCalendarWatch(uid: string, watch: CalendarWatch): Promise<void> {
     try {
       await this.collection

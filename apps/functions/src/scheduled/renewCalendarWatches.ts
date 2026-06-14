@@ -1,5 +1,6 @@
 import { logger } from 'firebase-functions';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
+import type { calendar_v3 } from 'googleapis';
 import { google } from 'googleapis';
 
 import type { CalendarWatch, GmailCredential } from '@ats/shared-types';
@@ -22,9 +23,10 @@ const userRepository = new UserRepository();
  * Si falla para un recruiter, se loguea y continúa con el resto.
  */
 export const renewCalendarWatches = onSchedule(
-  // Corre cada 29 días — los canales de Google duran 30 días, esto garantiza
-  // renovación antes del vencimiento independientemente del día de creación.
-  { schedule: '0 3 */29 * *', timeZone: 'UTC' },
+  // Corre diariamente — la lógica de renovación solo actúa cuando el canal
+  // vence en < 2 días. El schedule */29 anterior era incorrecto (no significaba
+  // "cada 29 días", sino días específicos del mes).
+  { schedule: '0 3 * * *', timeZone: 'UTC', secrets: ['OAUTH_ENCRYPTION_KEY', 'CALENDAR_WEBHOOK_SECRET'] },
   async () => {
     logger.info('[renewCalendarWatches] Iniciando renovación de canales');
 
@@ -52,13 +54,11 @@ export const renewCalendarWatches = onSchedule(
     }
 
     const results = await Promise.allSettled(
-      snapshot.docs.map((doc) => {
+      snapshot.docs.map(async (doc) => {
         const data = doc.data();
-        // Leemos los campos directamente del doc — sin queries extra
         const watch = data.calendarWatch as CalendarWatch | undefined;
-        const credential = data.calendarCredential as
-          | GmailCredential
-          | undefined;
+        // Usar el repositorio para obtener la credencial descifrada correctamente
+        const credential = await userRepository.getCalendarCredential(doc.id);
         return renewWatchForUser(doc.id, watch, credential, webhookUrl);
       }),
     );
@@ -75,7 +75,7 @@ export const renewCalendarWatches = onSchedule(
 async function renewWatchForUser(
   uid: string,
   existingWatch: CalendarWatch | undefined,
-  credential: GmailCredential | undefined,
+  credential: GmailCredential | null | undefined,
   webhookUrl: string,
 ): Promise<void> {
   if (!credential) {
@@ -136,7 +136,8 @@ async function renewWatchForUser(
       );
     });
 
-  const channelId = `${uid}-calendar-watch`;
+  // ID único por renovación — Google exige que cada canal nuevo tenga un ID distinto.
+  const channelId = `${uid}-cw-${Date.now()}`;
   const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
 
   const watchResponse = await calendar.events.watch({
@@ -165,8 +166,38 @@ async function renewWatchForUser(
     expiresAt,
   });
 
+  // Actualizar syncToken para que el webhook siga procesando incrementalmente.
+  const newSyncToken = await fetchInitialSyncToken(calendar);
+  if (newSyncToken) {
+    await userRepository.saveCalendarSyncToken(uid, newSyncToken);
+  }
+
   logger.info(`[renewCalendarWatches] Canal renovado para ${uid}`, {
     channelId,
     expiresAt: new Date(expiresAt).toISOString(),
   });
+}
+
+/**
+ * Pagina events.list desde ahora hasta obtener el nextSyncToken (última página).
+ * Con timeMin=now hay pocos eventos futuros, así que termina rápido.
+ */
+async function fetchInitialSyncToken(
+  calendar: calendar_v3.Calendar,
+): Promise<string | null> {
+  let pageToken: string | undefined;
+  let syncToken: string | null = null;
+  const timeMin = new Date().toISOString();
+  do {
+    const resp = await calendar.events.list({
+      calendarId: 'primary',
+      timeMin,
+      singleEvents: true,
+      maxResults: 250,
+      ...(pageToken ? { pageToken } : {}),
+    });
+    syncToken = resp.data.nextSyncToken ?? null;
+    pageToken = resp.data.nextPageToken ?? undefined;
+  } while (pageToken);
+  return syncToken;
 }

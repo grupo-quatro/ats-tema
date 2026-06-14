@@ -1,7 +1,9 @@
 import { logger } from 'firebase-functions';
 import { onRequest } from 'firebase-functions/v2/https';
+import type { calendar_v3 } from 'googleapis';
 import { google } from 'googleapis';
 
+import { handleCorsPreflightAndVerifyMethod } from '../core/cors';
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
 import { UserRepository } from '../repositories/userRepository';
 
@@ -18,20 +20,10 @@ const userRepository = new UserRepository();
  * Los canales expiran en 30 días. La Cloud Function `renewCalendarWatches`
  * los renueva automáticamente antes del vencimiento.
  */
-export const registerCalendarWatch = onRequest(async (request, response) => {
-  response.set('Access-Control-Allow-Origin', '*');
-  response.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  response.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-  if (request.method === 'OPTIONS') {
-    response.status(204).send('');
-    return;
-  }
-
-  if (request.method !== 'POST') {
-    response.status(405).json({ error: 'Method Not Allowed.' });
-    return;
-  }
+export const registerCalendarWatch = onRequest(
+  { secrets: ['OAUTH_ENCRYPTION_KEY', 'CALENDAR_WEBHOOK_SECRET'] },
+  async (request, response) => {
+  if (handleCorsPreflightAndVerifyMethod(request, response, 'POST')) return;
 
   try {
     const { uid } = await requireAuthenticatedUser(request);
@@ -85,7 +77,8 @@ export const registerCalendarWatch = onRequest(async (request, response) => {
 
     // 4. Registrar el canal con Google Calendar API
     //    Expira en 30 días (máximo que permite Google).
-    const channelId = `${uid}-calendar-watch`;
+    //    El ID debe ser único por canal — incluye timestamp para evitar conflictos en renovaciones.
+    const channelId = `${uid}-cw-${Date.now()}`;
     const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
 
     const watchResponse = await calendar.events.watch({
@@ -118,6 +111,14 @@ export const registerCalendarWatch = onRequest(async (request, response) => {
       expiresAt,
     });
 
+    // 6. Obtener syncToken inicial para procesamiento incremental.
+    //    Hay que paginar hasta la última página — el nextSyncToken solo aparece ahí.
+    //    Filtramos desde ahora para minimizar páginas (solo eventos futuros).
+    const initialSyncToken = await fetchInitialSyncToken(calendar);
+    if (initialSyncToken) {
+      await userRepository.saveCalendarSyncToken(uid, initialSyncToken);
+    }
+
     logger.info('[registerCalendarWatch] Canal registrado correctamente', {
       uid,
       channelId,
@@ -137,4 +138,29 @@ export const registerCalendarWatch = onRequest(async (request, response) => {
       .status(500)
       .json({ error: 'No se pudo registrar el canal de Calendar.' });
   }
-});
+},
+);
+
+/**
+ * Pagina events.list desde ahora hasta obtener el nextSyncToken (última página).
+ * Con timeMin=now hay pocos eventos futuros, así que termina rápido.
+ */
+async function fetchInitialSyncToken(
+  calendar: calendar_v3.Calendar,
+): Promise<string | null> {
+  let pageToken: string | undefined;
+  let syncToken: string | null = null;
+  const timeMin = new Date().toISOString();
+  do {
+    const resp = await calendar.events.list({
+      calendarId: 'primary',
+      timeMin,
+      singleEvents: true,
+      maxResults: 250,
+      ...(pageToken ? { pageToken } : {}),
+    });
+    syncToken = resp.data.nextSyncToken ?? null;
+    pageToken = resp.data.nextPageToken ?? undefined;
+  } while (pageToken);
+  return syncToken;
+}

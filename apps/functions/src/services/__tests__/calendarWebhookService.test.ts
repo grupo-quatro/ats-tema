@@ -3,21 +3,27 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const {
   mockGetCalendarCredential,
   mockUpdateCalendarCredential,
-  mockFindById,
+  mockGetCalendarSyncToken,
+  mockSaveCalendarSyncToken,
+  mockJobsFindById,
   mockFindActiveInSchedulingByEmail,
-  mockUpdate,
   mockUpdateStage,
   mockSetCalendarStatus,
   mockEventsList,
+  mockTxGet,
+  mockTxUpdate,
 } = vi.hoisted(() => ({
   mockGetCalendarCredential: vi.fn(),
   mockUpdateCalendarCredential: vi.fn(),
-  mockFindById: vi.fn(),
+  mockGetCalendarSyncToken: vi.fn(),
+  mockSaveCalendarSyncToken: vi.fn(),
+  mockJobsFindById: vi.fn(),
   mockFindActiveInSchedulingByEmail: vi.fn(),
-  mockUpdate: vi.fn(),
   mockUpdateStage: vi.fn(),
   mockSetCalendarStatus: vi.fn(),
   mockEventsList: vi.fn(),
+  mockTxGet: vi.fn(),
+  mockTxUpdate: vi.fn(),
 }));
 
 vi.mock('firebase-functions', () => ({
@@ -25,7 +31,15 @@ vi.mock('firebase-functions', () => ({
 }));
 
 vi.mock('../../core/firebaseAdmin', () => ({
-  db: { collection: vi.fn() },
+  db: {
+    collection: vi.fn().mockReturnValue({
+      doc: vi.fn().mockReturnValue({}),
+    }),
+    runTransaction: vi.fn().mockImplementation(async (fn: (tx: unknown) => Promise<void>) => {
+      const tx = { get: mockTxGet, update: mockTxUpdate };
+      await fn(tx);
+    }),
+  },
 }));
 
 vi.mock('googleapis', () => ({
@@ -51,6 +65,8 @@ vi.mock('../../repositories/userRepository', () => ({
   UserRepository: vi.fn().mockImplementation(() => ({
     getCalendarCredential: mockGetCalendarCredential,
     updateCalendarCredential: mockUpdateCalendarCredential,
+    getCalendarSyncToken: mockGetCalendarSyncToken,
+    saveCalendarSyncToken: mockSaveCalendarSyncToken,
     getGmailCredential: vi.fn().mockResolvedValue(null),
     updateGmailCredential: vi.fn(),
     saveCalendarWatch: vi.fn(),
@@ -60,9 +76,13 @@ vi.mock('../../repositories/userRepository', () => ({
 
 vi.mock('../../repositories/applicationRepository', () => ({
   ApplicationsRepository: vi.fn().mockImplementation(() => ({
-    findById: mockFindById,
     findActiveInSchedulingByEmail: mockFindActiveInSchedulingByEmail,
-    update: mockUpdate,
+  })),
+}));
+
+vi.mock('../../repositories/jobsRepository', () => ({
+  JobsRepository: vi.fn().mockImplementation(() => ({
+    findById: mockJobsFindById,
   })),
 }));
 
@@ -128,12 +148,17 @@ const makeEvent = (overrides = {}) => ({
 beforeEach(() => {
   vi.clearAllMocks();
   mockGetCalendarCredential.mockResolvedValue(CREDENTIAL);
-  mockFindById.mockResolvedValue(null);
+  mockGetCalendarSyncToken.mockResolvedValue(null);
+  mockSaveCalendarSyncToken.mockResolvedValue(undefined);
+  // Job pertenece al recruiter uid-1 por defecto
+  mockJobsFindById.mockResolvedValue({ id: 'job-1', hiringManagerId: 'uid-1' });
   mockFindActiveInSchedulingByEmail.mockResolvedValue(null);
-  mockUpdate.mockResolvedValue(undefined);
   mockUpdateStage.mockResolvedValue(undefined);
   mockSetCalendarStatus.mockResolvedValue(undefined);
   mockEventsList.mockResolvedValue({ data: { items: [] } });
+  // Por defecto la transacción no encuentra calendarEventId — permite procesamiento
+  mockTxGet.mockResolvedValue({ exists: true, data: () => ({}) });
+  mockTxUpdate.mockReturnValue(undefined);
 });
 
 describe('processCalendarNotification', () => {
@@ -165,13 +190,11 @@ describe('processCalendarNotification', () => {
       'candidate@example.com',
       expect.any(Array),
     );
+    expect(mockTxUpdate).toHaveBeenCalled();
     expect(mockUpdateStage).toHaveBeenCalledWith(
       { applicationId: 'app-1', stage: 'hr_1_scheduled' },
       'uid-1',
     );
-    expect(mockUpdate).toHaveBeenCalledWith('app-1', {
-      calendarEventId: 'evt-1',
-    });
   });
 
   it('ignora eventos sin asistente externo', async () => {
@@ -203,23 +226,44 @@ describe('processCalendarNotification', () => {
   it('no reprocesa si calendarEventId ya está seteado (idempotencia)', async () => {
     const app = makeApplication({ calendarEventId: 'evt-1' });
     mockFindActiveInSchedulingByEmail.mockResolvedValue(app);
+    // La transacción encuentra el eventId ya marcado
+    mockTxGet.mockResolvedValue({
+      exists: true,
+      data: () => ({ calendarEventId: 'evt-1' }),
+    });
     mockEventsList.mockResolvedValue({ data: { items: [makeEvent()] } });
 
     await processCalendarNotification('uid-1');
 
     expect(mockUpdateStage).not.toHaveBeenCalled();
-    expect(mockUpdate).not.toHaveBeenCalled();
+    expect(mockTxUpdate).not.toHaveBeenCalled();
   });
 
-  it('guarda calendarEventId DESPUÉS de updateStage — si falla no queda marcado', async () => {
+  it('no avanza la postulación si el job no pertenece al recruiter', async () => {
     const app = makeApplication();
     mockFindActiveInSchedulingByEmail.mockResolvedValue(app);
-    mockUpdateStage.mockRejectedValue(new Error('updateStage failed'));
+    // El job pertenece a otro recruiter
+    mockJobsFindById.mockResolvedValue({ id: 'job-1', hiringManagerId: 'otro-recruiter' });
     mockEventsList.mockResolvedValue({ data: { items: [makeEvent()] } });
 
     await processCalendarNotification('uid-1');
 
-    expect(mockUpdate).not.toHaveBeenCalled();
+    expect(mockUpdateStage).not.toHaveBeenCalled();
+    expect(mockTxUpdate).not.toHaveBeenCalled();
+  });
+
+  it('usa syncToken si existe en Firestore', async () => {
+    mockGetCalendarSyncToken.mockResolvedValue('sync-token-abc');
+    mockEventsList.mockResolvedValue({
+      data: { items: [], nextSyncToken: 'sync-token-new' },
+    });
+
+    await processCalendarNotification('uid-1');
+
+    expect(mockEventsList).toHaveBeenCalledWith(
+      expect.objectContaining({ syncToken: 'sync-token-abc' }),
+    );
+    expect(mockSaveCalendarSyncToken).toHaveBeenCalledWith('uid-1', 'sync-token-new');
   });
 
   it('setea calendarStatus DISCONNECTED cuando el token fue revocado', async () => {

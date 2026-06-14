@@ -57,18 +57,15 @@ export default function OAuthCodeHandler() {
         .then(() => {
           cleanUrl();
           window.dispatchEvent(new Event('gmail-connected'));
+          return registerCalendarWatch();
+        })
+        .then(() => {
           window.dispatchEvent(new Event('calendar-connected'));
-          registerCalendarWatch().catch((err: unknown) => {
-            console.error(
-              '[OAuthCodeHandler] registerCalendarWatch failed:',
-              err,
-            );
-          });
         })
         .catch((err: unknown) => {
           const message =
             err instanceof Error ? err.message : 'Error desconocido';
-          console.error('[OAuthCodeHandler] Google exchange failed:', message);
+          console.error('[OAuthCodeHandler] Google OAuth failed:', message);
           cleanUrl();
           window.dispatchEvent(
             new CustomEvent('gmail-connect-error', { detail: message }),
@@ -96,19 +93,16 @@ export default function OAuthCodeHandler() {
       exchangeCalendarCode({ code, redirectUri: CALENDAR_REDIRECT_URI })
         .then(() => {
           cleanUrl();
+          return registerCalendarWatch();
+        })
+        .then(() => {
           window.dispatchEvent(new Event('calendar-connected'));
-          registerCalendarWatch().catch((err: unknown) => {
-            console.error(
-              '[OAuthCodeHandler] registerCalendarWatch failed:',
-              err,
-            );
-          });
         })
         .catch((err: unknown) => {
           const message =
             err instanceof Error ? err.message : 'Error desconocido';
           console.error(
-            '[OAuthCodeHandler] Calendar exchange failed:',
+            '[OAuthCodeHandler] Calendar OAuth failed:',
             message,
           );
           cleanUrl();
