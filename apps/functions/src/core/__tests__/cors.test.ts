@@ -115,7 +115,11 @@ describe('handleCorsPreflightAndVerifyMethod', () => {
 
   it('siempre setea los headers CORS incluso para métodos válidos', () => {
     const res = makeResponse();
-    handleCorsPreflightAndVerifyMethod({ method: 'PATCH' }, res as never, 'PATCH');
+    handleCorsPreflightAndVerifyMethod(
+      { method: 'PATCH' },
+      res as never,
+      'PATCH',
+    );
     expect(res.set).toHaveBeenCalledWith(
       'Access-Control-Allow-Origin',
       expect.any(String),
