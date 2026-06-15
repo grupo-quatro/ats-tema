@@ -313,38 +313,6 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     canManageNotes,
   ]);
 
-  const handlePreviewStageChange = useCallback(async () => {
-    if (!selectedStageKey) return;
-
-    const targetStage = CANDIDATE_STAGE_TO_APP_STAGE[selectedStageKey];
-    if (targetStage) {
-      const warning = resolveAuthWarning(targetStage, employee);
-      if (warning) {
-        setAuthWarning(warning);
-        return;
-      }
-    }
-
-    setIsPreviewingStageEmail(true);
-    try {
-      const preview = await previewApplicationStageEmail({
-        applicationId: candidate.applicationId,
-        stage: CANDIDATE_STAGE_TO_APP_STAGE[selectedStageKey],
-      });
-
-      setStageEmailPreview(preview);
-      setStageDialogOpen(false);
-      setStageEmailPreviewOpen(true);
-    } catch {
-      setSnackbar({
-        message: 'No se pudo previsualizar el email',
-        severity: 'error',
-      });
-    } finally {
-      setIsPreviewingStageEmail(false);
-    }
-  }, [selectedStageKey, candidate.applicationId, employee]);
-
   const handleStageChange = useCallback(async () => {
     if (!selectedStageKey) return;
 
@@ -386,7 +354,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
       setSelectedStageKey('');
       setSnackbar({
         message: stageEmailPreview?.hasEmail
-          ? 'Se cambio de etapa y se envio el correo'
+          ? 'Se cambió la etapa y se envió el correo'
           : `Etapa actualizada a "${STAGE_LABELS[selectedStageKey]}"`,
         severity: 'success',
       });
@@ -406,6 +374,43 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     stageEmailPreview?.hasEmail,
     currentApplicationStage,
   ]);
+
+  const handlePreviewStageChange = useCallback(async () => {
+    if (!selectedStageKey) return;
+
+    const targetStage = CANDIDATE_STAGE_TO_APP_STAGE[selectedStageKey];
+    if (targetStage) {
+      const warning = resolveAuthWarning(targetStage, employee);
+      if (warning) {
+        setAuthWarning(warning);
+        return;
+      }
+    }
+
+    setIsPreviewingStageEmail(true);
+    try {
+      const preview = await previewApplicationStageEmail({
+        applicationId: candidate.applicationId,
+        stage: CANDIDATE_STAGE_TO_APP_STAGE[selectedStageKey],
+      });
+
+      if (preview.hasEmail) {
+        setStageEmailPreview(preview);
+        setStageDialogOpen(false);
+        setStageEmailPreviewOpen(true);
+      } else {
+        setStageDialogOpen(false);
+        await handleStageChange();
+      }
+    } catch {
+      setSnackbar({
+        message: 'No se pudo cambiar la etapa',
+        severity: 'error',
+      });
+    } finally {
+      setIsPreviewingStageEmail(false);
+    }
+  }, [selectedStageKey, candidate.applicationId, employee, handleStageChange]);
 
   const handleReject = useCallback(async () => {
     if (!rejectReason.trim()) return;

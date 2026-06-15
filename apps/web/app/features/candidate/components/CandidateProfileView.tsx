@@ -951,8 +951,8 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
             }
           >
             {profile.isPreviewingStageEmail
-              ? 'Generando...'
-              : 'Previsualizar correo'}
+              ? 'Cargando...'
+              : 'Cambiar etapa'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -967,77 +967,70 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
       >
         <DialogTitle>Previsualización del correo</DialogTitle>
         <DialogContent>
-          {profile.stageEmailPreview?.hasEmail ? (
-            <Stack spacing={2}>
-              <DialogContentText color="text.secondary">
-                Revisá el correo que se enviará antes de confirmar el cambio de
-                etapa.
-              </DialogContentText>
-              <Box>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ display: 'block', mb: 0.5 }}
-                >
-                  Para
-                </Typography>
-                <Typography variant="body2">
-                  {profile.stageEmailPreview.candidateEmail}
-                </Typography>
-              </Box>
-              <Box>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ display: 'block', mb: 0.5 }}
-                >
-                  Plantilla
-                </Typography>
-                <Typography variant="body2">
-                  {profile.stageEmailPreview.templateName}
-                </Typography>
-              </Box>
-              <Box>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ display: 'block', mb: 0.5 }}
-                >
-                  Asunto
-                </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {profile.stageEmailPreview.subject}
-                </Typography>
-              </Box>
+          <Stack spacing={2}>
+            <DialogContentText color="text.secondary">
+              Revisá el correo que se enviará antes de confirmar el cambio de
+              etapa.
+            </DialogContentText>
+            <Box>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block', mb: 0.5 }}
+              >
+                Para
+              </Typography>
+              <Typography variant="body2">
+                {profile.stageEmailPreview?.candidateEmail}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block', mb: 0.5 }}
+              >
+                Plantilla
+              </Typography>
+              <Typography variant="body2">
+                {profile.stageEmailPreview?.templateName}
+              </Typography>
+            </Box>
+            <Box>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: 'block', mb: 0.5 }}
+              >
+                Asunto
+              </Typography>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                {profile.stageEmailPreview?.subject}
+              </Typography>
+            </Box>
+            <Box
+              sx={{
+                border: '1px solid #e2e8f0',
+                borderRadius: '8px',
+                bgcolor: '#ffffff',
+                p: 2,
+                maxHeight: 360,
+                overflow: 'auto',
+              }}
+            >
               <Box
                 sx={{
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '8px',
-                  bgcolor: '#ffffff',
-                  p: 2,
-                  maxHeight: 360,
-                  overflow: 'auto',
+                  color: 'text.primary',
+                  fontSize: 14,
+                  lineHeight: 1.6,
+                  '& p': { my: 1 },
                 }}
-              >
-                <Box
-                  sx={{
-                    color: 'text.primary',
-                    fontSize: 14,
-                    lineHeight: 1.6,
-                    '& p': { my: 1 },
-                  }}
-                  dangerouslySetInnerHTML={{
-                    __html: profile.stageEmailPreview.body ?? '',
-                  }}
-                />
-              </Box>
-            </Stack>
-          ) : (
-            <DialogContentText color="text.secondary">
-              Esta etapa no tiene una plantilla configurada. Al confirmar solo
-              se cambiará la etapa del candidato y no se enviará ningún correo.
-            </DialogContentText>
-          )}
+                dangerouslySetInnerHTML={{
+                  __html: profile.stageEmailPreview?.body ?? '',
+                }}
+              />
+            </Box>
+          </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
           <Button
@@ -1048,13 +1041,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
           </Button>
           <Button
             variant="contained"
-            onClick={() => {
-              if (profile.stageEmailPreview?.hasEmail) {
-                setStageSendConfirmOpen(true);
-                return;
-              }
-              profile.handleStageChange();
-            }}
+            onClick={() => setStageSendConfirmOpen(true)}
             disabled={profile.isUpdatingStage}
             startIcon={
               profile.isUpdatingStage ? (
@@ -1064,9 +1051,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
           >
             {profile.isUpdatingStage
               ? 'Confirmando...'
-              : profile.stageEmailPreview?.hasEmail
-                ? 'Confirmar y enviar el correo'
-                : 'Confirmar cambio'}
+              : 'Confirmar y enviar el correo'}
           </Button>
         </DialogActions>
       </Dialog>
