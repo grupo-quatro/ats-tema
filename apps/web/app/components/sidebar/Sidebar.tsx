@@ -28,6 +28,7 @@ import {
 import { useAuth } from '../../shared/lib/authContext';
 import ConnectGmailButton from '../../features/gmail/components/ConnectGmailButton';
 import ConnectCalendarButton from '../../features/calendar/components/ConnectCalendarButton';
+import ConnectGoogleButton from '../../features/auth/components/ConnectGoogleButton';
 import CalendarLinkEditor from '../../features/calendar/components/CalendarLinkEditor';
 import { useEmployeeProfile } from '../../features/calendar/hooks/useEmployeeProfile';
 
@@ -66,7 +67,13 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const { user, role, signOut } = useAuth();
   const { employee } = useEmployeeProfile();
+  const gmailConnected = employee?.gmailStatus === GMAIL_STATUS.CONNECTED;
+  const calendarConnected = employee?.calendarStatus === GMAIL_STATUS.CONNECTED;
   const gmailRevoked = employee?.gmailStatus === GMAIL_STATUS.DISCONNECTED;
+  const calendarRevoked =
+    employee?.calendarStatus === GMAIL_STATUS.DISCONNECTED;
+  const showUnifiedConnect =
+    role === EMPLOYEE_ROLES.HR && !gmailConnected && !calendarConnected;
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -91,14 +98,15 @@ export default function Sidebar() {
       sx={{
         width,
         minWidth: width,
-        alignSelf: 'stretch',
+        height: '100vh',
+        position: 'sticky',
+        top: 0,
         bgcolor: '#ffffff',
         borderRight: '1px solid #e2e8f0',
         display: 'flex',
         flexDirection: 'column',
         transition: 'width 0.2s ease, min-width 0.2s ease',
         overflow: 'hidden',
-        position: 'relative',
       }}
     >
       {/* Header */}
@@ -298,24 +306,50 @@ export default function Sidebar() {
                 </IconButton>
               </Tooltip>
             </Box>
-            {gmailRevoked && (
-              <Box
-                sx={{
-                  px: 1.5,
-                  py: 1,
-                  borderRadius: 1,
-                  bgcolor: 'warning.light',
-                  color: 'warning.contrastText',
-                  fontSize: '0.75rem',
-                  lineHeight: 1.4,
-                }}
-              >
-                Tu cuenta de Gmail fue desconectada. Reconectá para continuar
-                enviando emails.
-              </Box>
+            {showUnifiedConnect ? (
+              <ConnectGoogleButton />
+            ) : (
+              <>
+                {gmailRevoked && (
+                  <Box
+                    sx={{
+                      px: 1.5,
+                      py: 1,
+                      borderRadius: 1,
+                      bgcolor: 'warning.light',
+                      color: 'warning.contrastText',
+                      fontSize: '0.75rem',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    Tu cuenta de Gmail fue desconectada. Reconectá para
+                    continuar enviando emails.
+                  </Box>
+                )}
+                <ConnectGmailButton gmailStatus={employee?.gmailStatus} />
+                {role === EMPLOYEE_ROLES.HR && calendarRevoked && (
+                  <Box
+                    sx={{
+                      px: 1.5,
+                      py: 1,
+                      borderRadius: 1,
+                      bgcolor: 'warning.light',
+                      color: 'warning.contrastText',
+                      fontSize: '0.75rem',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    Tu cuenta de Google Calendar fue desconectada. Reconectá
+                    para continuar detectando reservas.
+                  </Box>
+                )}
+                {role === EMPLOYEE_ROLES.HR && (
+                  <ConnectCalendarButton
+                    calendarStatus={employee?.calendarStatus}
+                  />
+                )}
+              </>
             )}
-            <ConnectGmailButton />
-            {role === EMPLOYEE_ROLES.HR && <ConnectCalendarButton />}
             {role === EMPLOYEE_ROLES.HR && <CalendarLinkEditor />}
             <Typography sx={{ fontSize: '0.7rem', color: '#94a3b8' }}>
               ATS · Tema Consulting

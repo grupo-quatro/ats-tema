@@ -1,10 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { exchangeGmailCode } from '../../../shared/api/gmailApi';
+import { GMAIL_STATUS, type GmailStatus } from '@ats/shared-types';
 
-const GMAIL_CONNECTED_KEY = 'ats-gmail-connected';
 const GMAIL_REDIRECT_URI =
   process.env.NEXT_PUBLIC_GMAIL_REDIRECT_URI ?? 'http://localhost:3000';
 const GOOGLE_OAUTH_CLIENT_ID =
@@ -30,60 +28,39 @@ function buildGoogleOAuthUrl(): string {
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 }
 
-export function useGmailConnect(): UseGmailConnectReturn {
-  const router = useRouter();
-
-  const [status, setStatus] = useState<GmailConnectStatus>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(GMAIL_CONNECTED_KEY) === 'true'
-        ? 'connected'
-        : 'idle';
-    }
-    return 'idle';
-  });
+export function useGmailConnect(
+  gmailStatus?: GmailStatus,
+): UseGmailConnectReturn {
+  const [status, setStatus] = useState<GmailConnectStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Sincronizar con el estado real de Firestore (via employee.gmailStatus)
+  useEffect(() => {
+    if (gmailStatus === GMAIL_STATUS.CONNECTED) {
+      setStatus('connected');
+    } else {
+      setStatus('idle');
+    }
+  }, [gmailStatus]);
+
+  // Escuchar el evento post-exchange de OAuthCodeHandler para feedback inmediato
   useEffect(() => {
     const onConnected = () => {
-      localStorage.setItem(GMAIL_CONNECTED_KEY, 'true');
       setStatus('connected');
+      setErrorMessage(null);
+    };
+    const onError = (e: Event) => {
+      const message =
+        (e as CustomEvent<string>).detail ?? 'Error al conectar Gmail';
+      setErrorMessage(message);
+      setStatus('error');
     };
     window.addEventListener('gmail-connected', onConnected);
-    return () => window.removeEventListener('gmail-connected', onConnected);
-  }, []);
-
-  useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get('code');
-    if (!code) return;
-
-    setStatus('loading');
-    setErrorMessage(null);
-
-    const cleanUrl = () => {
-      const currentUrl = new URL(window.location.href);
-      currentUrl.searchParams.delete('code');
-      currentUrl.searchParams.delete('scope');
-      currentUrl.searchParams.delete('authuser');
-      currentUrl.searchParams.delete('prompt');
-      router.replace(currentUrl.pathname + (currentUrl.search || ''));
+    window.addEventListener('gmail-connect-error', onError);
+    return () => {
+      window.removeEventListener('gmail-connected', onConnected);
+      window.removeEventListener('gmail-connect-error', onError);
     };
-
-    exchangeGmailCode({ code, redirectUri: GMAIL_REDIRECT_URI })
-      .then(() => {
-        console.log('[GmailConnect] exchange OK');
-        localStorage.setItem(GMAIL_CONNECTED_KEY, 'true');
-        setStatus('connected');
-        cleanUrl();
-      })
-      .catch((err: unknown) => {
-        const message =
-          err instanceof Error ? err.message : 'Error desconocido';
-        console.error('[GmailConnect] exchange FAILED', message);
-        setErrorMessage(message);
-        setStatus('error');
-        cleanUrl();
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const connect = useCallback(() => {

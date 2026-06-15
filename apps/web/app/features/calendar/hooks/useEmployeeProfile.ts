@@ -23,29 +23,15 @@ export function useEmployeeProfile(): UseEmployeeProfileResult {
       return;
     }
 
-    let cancelled = false;
+    setLoading(true);
 
-    employeeRepository
-      .getById(callerUid)
-      .then((data) => {
-        if (!cancelled) {
-          setEmployee(data);
-        }
-      })
-      .catch((err: unknown) => {
-        if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : 'No se pudo cargar el perfil.',
-          );
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    const unsubscribe = employeeRepository.subscribe(callerUid, (data) => {
+      setEmployee(data);
+      setLoading(false);
+      setError(null);
+    });
 
-    return () => {
-      cancelled = true;
-    };
+    return unsubscribe;
   }, [callerUid]);
 
   return { employee, loading, error };

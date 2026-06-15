@@ -4,10 +4,15 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tooltip from '@mui/material/Tooltip';
 import { Mail, CheckCircle, AlertCircle } from 'lucide-react';
+import type { GmailStatus } from '@ats/shared-types';
 import { useGmailConnect } from '../hooks/useGmailConnect';
 
-function ConnectGmailButtonInner() {
-  const { status, errorMessage, connect } = useGmailConnect();
+interface Props {
+  gmailStatus?: GmailStatus;
+}
+
+export default function ConnectGmailButton({ gmailStatus }: Props) {
+  const { status, errorMessage, connect } = useGmailConnect(gmailStatus);
 
   if (status === 'connected') {
     return (
@@ -17,7 +22,14 @@ function ConnectGmailButtonInner() {
         size="small"
         disabled
         startIcon={<CheckCircle size={16} />}
-        sx={{ textTransform: 'none', fontWeight: 500 }}
+        sx={{
+          textTransform: 'none',
+          fontWeight: 500,
+          '&.Mui-disabled': {
+            color: 'success.main',
+            borderColor: 'success.main',
+          },
+        }}
       >
         Gmail conectado
       </Button>
@@ -58,6 +70,7 @@ function ConnectGmailButtonInner() {
   return (
     <Button
       variant="outlined"
+      color="error"
       size="small"
       onClick={connect}
       startIcon={<Mail size={16} />}
@@ -66,8 +79,4 @@ function ConnectGmailButtonInner() {
       Conectar Gmail
     </Button>
   );
-}
-
-export default function ConnectGmailButton() {
-  return <ConnectGmailButtonInner />;
 }

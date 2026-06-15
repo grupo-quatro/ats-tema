@@ -331,6 +331,35 @@ export class ApplicationsRepository {
     }
   }
 
+  /**
+   * Busca aplicaciones por email del candidato, estado y etapas.
+   * Lo usa el calendarWebhook para encontrar la aplicación activa
+   * de un candidato que acaba de reservar una entrevista.
+   */
+  async findAllActiveInSchedulingByEmail(
+    candidateEmail: string,
+    stages: readonly string[],
+    recruiterUid: string,
+  ): Promise<Application[]> {
+    try {
+      const snapshot = await this.collection
+        .where('candidateEmail', '==', candidateEmail)
+        .where('status', '==', 'active')
+        .where('stage', 'in', stages)
+        .where('recruiterId', '==', recruiterUid)
+        .get();
+
+      return snapshot.docs.map((doc) =>
+        this.mapToApplication(doc.data() as FirestoreApplication),
+      );
+    } catch (error) {
+      throw new ApplicationsRepositoryError(
+        `No se pudo buscar aplicaciones activas para ${candidateEmail}.`,
+        error,
+      );
+    }
+  }
+
   private mapToApplication(application: FirestoreApplication): Application {
     return {
       ...application,

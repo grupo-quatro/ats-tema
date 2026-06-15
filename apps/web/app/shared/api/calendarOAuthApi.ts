@@ -1,5 +1,22 @@
 import { getToken } from '../lib/auth';
 
+export async function registerCalendarWatch(): Promise<void> {
+  const token = await getToken();
+  const res = await fetch('/api/calendar/register-watch', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    const error = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(
+      error.error ?? 'No se pudo registrar el canal de Google Calendar.',
+    );
+  }
+}
+
 export interface ExchangeCalendarCodePayload {
   code: string;
   redirectUri: string;

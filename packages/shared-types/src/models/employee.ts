@@ -23,6 +23,7 @@ export interface Employee {
   active: boolean;
   calendarLink?: string;
   gmailStatus?: GmailStatus;
+  calendarStatus?: GmailStatus;
   createdAt: Date;
   updatedAt: Date;
 }
