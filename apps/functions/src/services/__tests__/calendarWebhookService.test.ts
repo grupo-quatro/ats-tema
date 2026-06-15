@@ -35,10 +35,12 @@ vi.mock('../../core/firebaseAdmin', () => ({
     collection: vi.fn().mockReturnValue({
       doc: vi.fn().mockReturnValue({}),
     }),
-    runTransaction: vi.fn().mockImplementation(async (fn: (tx: unknown) => Promise<void>) => {
-      const tx = { get: mockTxGet, update: mockTxUpdate };
-      await fn(tx);
-    }),
+    runTransaction: vi
+      .fn()
+      .mockImplementation(async (fn: (tx: unknown) => Promise<void>) => {
+        const tx = { get: mockTxGet, update: mockTxUpdate };
+        await fn(tx);
+      }),
   },
 }));
 
@@ -243,7 +245,10 @@ describe('processCalendarNotification', () => {
     const app = makeApplication();
     mockFindActiveInSchedulingByEmail.mockResolvedValue(app);
     // El job pertenece a otro recruiter
-    mockJobsFindById.mockResolvedValue({ id: 'job-1', hiringManagerId: 'otro-recruiter' });
+    mockJobsFindById.mockResolvedValue({
+      id: 'job-1',
+      hiringManagerId: 'otro-recruiter',
+    });
     mockEventsList.mockResolvedValue({ data: { items: [makeEvent()] } });
 
     await processCalendarNotification('uid-1');
@@ -263,7 +268,10 @@ describe('processCalendarNotification', () => {
     expect(mockEventsList).toHaveBeenCalledWith(
       expect.objectContaining({ syncToken: 'sync-token-abc' }),
     );
-    expect(mockSaveCalendarSyncToken).toHaveBeenCalledWith('uid-1', 'sync-token-new');
+    expect(mockSaveCalendarSyncToken).toHaveBeenCalledWith(
+      'uid-1',
+      'sync-token-new',
+    );
   });
 
   it('setea calendarStatus DISCONNECTED cuando el token fue revocado', async () => {

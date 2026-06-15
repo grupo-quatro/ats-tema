@@ -101,10 +101,7 @@ export default function OAuthCodeHandler() {
         .catch((err: unknown) => {
           const message =
             err instanceof Error ? err.message : 'Error desconocido';
-          console.error(
-            '[OAuthCodeHandler] Calendar OAuth failed:',
-            message,
-          );
+          console.error('[OAuthCodeHandler] Calendar OAuth failed:', message);
           cleanUrl();
           window.dispatchEvent(
             new CustomEvent('calendar-connect-error', { detail: message }),

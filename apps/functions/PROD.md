@@ -89,6 +89,7 @@ En la [Google Cloud Console](https://console.cloud.google.com) → APIs & Servic
 3. Completar el flujo OAuth
 
 Verificar en Firestore (Firebase Console → Firestore → `users/{uid}`):
+
 - `calendarCredential` → debe existir (cifrado)
 - `calendarWatch.channelId` → debe tener formato `{uid}-cw-{timestamp}`
 - `calendarSyncToken` → debe existir
@@ -122,10 +123,10 @@ Para verificar que está activa: Firebase Console → Functions → `renewCalend
 
 ## Resumen de variables por entorno
 
-| Variable | Local (`.env.local`) | Producción |
-|---|---|---|
-| `OAUTH_ENCRYPTION_KEY` | valor generado con `randomBytes(32)` | Firebase Secret (`functions:secrets:set`) |
-| `CALENDAR_WEBHOOK_SECRET` | `local-dev-secret` | Firebase Secret (`functions:secrets:set`) |
-| `CALENDAR_WEBHOOK_URL` | `http://127.0.0.1:5001/ats-tema-ort/us-central1/calendarWebhook` | URL de la función deployada (`.env.ats-tema-ort`) |
-| `GOOGLE_OAUTH_CLIENT_ID` | en `.env.local` del equipo | Firebase Secret (ya configurado) |
-| `GOOGLE_OAUTH_CLIENT_SECRET` | en `.env.local` del equipo | Firebase Secret (ya configurado) |
+| Variable                     | Local (`.env.local`)                                             | Producción                                        |
+| ---------------------------- | ---------------------------------------------------------------- | ------------------------------------------------- |
+| `OAUTH_ENCRYPTION_KEY`       | valor generado con `randomBytes(32)`                             | Firebase Secret (`functions:secrets:set`)         |
+| `CALENDAR_WEBHOOK_SECRET`    | `local-dev-secret`                                               | Firebase Secret (`functions:secrets:set`)         |
+| `CALENDAR_WEBHOOK_URL`       | `http://127.0.0.1:5001/ats-tema-ort/us-central1/calendarWebhook` | URL de la función deployada (`.env.ats-tema-ort`) |
+| `GOOGLE_OAUTH_CLIENT_ID`     | en `.env.local` del equipo                                       | Firebase Secret (ya configurado)                  |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | en `.env.local` del equipo                                       | Firebase Secret (ya configurado)                  |

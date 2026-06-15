@@ -26,7 +26,11 @@ export const renewCalendarWatches = onSchedule(
   // Corre diariamente — la lógica de renovación solo actúa cuando el canal
   // vence en < 2 días. El schedule */29 anterior era incorrecto (no significaba
   // "cada 29 días", sino días específicos del mes).
-  { schedule: '0 3 * * *', timeZone: 'UTC', secrets: ['OAUTH_ENCRYPTION_KEY', 'CALENDAR_WEBHOOK_SECRET'] },
+  {
+    schedule: '0 3 * * *',
+    timeZone: 'UTC',
+    secrets: ['OAUTH_ENCRYPTION_KEY', 'CALENDAR_WEBHOOK_SECRET'],
+  },
   async () => {
     logger.info('[renewCalendarWatches] Iniciando renovación de canales');
 
