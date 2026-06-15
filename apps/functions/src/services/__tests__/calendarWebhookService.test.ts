@@ -5,25 +5,25 @@ const {
   mockUpdateCalendarCredential,
   mockGetCalendarSyncToken,
   mockSaveCalendarSyncToken,
-  mockJobsFindById,
-  mockFindActiveInSchedulingByEmail,
+  mockFindAllActiveInSchedulingByEmail,
   mockUpdateStage,
   mockSetCalendarStatus,
   mockEventsList,
   mockTxGet,
   mockTxUpdate,
+  mockDocUpdate,
 } = vi.hoisted(() => ({
   mockGetCalendarCredential: vi.fn(),
   mockUpdateCalendarCredential: vi.fn(),
   mockGetCalendarSyncToken: vi.fn(),
   mockSaveCalendarSyncToken: vi.fn(),
-  mockJobsFindById: vi.fn(),
-  mockFindActiveInSchedulingByEmail: vi.fn(),
+  mockFindAllActiveInSchedulingByEmail: vi.fn(),
   mockUpdateStage: vi.fn(),
   mockSetCalendarStatus: vi.fn(),
   mockEventsList: vi.fn(),
   mockTxGet: vi.fn(),
   mockTxUpdate: vi.fn(),
+  mockDocUpdate: vi.fn(),
 }));
 
 vi.mock('firebase-functions', () => ({
@@ -33,7 +33,7 @@ vi.mock('firebase-functions', () => ({
 vi.mock('../../core/firebaseAdmin', () => ({
   db: {
     collection: vi.fn().mockReturnValue({
-      doc: vi.fn().mockReturnValue({}),
+      doc: vi.fn().mockReturnValue({ update: mockDocUpdate }),
     }),
     runTransaction: vi
       .fn()
@@ -78,13 +78,7 @@ vi.mock('../../repositories/userRepository', () => ({
 
 vi.mock('../../repositories/applicationRepository', () => ({
   ApplicationsRepository: vi.fn().mockImplementation(() => ({
-    findActiveInSchedulingByEmail: mockFindActiveInSchedulingByEmail,
-  })),
-}));
-
-vi.mock('../../repositories/jobsRepository', () => ({
-  JobsRepository: vi.fn().mockImplementation(() => ({
-    findById: mockJobsFindById,
+    findAllActiveInSchedulingByEmail: mockFindAllActiveInSchedulingByEmail,
   })),
 }));
 
@@ -143,7 +137,10 @@ const makeApplication = (
 
 const makeEvent = (overrides = {}) => ({
   id: 'evt-1',
-  attendees: [{ email: 'candidate@example.com', self: false }],
+  status: 'confirmed',
+  attendees: [
+    { email: 'candidate@example.com', self: false, responseStatus: 'accepted' },
+  ],
   ...overrides,
 });
 
@@ -152,15 +149,14 @@ beforeEach(() => {
   mockGetCalendarCredential.mockResolvedValue(CREDENTIAL);
   mockGetCalendarSyncToken.mockResolvedValue(null);
   mockSaveCalendarSyncToken.mockResolvedValue(undefined);
-  // Job pertenece al recruiter uid-1 por defecto
-  mockJobsFindById.mockResolvedValue({ id: 'job-1', hiringManagerId: 'uid-1' });
-  mockFindActiveInSchedulingByEmail.mockResolvedValue(null);
+  mockFindAllActiveInSchedulingByEmail.mockResolvedValue([]);
   mockUpdateStage.mockResolvedValue(undefined);
   mockSetCalendarStatus.mockResolvedValue(undefined);
   mockEventsList.mockResolvedValue({ data: { items: [] } });
   // Por defecto la transacción no encuentra calendarEventId — permite procesamiento
   mockTxGet.mockResolvedValue({ exists: true, data: () => ({}) });
   mockTxUpdate.mockReturnValue(undefined);
+  mockDocUpdate.mockResolvedValue(undefined);
 });
 
 describe('processCalendarNotification', () => {
@@ -183,14 +179,15 @@ describe('processCalendarNotification', () => {
 
   it('transiciona la aplicación al encontrar el candidato por email del asistente', async () => {
     const app = makeApplication();
-    mockFindActiveInSchedulingByEmail.mockResolvedValue(app);
+    mockFindAllActiveInSchedulingByEmail.mockResolvedValue([app]);
     mockEventsList.mockResolvedValue({ data: { items: [makeEvent()] } });
 
     await processCalendarNotification('uid-1');
 
-    expect(mockFindActiveInSchedulingByEmail).toHaveBeenCalledWith(
+    expect(mockFindAllActiveInSchedulingByEmail).toHaveBeenCalledWith(
       'candidate@example.com',
       expect.any(Array),
+      'uid-1',
     );
     expect(mockTxUpdate).toHaveBeenCalled();
     expect(mockUpdateStage).toHaveBeenCalledWith(
@@ -212,12 +209,12 @@ describe('processCalendarNotification', () => {
 
     await processCalendarNotification('uid-1');
 
-    expect(mockFindActiveInSchedulingByEmail).not.toHaveBeenCalled();
+    expect(mockFindAllActiveInSchedulingByEmail).not.toHaveBeenCalled();
     expect(mockUpdateStage).not.toHaveBeenCalled();
   });
 
   it('no hace nada si no hay aplicación activa en scheduling para el candidato', async () => {
-    mockFindActiveInSchedulingByEmail.mockResolvedValue(null);
+    mockFindAllActiveInSchedulingByEmail.mockResolvedValue([]);
     mockEventsList.mockResolvedValue({ data: { items: [makeEvent()] } });
 
     await processCalendarNotification('uid-1');
@@ -227,7 +224,7 @@ describe('processCalendarNotification', () => {
 
   it('no reprocesa si calendarEventId ya está seteado (idempotencia)', async () => {
     const app = makeApplication({ calendarEventId: 'evt-1' });
-    mockFindActiveInSchedulingByEmail.mockResolvedValue(app);
+    mockFindAllActiveInSchedulingByEmail.mockResolvedValue([app]);
     // La transacción encuentra el eventId ya marcado
     mockTxGet.mockResolvedValue({
       exists: true,
@@ -241,14 +238,8 @@ describe('processCalendarNotification', () => {
     expect(mockTxUpdate).not.toHaveBeenCalled();
   });
 
-  it('no avanza la postulación si el job no pertenece al recruiter', async () => {
-    const app = makeApplication();
-    mockFindActiveInSchedulingByEmail.mockResolvedValue(app);
-    // El job pertenece a otro recruiter
-    mockJobsFindById.mockResolvedValue({
-      id: 'job-1',
-      hiringManagerId: 'otro-recruiter',
-    });
+  it('no avanza si la query no devuelve postulaciones para este recruiter', async () => {
+    mockFindAllActiveInSchedulingByEmail.mockResolvedValue([]);
     mockEventsList.mockResolvedValue({ data: { items: [makeEvent()] } });
 
     await processCalendarNotification('uid-1');
@@ -281,5 +272,100 @@ describe('processCalendarNotification', () => {
 
     expect(mockSetCalendarStatus).toHaveBeenCalledWith('uid-1', 'disconnected');
     expect(mockUpdateStage).not.toHaveBeenCalled();
+  });
+
+  it('ignora eventos cancelados', async () => {
+    mockEventsList.mockResolvedValue({
+      data: { items: [makeEvent({ status: 'cancelled' })] },
+    });
+
+    await processCalendarNotification('uid-1');
+
+    expect(mockFindAllActiveInSchedulingByEmail).not.toHaveBeenCalled();
+    expect(mockUpdateStage).not.toHaveBeenCalled();
+  });
+
+  it('ignora asistentes que no aceptaron la invitación', async () => {
+    mockEventsList.mockResolvedValue({
+      data: {
+        items: [
+          makeEvent({
+            attendees: [
+              {
+                email: 'candidate@example.com',
+                self: false,
+                responseStatus: 'needsAction',
+              },
+            ],
+          }),
+        ],
+      },
+    });
+
+    await processCalendarNotification('uid-1');
+
+    expect(mockFindAllActiveInSchedulingByEmail).not.toHaveBeenCalled();
+    expect(mockUpdateStage).not.toHaveBeenCalled();
+  });
+
+  it('libera calendarEventId si updateStage falla para permitir reintento', async () => {
+    const app = makeApplication();
+    mockFindAllActiveInSchedulingByEmail.mockResolvedValue([app]);
+    mockEventsList.mockResolvedValue({ data: { items: [makeEvent()] } });
+    mockUpdateStage.mockRejectedValue(new Error('stage transition failed'));
+
+    await processCalendarNotification('uid-1');
+
+    // El reclamo se hizo durante la transacción
+    expect(mockTxUpdate).toHaveBeenCalled();
+    // Y se liberó al fallar updateStage
+    expect(mockDocUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ calendarEventId: expect.anything() }),
+    );
+  });
+
+  it('procesa todas las páginas antes de guardar el syncToken', async () => {
+    const page1Event = makeEvent({ id: 'evt-page1' });
+    const page2Event = makeEvent({ id: 'evt-page2' });
+
+    mockEventsList
+      .mockResolvedValueOnce({
+        data: { items: [page1Event], nextPageToken: 'tok-2' },
+      })
+      .mockResolvedValueOnce({
+        data: { items: [page2Event], nextSyncToken: 'sync-final' },
+      });
+
+    await processCalendarNotification('uid-1');
+
+    expect(mockEventsList).toHaveBeenCalledTimes(2);
+    expect(mockEventsList).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ pageToken: 'tok-2' }),
+    );
+    // syncToken solo se persiste una vez, con el token de la última página
+    expect(mockSaveCalendarSyncToken).toHaveBeenCalledTimes(1);
+    expect(mockSaveCalendarSyncToken).toHaveBeenCalledWith(
+      'uid-1',
+      'sync-final',
+    );
+  });
+
+  it('avanza la postulación que la query devuelve para este recruiter', async () => {
+    const app = makeApplication({ id: 'app-correcto', recruiterId: 'uid-1' });
+    mockFindAllActiveInSchedulingByEmail.mockResolvedValue([app]);
+    mockEventsList.mockResolvedValue({ data: { items: [makeEvent()] } });
+
+    await processCalendarNotification('uid-1');
+
+    expect(mockUpdateStage).toHaveBeenCalledWith(
+      { applicationId: 'app-correcto', stage: 'hr_1_scheduled' },
+      'uid-1',
+    );
+    expect(mockFindAllActiveInSchedulingByEmail).toHaveBeenCalledWith(
+      'candidate@example.com',
+      expect.any(Array),
+      'uid-1',
+    );
   });
 });

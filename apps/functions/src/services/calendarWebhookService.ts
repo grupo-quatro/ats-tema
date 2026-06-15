@@ -1,4 +1,5 @@
 import { logger } from 'firebase-functions';
+import { FieldValue } from 'firebase-admin/firestore';
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 
@@ -13,7 +14,6 @@ import { ApplicationsRepository } from '../repositories/applicationRepository';
 import { EmailLogRepository } from '../repositories/emailLogRepository';
 import { EmailTemplateRepository } from '../repositories/emailTemplateRepository';
 import { EmployeeRepository } from '../repositories/employeeRepository';
-import { JobsRepository } from '../repositories/jobsRepository';
 import { OrgConfigRepository } from '../repositories/orgConfigRepository';
 import { UserRepository } from '../repositories/userRepository';
 import { GmailSenderService } from './gmailSenderService';
@@ -29,17 +29,15 @@ const SCHEDULING_STAGES = Object.keys(STAGE_CONFIG).filter((stage) =>
 const userRepository = new UserRepository();
 const applicationsRepository = new ApplicationsRepository();
 const employeeRepository = new EmployeeRepository();
-const jobsRepository = new JobsRepository();
-
-// Singleton de módulo — usar .once('tokens') para no acumular listeners entre invocaciones.
-const calendarOauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_OAUTH_CLIENT_ID,
-  process.env.GOOGLE_OAUTH_CLIENT_SECRET,
-);
 
 export async function processCalendarNotification(
   recruiterUid: string,
 ): Promise<void> {
+  const calendarOauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_OAUTH_CLIENT_ID,
+    process.env.GOOGLE_OAUTH_CLIENT_SECRET,
+  );
+
   const credential = await userRepository.getCalendarCredential(recruiterUid);
   if (!credential) {
     logger.warn('[calendarWebhookService] Recruiter sin calendarCredential', {
@@ -127,51 +125,76 @@ export async function processCalendarNotification(
     }
   }
 
-  // Guardar nuevo syncToken para la próxima notificación
-  if (eventsResponse.data.nextSyncToken) {
+  // Procesar todas las páginas; persistir el syncToken solo al terminar
+  let currentResponse = eventsResponse;
+  let nextSyncToken: string | null | undefined;
+
+  while (true) {
+    const events = currentResponse.data.items ?? [];
+
+    if (events.length === 0 && !currentResponse.data.nextPageToken) {
+      logger.info('[calendarWebhookService] Sin eventos nuevos', {
+        recruiterUid,
+      });
+    }
+
+    for (const event of events) {
+      const eventId = event.id;
+      if (!eventId) continue;
+
+      if (event.status === 'cancelled') {
+        logger.info('[calendarWebhookService] Evento cancelado — ignorado', {
+          eventId,
+        });
+        continue;
+      }
+
+      // Solo el primer asistente externo que aceptó la invitación
+      const attendee = (event.attendees ?? []).find(
+        (a) => !a.self && a.responseStatus === 'accepted',
+      );
+
+      if (!attendee?.email) {
+        logger.info(
+          '[calendarWebhookService] Evento sin asistente externo aceptado — ignorado',
+          { eventId },
+        );
+        continue;
+      }
+
+      const attendeeEmail = attendee.email;
+
+      await matchAndTransition({ recruiterUid, eventId, attendeeEmail }).catch(
+        (err) => {
+          logger.error('[calendarWebhookService] Error procesando evento', {
+            eventId,
+            error: err,
+          });
+        },
+      );
+    }
+
+    nextSyncToken = currentResponse.data.nextSyncToken;
+    const nextPageToken = currentResponse.data.nextPageToken;
+    if (!nextPageToken) break;
+
+    currentResponse = await calendar.events.list({
+      calendarId: 'primary',
+      pageToken: nextPageToken,
+      singleEvents: true,
+    });
+  }
+
+  // Guardar syncToken después de procesar todos los eventos de todas las páginas
+  if (nextSyncToken) {
     await userRepository
-      .saveCalendarSyncToken(recruiterUid, eventsResponse.data.nextSyncToken)
+      .saveCalendarSyncToken(recruiterUid, nextSyncToken)
       .catch((err) =>
         logger.error('[calendarWebhookService] Error guardando syncToken', {
           recruiterUid,
           err,
         }),
       );
-  }
-
-  const events = eventsResponse.data.items ?? [];
-
-  if (events.length === 0) {
-    logger.info('[calendarWebhookService] Sin eventos nuevos', {
-      recruiterUid,
-    });
-    return;
-  }
-
-  for (const event of events) {
-    const eventId = event.id;
-    if (!eventId) continue;
-
-    // Buscar el email del candidato entre los asistentes externos del evento.
-    const attendeeEmail =
-      (event.attendees ?? []).find((a) => !a.self)?.email ?? null;
-
-    if (!attendeeEmail) {
-      logger.info(
-        '[calendarWebhookService] Evento sin asistente externo — ignorado',
-        { eventId },
-      );
-      continue;
-    }
-
-    await matchAndTransition({ recruiterUid, eventId, attendeeEmail }).catch(
-      (err) => {
-        logger.error('[calendarWebhookService] Error procesando evento', {
-          eventId,
-          error: err,
-        });
-      },
-    );
   }
 }
 
@@ -182,37 +205,22 @@ async function matchAndTransition(params: {
 }): Promise<void> {
   const { recruiterUid, eventId, attendeeEmail } = params;
 
-  const application =
-    await applicationsRepository.findActiveInSchedulingByEmail(
+  const applications =
+    await applicationsRepository.findAllActiveInSchedulingByEmail(
       attendeeEmail,
       SCHEDULING_STAGES,
+      recruiterUid,
     );
 
-  if (!application) {
+  if (applications.length === 0) {
     logger.info(
-      '[calendarWebhookService] Sin aplicación activa en scheduling para asistente',
-      {
-        attendeeEmail,
-      },
+      '[calendarWebhookService] Sin aplicación activa en scheduling para este recruiter',
+      { attendeeEmail, recruiterUid },
     );
     return;
   }
 
-  // B3: Verificar que la postulación pertenece al recruiter cuyo calendario
-  // detectó el evento. Evita avanzar postulaciones de otros recruiters.
-  const job = await jobsRepository.findById(application.jobId);
-  if (!job || job.hiringManagerId !== recruiterUid) {
-    logger.info(
-      '[calendarWebhookService] Postulación no pertenece a este recruiter — ignorada',
-      {
-        applicationId: application.id,
-        jobId: application.jobId,
-        recruiterUid,
-        jobHiringManager: job?.hiringManagerId,
-      },
-    );
-    return;
-  }
+  const application = applications[0];
 
   const applicationId = application.id;
   const applicationRef = db.collection('applications').doc(applicationId);
@@ -278,10 +286,23 @@ async function matchAndTransition(params: {
     ),
   );
 
-  await updateService.updateStage(
-    { applicationId, stage: nextStage },
-    recruiterUid,
-  );
+  try {
+    await updateService.updateStage(
+      { applicationId, stage: nextStage },
+      recruiterUid,
+    );
+  } catch (err) {
+    // Liberar el reclamo para que el próximo webhook pueda reintentar
+    await applicationRef
+      .update({ calendarEventId: FieldValue.delete() })
+      .catch((deleteErr) =>
+        logger.error(
+          '[calendarWebhookService] Error liberando reclamo de evento',
+          { applicationId, eventId, deleteErr },
+        ),
+      );
+    throw err;
+  }
 
   logger.info('[calendarWebhookService] Aplicación transicionada', {
     applicationId,

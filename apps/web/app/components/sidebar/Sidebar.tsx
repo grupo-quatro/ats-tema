@@ -72,7 +72,8 @@ export default function Sidebar() {
   const gmailRevoked = employee?.gmailStatus === GMAIL_STATUS.DISCONNECTED;
   const calendarRevoked =
     employee?.calendarStatus === GMAIL_STATUS.DISCONNECTED;
-  const showUnifiedConnect = !gmailConnected && !calendarConnected;
+  const showUnifiedConnect =
+    role === EMPLOYEE_ROLES.HR && !gmailConnected && !calendarConnected;
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
