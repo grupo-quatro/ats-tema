@@ -4,8 +4,8 @@ import { OAuth2Client } from 'google-auth-library';
 
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
 import { setCorsHeaders } from '../core/cors';
-import { EmployeeRepository } from '../repositories/employeeRepository';
 import { UserRepository } from '../repositories/userRepository';
+import { EmployeeRepository } from '../repositories/employeeRepository';
 import { ExchangeGmailCodeService } from '../services/exchangeGmailCodeService';
 import {
   validateExchangeGmailCodePayload,

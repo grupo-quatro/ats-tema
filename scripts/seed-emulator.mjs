@@ -63,12 +63,19 @@ async function createAuthUser({ email, password, displayName, role, devUid }) {
   }
 
   if (role) {
-    const claimsUrl = `${AUTH_EMULATOR_URL}/emulator/v1/projects/${PROJECT_ID}/accounts/${devUid}`;
-    await fetch(claimsUrl, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ customAttributes: JSON.stringify({ role }) }),
+    const claimsUrl = `${AUTH_EMULATOR_URL}/identitytoolkit.googleapis.com/v1/projects/${PROJECT_ID}/accounts:update`;
+    const claimsRes = await fetch(claimsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer owner',
+      },
+      body: JSON.stringify({ localId: devUid, customAttributes: JSON.stringify({ role }) }),
     });
+    if (!claimsRes.ok) {
+      const body = await claimsRes.json();
+      throw new Error(`Error asignando custom claim a ${devUid}: ${body?.error?.message ?? claimsRes.status}`);
+    }
   }
 }
 

@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { GMAIL_STATUS, type GmailStatus } from '@ats/shared-types';
 
-const CALENDAR_CONNECTED_KEY = 'ats-calendar-connected';
 const CALENDAR_REDIRECT_URI =
   process.env.NEXT_PUBLIC_CALENDAR_REDIRECT_URI ?? 'http://localhost:3000';
 const GOOGLE_OAUTH_CLIENT_ID =
@@ -31,24 +31,40 @@ function buildGoogleCalendarOAuthUrl(): string {
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 }
 
-export function useCalendarConnect(): UseCalendarConnectReturn {
-  const [status, setStatus] = useState<CalendarConnectStatus>(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem(CALENDAR_CONNECTED_KEY) === 'true'
-        ? 'connected'
-        : 'idle';
-    }
-    return 'idle';
-  });
-  const [errorMessage] = useState<string | null>(null);
+export function useCalendarConnect(
+  calendarStatus?: GmailStatus,
+): UseCalendarConnectReturn {
+  const [status, setStatus] = useState<CalendarConnectStatus>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Sincronizar con el estado real de Firestore (via employee.calendarStatus)
+  useEffect(() => {
+    if (calendarStatus === GMAIL_STATUS.CONNECTED) {
+      setStatus('connected');
+    } else {
+      setStatus('idle');
+    }
+  }, [calendarStatus]);
+
+  // Escuchar el evento post-exchange de OAuthCodeHandler para feedback inmediato
   useEffect(() => {
     const onConnected = () => {
-      localStorage.setItem(CALENDAR_CONNECTED_KEY, 'true');
       setStatus('connected');
+      setErrorMessage(null);
+    };
+    const onError = (e: Event) => {
+      const message =
+        (e as CustomEvent<string>).detail ??
+        'Error al conectar Google Calendar';
+      setErrorMessage(message);
+      setStatus('error');
     };
     window.addEventListener('calendar-connected', onConnected);
-    return () => window.removeEventListener('calendar-connected', onConnected);
+    window.addEventListener('calendar-connect-error', onError);
+    return () => {
+      window.removeEventListener('calendar-connected', onConnected);
+      window.removeEventListener('calendar-connect-error', onError);
+    };
   }, []);
 
   const connect = useCallback(() => {
@@ -58,4 +74,4 @@ export function useCalendarConnect(): UseCalendarConnectReturn {
   return { status, errorMessage, connect };
 }
 
-export { CALENDAR_REDIRECT_URI, CALENDAR_CONNECTED_KEY };
+export { CALENDAR_REDIRECT_URI };

@@ -104,6 +104,8 @@ const makeUserRepo = (): IUserRepository => ({
   updateGmailCredential: vi.fn(),
   getCalendarCredential: vi.fn(),
   updateCalendarCredential: vi.fn(),
+  saveCalendarWatch: vi.fn(),
+  getCalendarWatchByChannelId: vi.fn(),
 });
 
 const makeOrgConfigRepo = (): IOrgConfigRepository => ({
@@ -132,6 +134,7 @@ const makeOAuth2Client = (): OAuth2Client =>
 const makeEmployeeRepo = (): IEmployeeRepository => ({
   getCalendarLink: vi.fn().mockResolvedValue(null),
   setGmailStatus: vi.fn().mockResolvedValue(undefined),
+  setCalendarStatus: vi.fn().mockResolvedValue(undefined),
 });
 
 // --- Helper para construir el servicio ---

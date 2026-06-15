@@ -6,25 +6,23 @@ import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
 import { setCorsHeaders } from '../core/cors';
 import { EmployeeRepository } from '../repositories/employeeRepository';
 import { UserRepository } from '../repositories/userRepository';
-import { ExchangeCalendarCodeService } from '../services/exchangeCalendarCodeService';
 import {
-  validateExchangeCalendarCodePayload,
-  ExchangeCalendarCodeValidationError,
-} from '../validators/exchangeCalendarCodeValidator';
+  ExchangeGoogleCodeError,
+  ExchangeGoogleCodeService,
+} from '../services/exchangeGoogleCodeService';
 
 const oauth2Client = new OAuth2Client(
   process.env.GOOGLE_OAUTH_CLIENT_ID,
   process.env.GOOGLE_OAUTH_CLIENT_SECRET,
 );
 
-const userRepository = new UserRepository();
-const exchangeCalendarCodeService = new ExchangeCalendarCodeService(
-  userRepository,
+const exchangeGoogleCodeService = new ExchangeGoogleCodeService(
+  new UserRepository(),
   oauth2Client,
   new EmployeeRepository(),
 );
 
-export const exchangeCalendarCode = onRequest(
+export const exchangeGoogleCode = onRequest(
   { secrets: ['OAUTH_ENCRYPTION_KEY'] },
   async (request, response) => {
     setCorsHeaders(response);
@@ -41,16 +39,24 @@ export const exchangeCalendarCode = onRequest(
       }
 
       const { uid } = await requireAuthenticatedUser(request);
+      const { code, redirectUri } = request.body as {
+        code?: string;
+        redirectUri?: string;
+      };
 
-      validateExchangeCalendarCodePayload(request.body);
+      if (!code || !redirectUri) {
+        response
+          .status(400)
+          .json({ error: 'code y redirectUri son requeridos.' });
+        return;
+      }
 
-      const { code, redirectUri } = request.body;
+      await exchangeGoogleCodeService.exchange(uid, code, redirectUri);
 
-      await exchangeCalendarCodeService.exchange(uid, code, redirectUri);
-
-      logger.info('[exchangeCalendarCode] Credencial de Calendar guardada', {
-        uid,
-      });
+      logger.info(
+        '[exchangeGoogleCode] Credenciales de Gmail y Calendar guardadas',
+        { uid },
+      );
 
       response.status(200).json({ ok: true });
     } catch (error) {
@@ -58,19 +64,17 @@ export const exchangeCalendarCode = onRequest(
         response.status(401).json({ error: error.message });
         return;
       }
-
-      if (error instanceof ExchangeCalendarCodeValidationError) {
+      if (error instanceof ExchangeGoogleCodeError) {
         response.status(400).json({ error: error.message });
         return;
       }
-
       logger.error(
-        '[exchangeCalendarCode] Error intercambiando código de Calendar',
+        '[exchangeGoogleCode] Error intercambiando código de Google',
         error,
       );
       response
         .status(500)
-        .json({ error: 'No se pudo conectar la cuenta de Google Calendar.' });
+        .json({ error: 'No se pudieron conectar las cuentas de Google.' });
     }
   },
 );
