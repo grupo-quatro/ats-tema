@@ -17,11 +17,41 @@ const GMAIL_REDIRECT_URI =
 const CALENDAR_REDIRECT_URI =
   process.env.NEXT_PUBLIC_CALENDAR_REDIRECT_URI ?? 'http://localhost:3000';
 
-function detectOAuthType(
+export const ALLOWED_GOOGLE_SCOPE_HOSTS = new Set([
+  'mail.google.com',
+  'www.googleapis.com',
+]);
+
+export function parseTrustedGoogleScope(
+  token: string,
+): { host: string; path: string } | null {
+  try {
+    const { hostname, pathname } = new URL(token);
+    return ALLOWED_GOOGLE_SCOPE_HOSTS.has(hostname)
+      ? { host: hostname, path: pathname }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export function detectOAuthType(
   scope: string,
 ): 'google' | 'gmail' | 'calendar' | null {
-  const hasGmail = scope.includes('gmail') || scope.includes('mail.google.com');
-  const hasCalendar = scope.includes('calendar');
+  let hasGmail = false;
+  let hasCalendar = false;
+
+  for (const token of scope.split(/\s+/).filter(Boolean)) {
+    const parsed = parseTrustedGoogleScope(token);
+    if (!parsed) continue;
+    if (
+      parsed.host === 'mail.google.com' ||
+      parsed.path.startsWith('/auth/gmail')
+    )
+      hasGmail = true;
+    if (parsed.path.startsWith('/auth/calendar')) hasCalendar = true;
+  }
+
   if (hasGmail && hasCalendar) return 'google';
   if (hasGmail) return 'gmail';
   if (hasCalendar) return 'calendar';
