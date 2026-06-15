@@ -950,9 +950,7 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
               ) : null
             }
           >
-            {profile.isPreviewingStageEmail
-              ? 'Cargando...'
-              : 'Cambiar etapa'}
+            {profile.isPreviewingStageEmail ? 'Cargando...' : 'Cambiar etapa'}
           </Button>
         </DialogActions>
       </Dialog>
