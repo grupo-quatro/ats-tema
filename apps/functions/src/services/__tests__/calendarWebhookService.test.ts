@@ -138,7 +138,9 @@ const makeApplication = (
 const makeEvent = (overrides = {}) => ({
   id: 'evt-1',
   status: 'confirmed',
-  attendees: [{ email: 'candidate@example.com', self: false, responseStatus: 'accepted' }],
+  attendees: [
+    { email: 'candidate@example.com', self: false, responseStatus: 'accepted' },
+  ],
   ...overrides,
 });
 
@@ -289,7 +291,11 @@ describe('processCalendarNotification', () => {
         items: [
           makeEvent({
             attendees: [
-              { email: 'candidate@example.com', self: false, responseStatus: 'needsAction' },
+              {
+                email: 'candidate@example.com',
+                self: false,
+                responseStatus: 'needsAction',
+              },
             ],
           }),
         ],
@@ -339,7 +345,10 @@ describe('processCalendarNotification', () => {
     );
     // syncToken solo se persiste una vez, con el token de la última página
     expect(mockSaveCalendarSyncToken).toHaveBeenCalledTimes(1);
-    expect(mockSaveCalendarSyncToken).toHaveBeenCalledWith('uid-1', 'sync-final');
+    expect(mockSaveCalendarSyncToken).toHaveBeenCalledWith(
+      'uid-1',
+      'sync-final',
+    );
   });
 
   it('avanza la postulación que la query devuelve para este recruiter', async () => {
