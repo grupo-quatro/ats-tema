@@ -60,6 +60,12 @@ type SkillDraft = {
   weight: string;
 };
 
+const SENIORITY_OPTIONS = [
+  { value: 'junior', label: 'Junior' },
+  { value: 'semi-senior', label: 'Semi Senior' },
+  { value: 'senior', label: 'Senior' },
+];
+
 type Props = {
   job: Job;
   onSave?: (jobId: string, payload: UpdateJobDTO) => Promise<void>;
@@ -940,7 +946,7 @@ export default function PositionEditView({ job, onSave }: Props) {
                           >
                             Seniority Buscado
                           </FieldLabel>
-                          <TextField
+                          <Select
                             fullWidth
                             size="small"
                             value={field.state.value}
@@ -948,8 +954,21 @@ export default function PositionEditView({ job, onSave }: Props) {
                             onChange={(event) =>
                               field.handleChange(event.target.value)
                             }
-                            sx={inputSx}
-                          />
+                            sx={{
+                              borderRadius: '8px',
+                              bgcolor: '#f8fafc',
+                              minHeight: 44,
+                            }}
+                          >
+                            <MenuItem value="" disabled>
+                              Seleccionar
+                            </MenuItem>
+                            {SENIORITY_OPTIONS.map((option) => (
+                              <MenuItem key={option.value} value={option.value}>
+                                {option.label}
+                              </MenuItem>
+                            ))}
+                          </Select>
                         </FormControl>
                       )}
                     </form.Field>

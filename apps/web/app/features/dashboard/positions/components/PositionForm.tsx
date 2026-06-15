@@ -37,6 +37,12 @@ interface PositionFormProps {
   submitError?: string;
 }
 
+const SENIORITY_OPTIONS = [
+  { value: 'junior', label: 'Junior' },
+  { value: 'semi-senior', label: 'Semi Senior' },
+  { value: 'senior', label: 'Senior' },
+];
+
 function parseLines(value: string): string[] {
   return value
     .split('\n')
@@ -347,7 +353,7 @@ export default function PositionForm({
                         >
                           Seniority Buscado *
                         </FormLabel>
-                        <TextField
+                        <Select
                           size="small"
                           fullWidth
                           value={field.state.value}
@@ -361,7 +367,16 @@ export default function PositionForm({
                               bgcolor: '#f8fafc',
                             },
                           }}
-                        />
+                        >
+                          <MenuItem value="" disabled>
+                            Seleccionar
+                          </MenuItem>
+                          {SENIORITY_OPTIONS.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                              {option.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
                       </FormControl>
                     )}
                   </form.Field>
