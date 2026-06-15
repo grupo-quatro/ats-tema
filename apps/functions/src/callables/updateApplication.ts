@@ -9,6 +9,7 @@ import {
 } from '@ats/shared-types';
 import { OAuth2Client } from 'google-auth-library';
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
+import { setCorsHeaders } from '../core/cors';
 import { ApplicationsRepository } from '../repositories/applicationRepository';
 import { EmailLogRepository } from '../repositories/emailLogRepository';
 import { EmailTemplateRepository } from '../repositories/emailTemplateRepository';
@@ -129,6 +130,11 @@ export const updateApplication = onRequest(
 export const updateApplicationStage = onRequest(
   { secrets: ['OAUTH_ENCRYPTION_KEY'] },
   async (request, response) => {
+    setCorsHeaders(response);
+    if (request.method === 'OPTIONS') {
+      response.status(204).send('');
+      return;
+    }
     try {
       if (request.method !== 'PATCH') {
         response.status(405).json({ error: 'Method Not Allowed.' });
@@ -184,6 +190,11 @@ export const updateApplicationStage = onRequest(
 export const previewApplicationStageEmail = onRequest(
   { secrets: ['OAUTH_ENCRYPTION_KEY'] },
   async (request, response) => {
+    setCorsHeaders(response);
+    if (request.method === 'OPTIONS') {
+      response.status(204).send('');
+      return;
+    }
     try {
       if (request.method !== 'POST') {
         response.status(405).json({ error: 'Method Not Allowed.' });

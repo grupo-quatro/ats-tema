@@ -23,6 +23,8 @@ import {
   CANDIDATE_STAGE_TO_APP_STAGE,
   getAvailableRecruiterStages,
   isTerminalApplicationStage,
+  resolveAuthWarning,
+  type AuthWarning,
 } from '../utils/candidateProfile.utils';
 import {
   PIPELINE_ORDER,
@@ -30,6 +32,7 @@ import {
   type PreviewApplicationStageEmailResponse,
   type StageHistoryEntry,
 } from '@ats/shared-types';
+import { useEmployeeProfile } from '../../calendar/hooks/useEmployeeProfile';
 
 type SnackbarState = { message: string; severity: 'success' | 'error' } | null;
 
@@ -105,6 +108,7 @@ function toVisibleStageHistory(
 }
 
 export function useCandidateProfile(candidate: CandidateMockProfile) {
+  const { employee } = useEmployeeProfile();
   const [cvModalOpen, setCvModalOpen] = useState(false);
   const [interviewModalOpen, setInterviewModalOpen] = useState(false);
   const [interviewType, setInterviewType] = useState<'tech' | 'hr'>('tech');
@@ -122,6 +126,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
   const [isUpdatingStage, setIsUpdatingStage] = useState(false);
   const [isPreviewingStageEmail, setIsPreviewingStageEmail] = useState(false);
   const [snackbar, setSnackbar] = useState<SnackbarState>(null);
+  const [authWarning, setAuthWarning] = useState<AuthWarning>(null);
   const [stageEmailPreview, setStageEmailPreview] =
     useState<PreviewApplicationStageEmailResponse | null>(null);
 
@@ -311,6 +316,15 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
   const handlePreviewStageChange = useCallback(async () => {
     if (!selectedStageKey) return;
 
+    const targetStage = CANDIDATE_STAGE_TO_APP_STAGE[selectedStageKey];
+    if (targetStage) {
+      const warning = resolveAuthWarning(targetStage, employee);
+      if (warning) {
+        setAuthWarning(warning);
+        return;
+      }
+    }
+
     setIsPreviewingStageEmail(true);
     try {
       const preview = await previewApplicationStageEmail({
@@ -329,7 +343,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     } finally {
       setIsPreviewingStageEmail(false);
     }
-  }, [selectedStageKey, candidate.applicationId]);
+  }, [selectedStageKey, candidate.applicationId, employee]);
 
   const handleStageChange = useCallback(async () => {
     if (!selectedStageKey) return;
@@ -507,6 +521,9 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     startEditingNote,
     cancelEditingNote,
     handleSaveEditedNote,
+    authWarning,
+    setAuthWarning,
+    employee,
     handlePreviewStageChange,
     handleStageChange,
     handleReject,

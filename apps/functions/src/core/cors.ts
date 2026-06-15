@@ -18,7 +18,7 @@ function getAllowedOrigin(): string {
 
 export function setCorsHeaders(response: Response): void {
   response.set('Access-Control-Allow-Origin', getAllowedOrigin());
-  response.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  response.set('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
   response.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
 

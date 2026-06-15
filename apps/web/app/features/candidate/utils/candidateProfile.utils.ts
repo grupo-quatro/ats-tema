@@ -2,11 +2,13 @@ import type {
   ApplicationDetailDTO,
   ApplicationWithCandidateDTO,
   ApplicationStage,
+  Employee,
 } from '@ats/shared-types';
 import {
   JUMP_STAGES,
   PIPELINE_ORDER,
   STAGE_CONFIG,
+  GMAIL_STATUS,
   isValidTransition,
 } from '@ats/shared-types';
 import type {
@@ -158,6 +160,32 @@ export function getAvailableRecruiterStages(
       return { key, status: 'pending' as const };
     })
     .filter(Boolean) as CandidateStageEntry[];
+}
+
+export type AuthWarning = {
+  needsGmail: boolean;
+  needsCalendar: boolean;
+  needsCalendarLink: boolean;
+} | null;
+
+export function resolveAuthWarning(
+  targetStage: ApplicationStage,
+  employee: Employee | null,
+): AuthWarning {
+  const config = STAGE_CONFIG[targetStage];
+  const isSchedulingStage = targetStage.startsWith('schedule_');
+  const gmailConnected = employee?.gmailStatus === GMAIL_STATUS.CONNECTED;
+  const calendarConnected = employee?.calendarStatus === GMAIL_STATUS.CONNECTED;
+
+  const needsGmail = config.emailTemplateStage !== null && !gmailConnected;
+  const needsCalendar = isSchedulingStage && !calendarConnected;
+  const needsCalendarLink =
+    isSchedulingStage && !employee?.calendarLink?.trim();
+
+  if (needsGmail || needsCalendar || needsCalendarLink) {
+    return { needsGmail, needsCalendar, needsCalendarLink };
+  }
+  return null;
 }
 
 export function getInitials(name?: string): string {

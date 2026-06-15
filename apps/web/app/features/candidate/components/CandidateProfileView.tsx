@@ -50,6 +50,7 @@ import { InterviewFormsModal } from './InterviewFormsModal';
 import { useAuth } from '../../../shared/lib/authContext';
 import { OfferManagementCard } from './OfferManagementCard';
 import AppSnackbar from '@/shared/components/AppSnackbar';
+import { AuthWarningDialog } from './AuthWarningDialog';
 
 interface CandidateProfileViewProps {
   candidate: CandidateMockProfile;
@@ -1156,6 +1157,15 @@ export function CandidateProfileView({ candidate }: CandidateProfileViewProps) {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {profile.authWarning && (
+        <AuthWarningDialog
+          open={Boolean(profile.authWarning)}
+          onClose={() => profile.setAuthWarning(null)}
+          warning={profile.authWarning}
+          employee={profile.employee}
+        />
+      )}
 
       <AppSnackbar
         snackbar={profile.snackbar}
