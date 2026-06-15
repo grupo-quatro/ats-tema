@@ -232,7 +232,8 @@ export const CANDIDATES_MOCK: CandidateMockProfile[] = [
         key: 'contacto_entrevista_tecnica_1',
         date: '02/04/2026',
         status: 'completed',
-        description: 'Se contactó al candidato para agendar la 1ª entrevista técnica.',
+        description:
+          'Se contactó al candidato para agendar la 1ª entrevista técnica.',
       },
       {
         key: 'entrevista_tecnica_1_agendada',
@@ -245,7 +246,11 @@ export const CANDIDATES_MOCK: CandidateMockProfile[] = [
         status: 'completed',
         description: 'Entrevista técnica completada.',
       },
-      { key: 'contacto_entrevista_tecnica_2', date: '10/04/2026', status: 'current' },
+      {
+        key: 'contacto_entrevista_tecnica_2',
+        date: '10/04/2026',
+        status: 'current',
+      },
       { key: 'entrevista_tecnica_2_agendada', status: 'pending' },
       { key: 'entrevista_tecnica_2_realizada', status: 'pending' },
       { key: 'contacto_entrevista_rrhh_2', status: 'pending' },

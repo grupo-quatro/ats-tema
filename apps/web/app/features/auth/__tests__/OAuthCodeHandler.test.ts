@@ -21,9 +21,7 @@ describe('parseTrustedGoogleScope', () => {
   });
 
   it('rechaza un host no permitido aunque contenga mail.google.com como substring', () => {
-    expect(
-      parseTrustedGoogleScope('https://evil.mail.google.com/'),
-    ).toBeNull();
+    expect(parseTrustedGoogleScope('https://evil.mail.google.com/')).toBeNull();
   });
 
   it('rechaza un host que tiene mail.google.com como prefijo del TLD', () => {
@@ -33,7 +31,9 @@ describe('parseTrustedGoogleScope', () => {
   });
 
   it('rechaza hosts arbitrarios', () => {
-    expect(parseTrustedGoogleScope('https://attacker.com/auth/gmail')).toBeNull();
+    expect(
+      parseTrustedGoogleScope('https://attacker.com/auth/gmail'),
+    ).toBeNull();
   });
 
   it('devuelve null para tokens que no son URLs válidas', () => {
@@ -80,9 +80,7 @@ describe('detectOAuthType', () => {
   });
 
   it('no clasifica scopes de hosts no permitidos aunque contengan gmail en la ruta', () => {
-    expect(
-      detectOAuthType('https://attacker.com/auth/gmail.send'),
-    ).toBeNull();
+    expect(detectOAuthType('https://attacker.com/auth/gmail.send')).toBeNull();
   });
 
   it('no clasifica un scope con mail.google.com como substring del host', () => {

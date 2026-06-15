@@ -241,6 +241,12 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     loadCandidacyNotes,
     canManageNotes,
   ]);
+  }, [
+    newCommentText,
+    candidate.applicationId,
+    loadCandidacyNotes,
+    canManageNotes,
+  ]);
 
   const startEditingNote = useCallback(
     (note: CandidacyNoteDTO) => {
@@ -258,6 +264,12 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
 
   const handleSaveEditedNote = useCallback(async () => {
     const text = editingText.trim();
+    if (
+      !text ||
+      !editingNoteId ||
+      !candidate.applicationId ||
+      !canManageNotes
+    ) {
     if (
       !text ||
       !editingNoteId ||

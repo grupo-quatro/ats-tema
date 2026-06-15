@@ -123,7 +123,7 @@ export function getInterviewDecisionOptions(
   currentStage: ApplicationStage | null,
 ): InterviewDecisionOption[] {
   if (!currentStage) return [];
-  
+
   return [
     { key: 'avanza_siguiente', label: STAGE_LABELS.avanza_siguiente },
     { key: 'avanza_considera', label: STAGE_LABELS.avanza_considera },
