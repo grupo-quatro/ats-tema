@@ -4,6 +4,17 @@ export type JobLocation = 'remote' | 'on-site' | 'hybrid';
 
 export type SkillType = 'mandatory' | 'desirable';
 
+export const SENIORITY_OPTIONS = [
+  { value: 'trainee', label: 'Trainee' },
+  { value: 'junior', label: 'Junior' },
+  { value: 'semi-senior', label: 'Semi Senior' },
+  { value: 'semi-senior-plus', label: 'Semi Senior +' },
+  { value: 'senior', label: 'Senior' },
+  { value: 'sme', label: 'SME' },
+] as const;
+
+export type Seniority = (typeof SENIORITY_OPTIONS)[number]['value'];
+
 export interface Skill {
   name: string;
   weight: number;

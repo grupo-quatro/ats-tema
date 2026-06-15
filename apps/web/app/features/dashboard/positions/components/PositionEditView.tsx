@@ -35,14 +35,15 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import type {
-  Job,
-  JobLocation,
-  JobStatus,
-  ListPositionsResponse,
-  Skill,
-  UpdateJobDTO,
-  UpdatePositionPayload,
+import {
+  SENIORITY_OPTIONS,
+  type Job,
+  type JobLocation,
+  type JobStatus,
+  type ListPositionsResponse,
+  type Skill,
+  type UpdateJobDTO,
+  type UpdatePositionPayload,
 } from '@ats/shared-types';
 import {
   updatePosition,
@@ -59,12 +60,6 @@ type SkillDraft = {
   name: string;
   weight: string;
 };
-
-const SENIORITY_OPTIONS = [
-  { value: 'junior', label: 'Junior' },
-  { value: 'semi-senior', label: 'Semi Senior' },
-  { value: 'senior', label: 'Senior' },
-];
 
 type Props = {
   job: Job;

@@ -23,11 +23,12 @@ import { Plus, Sparkles, Star, FileText, CircleAlert, X } from 'lucide-react';
 
 import { useState } from 'react';
 
-import type {
-  CreateJobPayload,
-  Skill,
-  JobLocation,
-  JobStatus,
+import {
+  SENIORITY_OPTIONS,
+  type CreateJobPayload,
+  type JobLocation,
+  type JobStatus,
+  type Skill,
 } from '@ats/shared-types';
 
 interface PositionFormProps {
@@ -36,12 +37,6 @@ interface PositionFormProps {
   onCancel?: () => void;
   submitError?: string;
 }
-
-const SENIORITY_OPTIONS = [
-  { value: 'junior', label: 'Junior' },
-  { value: 'semi-senior', label: 'Semi Senior' },
-  { value: 'senior', label: 'Senior' },
-];
 
 function parseLines(value: string): string[] {
   return value
