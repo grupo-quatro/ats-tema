@@ -97,14 +97,15 @@ export default function Sidebar() {
       sx={{
         width,
         minWidth: width,
-        alignSelf: 'stretch',
+        height: '100vh',
+        position: 'sticky',
+        top: 0,
         bgcolor: '#ffffff',
         borderRight: '1px solid #e2e8f0',
         display: 'flex',
         flexDirection: 'column',
         transition: 'width 0.2s ease, min-width 0.2s ease',
         overflow: 'hidden',
-        position: 'relative',
       }}
     >
       {/* Header */}

@@ -29,7 +29,9 @@ function validateLinkedinUrl(value: unknown): void {
   }
 
   const trimmed = value.trim();
-  const urlValue = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  const urlValue = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
 
   try {
     const url = new URL(urlValue);
