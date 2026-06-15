@@ -98,9 +98,7 @@ export default function Sidebar() {
       sx={{
         width,
         minWidth: width,
-        height: '100vh',
-        position: 'sticky',
-        top: 0,
+        alignSelf: 'stretch',
         bgcolor: '#ffffff',
         borderRight: '1px solid #e2e8f0',
         display: 'flex',
@@ -234,7 +232,7 @@ export default function Sidebar() {
       <Divider />
 
       {/* User info + logout */}
-      <Box sx={{ px: collapsed ? 1 : 2, py: 1.5 }}>
+      <Box sx={{ px: collapsed ? 1 : 2, py: 1.5, flexShrink: 0 }}>
         {collapsed ? (
           <Stack sx={{ alignItems: 'center' }} spacing={1}>
             <Tooltip title={user?.email ?? ''} placement="right">
@@ -307,7 +305,25 @@ export default function Sidebar() {
               </Tooltip>
             </Box>
             {showUnifiedConnect ? (
-              <ConnectGoogleButton />
+              <>
+                {(gmailRevoked || calendarRevoked) && (
+                  <Box
+                    sx={{
+                      px: 1.5,
+                      py: 1,
+                      borderRadius: 1,
+                      bgcolor: 'warning.light',
+                      color: 'warning.contrastText',
+                      fontSize: '0.75rem',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    Tus conexiones de Google fueron desconectadas. Reconectá
+                    para continuar.
+                  </Box>
+                )}
+                <ConnectGoogleButton />
+              </>
             ) : (
               <>
                 {gmailRevoked && (

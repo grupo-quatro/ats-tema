@@ -62,8 +62,8 @@ export default function DashboardLayout({
     <Box
       sx={{
         display: 'flex',
-        flex: 1,
-        minHeight: { xs: 'calc(100dvh - 56px)', sm: 'calc(100dvh - 64px)' },
+        height: { xs: 'calc(100dvh - 56px)', sm: 'calc(100dvh - 64px)' },
+        overflow: 'hidden',
       }}
     >
       <Sidebar />

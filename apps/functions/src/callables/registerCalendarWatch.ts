@@ -64,6 +64,24 @@ export const registerCalendarWatch = onRequest(
 
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
+      // Detener el canal anterior si existe para evitar notificaciones huérfanas.
+      const existingWatch = await userRepository.getCalendarWatchForUser(uid);
+      if (existingWatch) {
+        await calendar.channels
+          .stop({
+            requestBody: {
+              id: existingWatch.channelId,
+              resourceId: existingWatch.resourceId,
+            },
+          })
+          .catch((err: unknown) => {
+            logger.warn(
+              '[registerCalendarWatch] No se pudo detener canal anterior',
+              { uid, channelId: existingWatch.channelId, err },
+            );
+          });
+      }
+
       // 3. La URL de nuestro webhook (calendarWebhook Cloud Function)
       //    En producción: https://{region}-{projectId}.cloudfunctions.net/calendarWebhook
       //    Se configura como variable de entorno para que funcione en staging y producción.

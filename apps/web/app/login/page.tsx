@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -27,9 +28,16 @@ const DEV_ROLES: Array<{ role: DevRole; label: string }> = [
   { role: 'area_leader', label: 'Área Líder' },
 ];
 
-export default function LoginPage() {
+function getSafeReturnTo(returnTo: string | null): string {
+  if (returnTo && returnTo.startsWith('/dashboard')) return returnTo;
+  return '/dashboard/positions';
+}
+
+function LoginContent() {
   const { user, role, authReady, isPendingApproval, signInWithGoogle } =
     useAuth();
+  const searchParams = useSearchParams();
+  const returnTo = getSafeReturnTo(searchParams.get('returnTo'));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [adminOpen, setAdminOpen] = useState(false);
@@ -39,12 +47,16 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user && role) {
-      window.location.replace('/dashboard/positions');
+      window.location.replace(returnTo);
     }
     if (user && isPendingApproval) {
-      window.location.replace('/login/select-role');
+      const selectRoleUrl =
+        returnTo !== '/dashboard/positions'
+          ? `/login/select-role?returnTo=${encodeURIComponent(returnTo)}`
+          : '/login/select-role';
+      window.location.replace(selectRoleUrl);
     }
-  }, [user, role, isPendingApproval]);
+  }, [user, role, isPendingApproval, returnTo]);
 
   if (user && role) {
     return (
@@ -133,7 +145,7 @@ export default function LoginPage() {
     setAdminLoading(true);
     try {
       await signInWithEmailAndPassword(auth, adminEmail, adminPassword);
-      window.location.replace('/dashboard/positions');
+      window.location.replace(returnTo);
     } catch (err) {
       console.error('Admin sign in error:', err);
       setError('Credenciales incorrectas. Verificá tu email y contraseña.');
@@ -298,5 +310,13 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </Box>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
   );
 }

@@ -71,6 +71,7 @@ export class UpdateApplicationStageService {
       this.applicationsRepository.update(applicationId, {
         stage,
         status,
+        recruiterId: changedBy,
         ...(rejectionReason !== undefined && { rejectionReason }),
         ...(notes !== undefined && { notes }),
       }),

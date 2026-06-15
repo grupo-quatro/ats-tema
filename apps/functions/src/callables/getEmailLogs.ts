@@ -2,6 +2,7 @@ import { logger } from 'firebase-functions';
 import { onRequest } from 'firebase-functions/v2/https';
 
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
+import { setCorsHeaders } from '../core/cors';
 import {
   GetEmailLogsValidationError,
   validateGetEmailLogsPayload,
@@ -11,6 +12,13 @@ import { GetEmailLogsService } from '../services/getEmailLogsService';
 const getEmailLogsService = new GetEmailLogsService();
 
 export const getEmailLogs = onRequest(async (request, response) => {
+  setCorsHeaders(response);
+
+  if (request.method === 'OPTIONS') {
+    response.status(204).send('');
+    return;
+  }
+
   try {
     if (request.method !== 'GET') {
       response.status(405).json({ error: 'Method Not Allowed.' });

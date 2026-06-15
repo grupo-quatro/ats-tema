@@ -15,6 +15,7 @@ const createUserRepositoryMock = (): IUserRepository => ({
   updateCalendarCredential: vi.fn(),
   saveCalendarWatch: vi.fn(),
   getCalendarWatchByChannelId: vi.fn(),
+  getCalendarWatchForUser: vi.fn(),
 });
 
 const createOAuth2ClientMock = () => ({

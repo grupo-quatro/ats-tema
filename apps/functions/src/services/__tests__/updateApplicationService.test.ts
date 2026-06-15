@@ -127,6 +127,7 @@ describe('UpdateApplicationStageService.updateStage', () => {
     expect(mockRepo.update).toHaveBeenCalledWith('app-1', {
       stage: 'screening',
       status: 'active',
+      recruiterId: 'uid-test',
     });
   });
 
@@ -142,6 +143,7 @@ describe('UpdateApplicationStageService.updateStage', () => {
     expect(mockRepo.update).toHaveBeenCalledWith('app-1', {
       stage: 'hired',
       status: 'hired',
+      recruiterId: 'uid-test',
     });
   });
 
@@ -162,6 +164,7 @@ describe('UpdateApplicationStageService.updateStage', () => {
       stage: 'rejected',
       status: 'rejected',
       rejectionReason: 'No cumple los requisitos técnicos',
+      recruiterId: 'uid-test',
     });
   });
 
@@ -177,6 +180,7 @@ describe('UpdateApplicationStageService.updateStage', () => {
     expect(mockRepo.update).toHaveBeenCalledWith('app-1', {
       stage: 'withdrawn',
       status: 'withdrawn',
+      recruiterId: 'uid-test',
     });
   });
 
@@ -197,6 +201,7 @@ describe('UpdateApplicationStageService.updateStage', () => {
       stage: 'cv_submitted',
       status: 'active',
       notes: 'Buen perfil técnico',
+      recruiterId: 'uid-test',
     });
   });
 

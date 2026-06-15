@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import type { CandidacyNoteDTO } from '@ats/shared-types';
 import {
   STAGE_LABELS,
@@ -33,6 +34,7 @@ import {
   type StageHistoryEntry,
 } from '@ats/shared-types';
 import { useEmployeeProfile } from '../../calendar/hooks/useEmployeeProfile';
+import { emailLogsQueryKey } from './useEmailLogs';
 
 type SnackbarState = { message: string; severity: 'success' | 'error' } | null;
 
@@ -108,6 +110,7 @@ function toVisibleStageHistory(
 }
 
 export function useCandidateProfile(candidate: CandidateMockProfile) {
+  const queryClient = useQueryClient();
   const { employee } = useEmployeeProfile();
   const [cvModalOpen, setCvModalOpen] = useState(false);
   const [interviewModalOpen, setInterviewModalOpen] = useState(false);
@@ -358,6 +361,9 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
           : `Etapa actualizada a "${STAGE_LABELS[selectedStageKey]}"`,
         severity: 'success',
       });
+      queryClient.invalidateQueries({
+        queryKey: emailLogsQueryKey(candidate.id),
+      });
       refreshStageHistory().catch(() => {});
     } catch {
       setSnackbar({
@@ -370,6 +376,8 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
   }, [
     selectedStageKey,
     candidate.applicationId,
+    candidate.id,
+    queryClient,
     refreshStageHistory,
     stageEmailPreview?.hasEmail,
     currentApplicationStage,
@@ -430,6 +438,9 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
       setRejectDialogOpen(false);
       setRejectReason('');
       setSnackbar({ message: 'Candidato rechazado', severity: 'success' });
+      queryClient.invalidateQueries({
+        queryKey: emailLogsQueryKey(candidate.id),
+      });
       refreshStageHistory().catch(() => {});
     } catch {
       setSnackbar({
@@ -439,7 +450,13 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     } finally {
       setIsUpdatingStage(false);
     }
-  }, [rejectReason, candidate.applicationId, refreshStageHistory]);
+  }, [
+    rejectReason,
+    candidate.applicationId,
+    candidate.id,
+    queryClient,
+    refreshStageHistory,
+  ]);
 
   const handleOfferSent = useCallback(() => {
     setStageHistory((current) => applyStageChange(current, 'oferta_enviada'));
@@ -463,6 +480,9 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
         message: 'Candidato marcado como contratado',
         severity: 'success',
       });
+      queryClient.invalidateQueries({
+        queryKey: emailLogsQueryKey(candidate.id),
+      });
       refreshStageHistory().catch(() => {});
     } catch {
       setSnackbar({
@@ -472,7 +492,7 @@ export function useCandidateProfile(candidate: CandidateMockProfile) {
     } finally {
       setIsUpdatingStage(false);
     }
-  }, [candidate.applicationId, refreshStageHistory]);
+  }, [candidate.applicationId, candidate.id, queryClient, refreshStageHistory]);
 
   const handleInterviewSave = useCallback(async () => {
     setInterviewModalOpen(false);

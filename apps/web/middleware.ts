@@ -50,7 +50,12 @@ export function middleware(request: NextRequest) {
   }
 
   if (pathname.startsWith('/dashboard') && !session) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set(
+      'returnTo',
+      pathname + (request.nextUrl.search || ''),
+    );
+    return NextResponse.redirect(loginUrl);
   }
 
   if (session && isInternalRole(role) && isCandidatePath(pathname)) {

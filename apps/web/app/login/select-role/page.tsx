@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
@@ -35,8 +36,15 @@ const ROLE_OPTIONS: RoleOption[] = [
   },
 ];
 
-export default function SelectRolePage() {
+function getSafeReturnTo(returnTo: string | null): string {
+  if (returnTo && returnTo.startsWith('/dashboard')) return returnTo;
+  return '/dashboard/positions';
+}
+
+function SelectRoleContent() {
   const { user, needsRoleSelection, completeRoleOnboarding } = useAuth();
+  const searchParams = useSearchParams();
+  const returnTo = getSafeReturnTo(searchParams.get('returnTo'));
   const [loading, setLoading] = useState<'hr' | 'area_leader' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,7 +71,7 @@ export default function SelectRolePage() {
     setLoading(role);
     try {
       await completeRoleOnboarding(role);
-      window.location.replace('/dashboard/positions');
+      window.location.replace(returnTo);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'No se pudo asignar el rol.';
@@ -177,5 +185,13 @@ export default function SelectRolePage() {
         </Stack>
       </Box>
     </Box>
+  );
+}
+
+export default function SelectRolePage() {
+  return (
+    <Suspense fallback={null}>
+      <SelectRoleContent />
+    </Suspense>
   );
 }

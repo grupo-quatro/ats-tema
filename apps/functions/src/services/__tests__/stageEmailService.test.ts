@@ -106,6 +106,7 @@ const makeUserRepo = (): IUserRepository => ({
   updateCalendarCredential: vi.fn(),
   saveCalendarWatch: vi.fn(),
   getCalendarWatchByChannelId: vi.fn(),
+  getCalendarWatchForUser: vi.fn(),
 });
 
 const makeOrgConfigRepo = (): IOrgConfigRepository => ({

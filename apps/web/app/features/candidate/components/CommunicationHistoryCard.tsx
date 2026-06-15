@@ -21,7 +21,7 @@ interface CommunicationHistoryCardProps {
 export function CommunicationHistoryCard({
   candidateId,
 }: CommunicationHistoryCardProps) {
-  const { data: logs, isLoading } = useEmailLogs(candidateId);
+  const { data: logs, isLoading, isError } = useEmailLogs(candidateId);
   const retryMutation = useRetryEmailSend(candidateId);
 
   return (
@@ -49,6 +49,10 @@ export function CommunicationHistoryCard({
             sx={{ borderRadius: 1 }}
           />
         </Box>
+      ) : isError ? (
+        <Typography variant="body2" color="error.main">
+          Error al cargar comunicaciones. Revisá la consola del emulador.
+        </Typography>
       ) : !logs || logs.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
           No hay comunicaciones registradas.
