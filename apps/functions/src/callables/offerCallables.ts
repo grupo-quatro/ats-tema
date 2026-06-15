@@ -67,148 +67,169 @@ const OFFER_MANAGER_ROLES: EmployeeRole[] = [
   EMPLOYEE_ROLES.AREA_LEADER,
 ];
 
-export const createOfferDraft = onRequest({ secrets: [oauthEncryptionKey] }, async (request, response) => {
-  try {
-    if (request.method !== 'POST') {
-      response.status(405).json({ error: 'Method Not Allowed.' });
-      return;
+export const createOfferDraft = onRequest(
+  { secrets: [oauthEncryptionKey] },
+  async (request, response) => {
+    try {
+      if (request.method !== 'POST') {
+        response.status(405).json({ error: 'Method Not Allowed.' });
+        return;
+      }
+
+      const { uid, role } = await requireAuthenticatedUser(request);
+      assertCanManageOffers(role);
+
+      const payload = request.body as Partial<CreateOfferDraftPayload>;
+      validateCreateOfferDraftPayload(payload);
+
+      const result = await offerService.createDraft(payload, uid);
+      response.status(201).json(result);
+    } catch (error) {
+      handleOfferError(response, error, '[createOfferDraft]');
     }
+  },
+);
 
-    const { uid, role } = await requireAuthenticatedUser(request);
-    assertCanManageOffers(role);
+export const sendOffer = onRequest(
+  { secrets: [oauthEncryptionKey] },
+  async (request, response) => {
+    try {
+      if (request.method !== 'POST') {
+        response.status(405).json({ error: 'Method Not Allowed.' });
+        return;
+      }
 
-    const payload = request.body as Partial<CreateOfferDraftPayload>;
-    validateCreateOfferDraftPayload(payload);
+      const { uid, role } = await requireAuthenticatedUser(request);
+      assertCanManageOffers(role);
 
-    const result = await offerService.createDraft(payload, uid);
-    response.status(201).json(result);
-  } catch (error) {
-    handleOfferError(response, error, '[createOfferDraft]');
-  }
-});
+      const payload = request.body as Partial<SendOfferPayload>;
+      validateSendOfferPayload(payload);
 
-export const sendOffer = onRequest({ secrets: [oauthEncryptionKey] }, async (request, response) => {
-  try {
-    if (request.method !== 'POST') {
-      response.status(405).json({ error: 'Method Not Allowed.' });
-      return;
+      const result = await offerService.sendOffer(payload, uid);
+      response.status(200).json(result);
+    } catch (error) {
+      handleOfferError(response, error, '[sendOffer]');
     }
+  },
+);
 
-    const { uid, role } = await requireAuthenticatedUser(request);
-    assertCanManageOffers(role);
+export const updateOfferDraft = onRequest(
+  { secrets: [oauthEncryptionKey] },
+  async (request, response) => {
+    try {
+      if (request.method !== 'PUT') {
+        response.status(405).json({ error: 'Method Not Allowed.' });
+        return;
+      }
 
-    const payload = request.body as Partial<SendOfferPayload>;
-    validateSendOfferPayload(payload);
+      const { role } = await requireAuthenticatedUser(request);
+      assertCanManageOffers(role);
 
-    const result = await offerService.sendOffer(payload, uid);
-    response.status(200).json(result);
-  } catch (error) {
-    handleOfferError(response, error, '[sendOffer]');
-  }
-});
+      const payload = request.body as Partial<UpdateOfferDraftPayload>;
+      validateUpdateOfferDraftPayload(payload);
 
-export const updateOfferDraft = onRequest({ secrets: [oauthEncryptionKey] }, async (request, response) => {
-  try {
-    if (request.method !== 'PUT') {
-      response.status(405).json({ error: 'Method Not Allowed.' });
-      return;
+      const result = await offerService.updateDraft(payload);
+      response.status(200).json(result);
+    } catch (error) {
+      handleOfferError(response, error, '[updateOfferDraft]');
     }
+  },
+);
 
-    const { role } = await requireAuthenticatedUser(request);
-    assertCanManageOffers(role);
+export const previewOffer = onRequest(
+  { secrets: [oauthEncryptionKey] },
+  async (request, response) => {
+    try {
+      if (request.method !== 'POST') {
+        response.status(405).json({ error: 'Method Not Allowed.' });
+        return;
+      }
 
-    const payload = request.body as Partial<UpdateOfferDraftPayload>;
-    validateUpdateOfferDraftPayload(payload);
+      const { role } = await requireAuthenticatedUser(request);
+      assertCanManageOffers(role);
 
-    const result = await offerService.updateDraft(payload);
-    response.status(200).json(result);
-  } catch (error) {
-    handleOfferError(response, error, '[updateOfferDraft]');
-  }
-});
+      const payload = request.body as Partial<PreviewOfferPayload>;
+      validatePreviewOfferPayload(payload);
 
-export const previewOffer = onRequest({ secrets: [oauthEncryptionKey] }, async (request, response) => {
-  try {
-    if (request.method !== 'POST') {
-      response.status(405).json({ error: 'Method Not Allowed.' });
-      return;
+      const result = await offerService.previewOffer(payload);
+      response.status(200).json(result);
+    } catch (error) {
+      handleOfferError(response, error, '[previewOffer]');
     }
+  },
+);
 
-    const { role } = await requireAuthenticatedUser(request);
-    assertCanManageOffers(role);
+export const getOfferByToken = onRequest(
+  { secrets: [oauthEncryptionKey] },
+  async (request, response) => {
+    try {
+      if (request.method !== 'GET') {
+        response.status(405).json({ error: 'Method Not Allowed.' });
+        return;
+      }
 
-    const payload = request.body as Partial<PreviewOfferPayload>;
-    validatePreviewOfferPayload(payload);
+      const payload = {
+        token: getQueryString(request.query.token),
+      };
+      validateGetOfferByTokenPayload(payload);
 
-    const result = await offerService.previewOffer(payload);
-    response.status(200).json(result);
-  } catch (error) {
-    handleOfferError(response, error, '[previewOffer]');
-  }
-});
-
-export const getOfferByToken = onRequest({ secrets: [oauthEncryptionKey] }, async (request, response) => {
-  try {
-    if (request.method !== 'GET') {
-      response.status(405).json({ error: 'Method Not Allowed.' });
-      return;
+      const result = await offerService.getPublicOffer(payload.token);
+      response.status(200).json(result);
+    } catch (error) {
+      handleOfferError(response, error, '[getOfferByToken]');
     }
+  },
+);
 
-    const payload = {
-      token: getQueryString(request.query.token),
-    };
-    validateGetOfferByTokenPayload(payload);
+export const getOfferByApplication = onRequest(
+  { secrets: [oauthEncryptionKey] },
+  async (request, response) => {
+    try {
+      if (request.method !== 'GET') {
+        response.status(405).json({ error: 'Method Not Allowed.' });
+        return;
+      }
 
-    const result = await offerService.getPublicOffer(payload.token);
-    response.status(200).json(result);
-  } catch (error) {
-    handleOfferError(response, error, '[getOfferByToken]');
-  }
-});
+      const { role } = await requireAuthenticatedUser(request);
+      assertCanManageOffers(role);
 
-export const getOfferByApplication = onRequest({ secrets: [oauthEncryptionKey] }, async (request, response) => {
-  try {
-    if (request.method !== 'GET') {
-      response.status(405).json({ error: 'Method Not Allowed.' });
-      return;
+      const payload = {
+        applicationId: getQueryString(request.query.applicationId),
+      };
+      validateGetOfferByApplicationPayload(payload);
+
+      const result = await offerService.getOfferByApplication(
+        payload.applicationId,
+      );
+      response.status(200).json(result);
+    } catch (error) {
+      handleOfferError(response, error, '[getOfferByApplication]');
     }
+  },
+);
 
-    const { role } = await requireAuthenticatedUser(request);
-    assertCanManageOffers(role);
+export const respondOffer = onRequest(
+  { secrets: [oauthEncryptionKey] },
+  async (request, response) => {
+    try {
+      if (request.method !== 'POST') {
+        response.status(405).json({ error: 'Method Not Allowed.' });
+        return;
+      }
 
-    const payload = {
-      applicationId: getQueryString(request.query.applicationId),
-    };
-    validateGetOfferByApplicationPayload(payload);
+      const payload = request.body as Partial<RespondOfferPayload>;
+      validateRespondOfferPayload(payload);
 
-    const result = await offerService.getOfferByApplication(
-      payload.applicationId,
-    );
-    response.status(200).json(result);
-  } catch (error) {
-    handleOfferError(response, error, '[getOfferByApplication]');
-  }
-});
-
-export const respondOffer = onRequest({ secrets: [oauthEncryptionKey] }, async (request, response) => {
-  try {
-    if (request.method !== 'POST') {
-      response.status(405).json({ error: 'Method Not Allowed.' });
-      return;
+      const result = await offerService.respondToOffer(payload, {
+        ip: request.ip,
+        userAgent: request.header('user-agent'),
+      });
+      response.status(200).json(result);
+    } catch (error) {
+      handleOfferError(response, error, '[respondOffer]');
     }
-
-    const payload = request.body as Partial<RespondOfferPayload>;
-    validateRespondOfferPayload(payload);
-
-    const result = await offerService.respondToOffer(payload, {
-      ip: request.ip,
-      userAgent: request.header('user-agent'),
-    });
-    response.status(200).json(result);
-  } catch (error) {
-    handleOfferError(response, error, '[respondOffer]');
-  }
-});
+  },
+);
 
 function assertCanManageOffers(role: EmployeeRole | null): void {
   if (!role || !OFFER_MANAGER_ROLES.includes(role)) {
