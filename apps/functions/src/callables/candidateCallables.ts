@@ -225,9 +225,8 @@ export const confirmCandidateProfile = onRequest(async (request, response) => {
 
     validateConfirmCandidateProfilePayload(payload);
 
-    const result = await candidateRegistrationService.confirmCandidateProfile(
-      payload,
-    );
+    const result =
+      await candidateRegistrationService.confirmCandidateProfile(payload);
 
     logger.info('Perfil de candidato confirmado con éxito', {
       candidateId: result.candidateId,

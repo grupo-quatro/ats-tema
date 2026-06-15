@@ -184,7 +184,7 @@ describe('CandidacyNotesService.updateCandidacyNote', () => {
 
     expect(mockNotesRepo.update).toHaveBeenCalled();
   });
-  
+
   it('no permite editar notas generadas por entrevistas', async () => {
     mockNotesRepo.findById.mockResolvedValue(makeNote({ source: 'interview' }));
 
@@ -222,8 +222,6 @@ describe('CandidacyNotesService.updateCandidacyNote', () => {
     ).rejects.toThrow(CandidacyNoteTerminalStageError);
   });
 });
-
-
 
 describe('CandidacyNotesService.getCandidacyNotes', () => {
   let service: CandidacyNotesService;
