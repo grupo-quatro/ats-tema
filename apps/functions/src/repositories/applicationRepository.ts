@@ -336,26 +336,25 @@ export class ApplicationsRepository {
    * Lo usa el calendarWebhook para encontrar la aplicación activa
    * de un candidato que acaba de reservar una entrevista.
    */
-  async findActiveInSchedulingByEmail(
+  async findAllActiveInSchedulingByEmail(
     candidateEmail: string,
     stages: readonly string[],
-  ): Promise<Application | null> {
+    recruiterUid: string,
+  ): Promise<Application[]> {
     try {
       const snapshot = await this.collection
         .where('candidateEmail', '==', candidateEmail)
         .where('status', '==', 'active')
         .where('stage', 'in', stages)
-        .limit(1)
+        .where('recruiterId', '==', recruiterUid)
         .get();
 
-      if (snapshot.empty) return null;
-
-      return this.mapToApplication(
-        snapshot.docs[0].data() as FirestoreApplication,
+      return snapshot.docs.map((doc) =>
+        this.mapToApplication(doc.data() as FirestoreApplication),
       );
     } catch (error) {
       throw new ApplicationsRepositoryError(
-        `No se pudo buscar aplicación activa para ${candidateEmail}.`,
+        `No se pudo buscar aplicaciones activas para ${candidateEmail}.`,
         error,
       );
     }
