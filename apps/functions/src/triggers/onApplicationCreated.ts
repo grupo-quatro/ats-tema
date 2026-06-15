@@ -5,6 +5,7 @@ import { OAuth2Client } from 'google-auth-library';
 import type { Application } from '@ats/shared-types';
 
 import { auth } from '../core/firebaseAdmin';
+import { oauthEncryptionKey } from '../core/secrets';
 import { CandidatesRepository } from '../repositories/candidateRepository';
 import { EmailLogRepository } from '../repositories/emailLogRepository';
 import { EmailTemplateRepository } from '../repositories/emailTemplateRepository';
@@ -41,25 +42,14 @@ const stageEmailService = new StageEmailService(
 const jobsRepository = new JobsRepository();
 const candidatesRepository = new CandidatesRepository();
 
-/**
- * Trigger Firestore (Background Trigger) — se ejecuta automáticamente
- * cada vez que se crea un nuevo documento en la colección `applications`.
- *
- * Responsabilidades:
- *  - Calcula el skill match via SkillMatchService.
- *  - Envía el email de "postulación recibida" (template: application_received)
- *    usando las credenciales de Gmail del hiring manager del job.
- *  - Los fallos de email se loguean pero nunca interrumpen ni reintentan el trigger.
- */
 export const onApplicationCreated = onDocumentCreated(
   {
     document: 'applications/{applicationId}',
-    secrets: ['OAUTH_ENCRYPTION_KEY'],
+    secrets: [oauthEncryptionKey],
   },
   async (event) => {
     const applicationId = event.params.applicationId;
 
-    // Guardia temprana: si el snapshot no trae datos, no hay nada que procesar
     if (!event.data?.exists) {
       logger.warn(
         `[onApplicationCreated] Evento recibido sin datos para applicationId=${applicationId}. Se omite.`,
@@ -71,7 +61,6 @@ export const onApplicationCreated = onDocumentCreated(
       `[onApplicationCreated] Procesando applicationId=${applicationId}`,
     );
 
-    // 1. Calcular skill match (comportamiento original)
     try {
       await skillMatchService.calculateAndPersist(applicationId);
       logger.info(
@@ -92,7 +81,6 @@ export const onApplicationCreated = onDocumentCreated(
       throw error;
     }
 
-    // 2. Enviar email de "postulación recibida" — el fallo nunca bloquea ni reintenta
     try {
       const rawData = event.data.data() as Omit<Application, 'id'>;
       const application: Application = { id: applicationId, ...rawData };

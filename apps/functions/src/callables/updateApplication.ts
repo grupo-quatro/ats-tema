@@ -10,6 +10,7 @@ import {
 import { OAuth2Client } from 'google-auth-library';
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
 import { setCorsHeaders } from '../core/cors';
+import { oauthEncryptionKey } from '../core/secrets';
 import { ApplicationsRepository } from '../repositories/applicationRepository';
 import { EmailLogRepository } from '../repositories/emailLogRepository';
 import { EmailTemplateRepository } from '../repositories/emailTemplateRepository';
@@ -71,7 +72,7 @@ const updateApplicationStageService = new UpdateApplicationStageService(
 );
 
 export const updateApplication = onRequest(
-  { secrets: ['OAUTH_ENCRYPTION_KEY'] },
+  { secrets: [oauthEncryptionKey] },
   async (request, response) => {
     try {
       if (request.method !== 'PATCH') {
@@ -128,7 +129,7 @@ export const updateApplication = onRequest(
 );
 
 export const updateApplicationStage = onRequest(
-  { secrets: ['OAUTH_ENCRYPTION_KEY'] },
+  { secrets: [oauthEncryptionKey] },
   async (request, response) => {
     setCorsHeaders(response);
     if (request.method === 'OPTIONS') {
@@ -188,7 +189,7 @@ export const updateApplicationStage = onRequest(
 );
 
 export const previewApplicationStageEmail = onRequest(
-  { secrets: ['OAUTH_ENCRYPTION_KEY'] },
+  { secrets: [oauthEncryptionKey] },
   async (request, response) => {
     setCorsHeaders(response);
     if (request.method === 'OPTIONS') {

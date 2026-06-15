@@ -4,6 +4,7 @@ import { OAuth2Client } from 'google-auth-library';
 
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
 import { setCorsHeaders } from '../core/cors';
+import { oauthEncryptionKey } from '../core/secrets';
 import { EmployeeRepository } from '../repositories/employeeRepository';
 import { UserRepository } from '../repositories/userRepository';
 import { ExchangeCalendarCodeService } from '../services/exchangeCalendarCodeService';
@@ -25,7 +26,7 @@ const exchangeCalendarCodeService = new ExchangeCalendarCodeService(
 );
 
 export const exchangeCalendarCode = onRequest(
-  { secrets: ['OAUTH_ENCRYPTION_KEY'] },
+  { secrets: [oauthEncryptionKey] },
   async (request, response) => {
     setCorsHeaders(response);
 

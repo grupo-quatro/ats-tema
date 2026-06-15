@@ -6,35 +6,20 @@ import { google } from 'googleapis';
 import type { CalendarWatch, GmailCredential } from '@ats/shared-types';
 
 import { db } from '../core/firebaseAdmin';
+import { oauthEncryptionKey, calendarWebhookSecret } from '../core/secrets';
 import { UserRepository } from '../repositories/userRepository';
 
 const userRepository = new UserRepository();
 
-/**
- * Renueva los canales de notificaciones push de Google Calendar de todos los
- * recruiters antes de que expiren. Corre cada 29 días (los canales duran 30).
- *
- * Lógica por recruiter:
- * 1. Leer calendarWatch y calendarCredential desde el doc ya leído
- * 2. Si el canal vence en < 2 días, renovar
- * 3. Llamar calendar.events.watch() con el mismo channelId
- * 4. Actualizar expiresAt en Firestore
- *
- * Si falla para un recruiter, se loguea y continúa con el resto.
- */
 export const renewCalendarWatches = onSchedule(
-  // Corre diariamente — la lógica de renovación solo actúa cuando el canal
-  // vence en < 2 días. El schedule */29 anterior era incorrecto (no significaba
-  // "cada 29 días", sino días específicos del mes).
   {
     schedule: '0 3 * * *',
     timeZone: 'UTC',
-    secrets: ['OAUTH_ENCRYPTION_KEY', 'CALENDAR_WEBHOOK_SECRET'],
+    secrets: [oauthEncryptionKey, calendarWebhookSecret],
   },
   async () => {
     logger.info('[renewCalendarWatches] Iniciando renovación de canales');
 
-    // Buscar todos los usuarios que tienen un calendarWatch registrado
     const snapshot = await db
       .collection('users')
       .where('calendarWatch.channelId', '!=', null)
@@ -61,7 +46,6 @@ export const renewCalendarWatches = onSchedule(
       snapshot.docs.map(async (doc) => {
         const data = doc.data();
         const watch = data.calendarWatch as CalendarWatch | undefined;
-        // Usar el repositorio para obtener la credencial descifrada correctamente
         const credential = await userRepository.getCalendarCredential(doc.id);
         return renewWatchForUser(doc.id, watch, credential, webhookUrl);
       }),
@@ -94,7 +78,6 @@ async function renewWatchForUser(
     return;
   }
 
-  // Solo renovar si vence en < 2 días (margen de seguridad)
   const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
   if (existingWatch.expiresAt > Date.now() + TWO_DAYS_MS) {
     logger.info(`[renewCalendarWatches] Canal vigente para ${uid}, se omite`);
@@ -111,7 +94,6 @@ async function renewWatchForUser(
     expiry_date: credential.expiresAt,
   });
 
-  // Guardar token refrescado automáticamente si expiró
   oauth2Client.on('tokens', async (tokens) => {
     if (tokens.access_token) {
       await userRepository.updateCalendarCredential(uid, {
@@ -124,8 +106,6 @@ async function renewWatchForUser(
 
   const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-  // Detener el canal anterior para evitar acumular canales huérfanos en Google.
-  // Si falla (canal ya expirado o desconocido), lo ignoramos y seguimos.
   await calendar.channels
     .stop({
       requestBody: {
@@ -140,7 +120,6 @@ async function renewWatchForUser(
       );
     });
 
-  // ID único por renovación — Google exige que cada canal nuevo tenga un ID distinto.
   const channelId = `${uid}-cw-${Date.now()}`;
   const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
 
@@ -170,7 +149,6 @@ async function renewWatchForUser(
     expiresAt,
   });
 
-  // Actualizar syncToken para que el webhook siga procesando incrementalmente.
   const newSyncToken = await fetchInitialSyncToken(calendar);
   if (newSyncToken) {
     await userRepository.saveCalendarSyncToken(uid, newSyncToken);
@@ -182,10 +160,6 @@ async function renewWatchForUser(
   });
 }
 
-/**
- * Pagina events.list desde ahora hasta obtener el nextSyncToken (última página).
- * Con timeMin=now hay pocos eventos futuros, así que termina rápido.
- */
 async function fetchInitialSyncToken(
   calendar: calendar_v3.Calendar,
 ): Promise<string | null> {

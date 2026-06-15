@@ -13,6 +13,7 @@ import {
 import { OAuth2Client } from 'google-auth-library';
 
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
+import { oauthEncryptionKey } from '../core/secrets';
 import { EmailLogRepository } from '../repositories/emailLogRepository';
 import { EmailTemplateRepository } from '../repositories/emailTemplateRepository';
 import { EmployeeRepository } from '../repositories/employeeRepository';
@@ -66,7 +67,7 @@ const OFFER_MANAGER_ROLES: EmployeeRole[] = [
   EMPLOYEE_ROLES.AREA_LEADER,
 ];
 
-export const createOfferDraft = onRequest(async (request, response) => {
+export const createOfferDraft = onRequest({ secrets: [oauthEncryptionKey] }, async (request, response) => {
   try {
     if (request.method !== 'POST') {
       response.status(405).json({ error: 'Method Not Allowed.' });
@@ -86,7 +87,7 @@ export const createOfferDraft = onRequest(async (request, response) => {
   }
 });
 
-export const sendOffer = onRequest(async (request, response) => {
+export const sendOffer = onRequest({ secrets: [oauthEncryptionKey] }, async (request, response) => {
   try {
     if (request.method !== 'POST') {
       response.status(405).json({ error: 'Method Not Allowed.' });
@@ -106,7 +107,7 @@ export const sendOffer = onRequest(async (request, response) => {
   }
 });
 
-export const updateOfferDraft = onRequest(async (request, response) => {
+export const updateOfferDraft = onRequest({ secrets: [oauthEncryptionKey] }, async (request, response) => {
   try {
     if (request.method !== 'PUT') {
       response.status(405).json({ error: 'Method Not Allowed.' });
@@ -126,7 +127,7 @@ export const updateOfferDraft = onRequest(async (request, response) => {
   }
 });
 
-export const previewOffer = onRequest(async (request, response) => {
+export const previewOffer = onRequest({ secrets: [oauthEncryptionKey] }, async (request, response) => {
   try {
     if (request.method !== 'POST') {
       response.status(405).json({ error: 'Method Not Allowed.' });
@@ -146,7 +147,7 @@ export const previewOffer = onRequest(async (request, response) => {
   }
 });
 
-export const getOfferByToken = onRequest(async (request, response) => {
+export const getOfferByToken = onRequest({ secrets: [oauthEncryptionKey] }, async (request, response) => {
   try {
     if (request.method !== 'GET') {
       response.status(405).json({ error: 'Method Not Allowed.' });
@@ -165,7 +166,7 @@ export const getOfferByToken = onRequest(async (request, response) => {
   }
 });
 
-export const getOfferByApplication = onRequest(async (request, response) => {
+export const getOfferByApplication = onRequest({ secrets: [oauthEncryptionKey] }, async (request, response) => {
   try {
     if (request.method !== 'GET') {
       response.status(405).json({ error: 'Method Not Allowed.' });
@@ -189,7 +190,7 @@ export const getOfferByApplication = onRequest(async (request, response) => {
   }
 });
 
-export const respondOffer = onRequest(async (request, response) => {
+export const respondOffer = onRequest({ secrets: [oauthEncryptionKey] }, async (request, response) => {
   try {
     if (request.method !== 'POST') {
       response.status(405).json({ error: 'Method Not Allowed.' });

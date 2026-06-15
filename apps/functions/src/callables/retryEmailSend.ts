@@ -3,6 +3,7 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { OAuth2Client } from 'google-auth-library';
 
 import { HttpAuthError, requireAuthenticatedUser } from '../core/httpAuth';
+import { oauthEncryptionKey } from '../core/secrets';
 import {
   RetryEmailSendValidationError,
   validateRetryEmailSendPayload,
@@ -31,7 +32,7 @@ const retryEmailSendService = new RetryEmailSendService(
 );
 
 export const retryEmailSend = onRequest(
-  { secrets: ['OAUTH_ENCRYPTION_KEY'] },
+  { secrets: [oauthEncryptionKey] },
   async (request, response) => {
     try {
       if (request.method !== 'POST') {

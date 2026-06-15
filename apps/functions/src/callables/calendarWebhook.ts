@@ -3,6 +3,7 @@ import { onRequest } from 'firebase-functions/v2/https';
 
 import { UserRepository } from '../repositories/userRepository';
 import { processCalendarNotification } from '../services/calendarWebhookService';
+import { oauthEncryptionKey, calendarWebhookSecret } from '../core/secrets';
 
 const userRepository = new UserRepository();
 
@@ -17,7 +18,7 @@ const userRepository = new UserRepository();
  *   X-Goog-Channel-Token   → token secreto configurado al registrar el canal
  */
 export const calendarWebhook = onRequest(
-  { secrets: ['OAUTH_ENCRYPTION_KEY', 'CALENDAR_WEBHOOK_SECRET'] },
+  { secrets: [oauthEncryptionKey, calendarWebhookSecret] },
   async (request, response) => {
     if (request.method !== 'POST') {
       response.status(405).send('Method Not Allowed');
