@@ -6,6 +6,8 @@ export interface CandidateProfileForConfirmation {
   lastName?: string;
   email?: string;
   phone?: string;
+  expectedMonthlySalaryArs?: number;
+  linkedinUrl?: string;
   location?: string;
   yearsOfExperience?: number;
   education?: string;

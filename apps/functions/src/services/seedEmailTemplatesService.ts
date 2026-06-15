@@ -1,4 +1,5 @@
 import { FieldValue } from 'firebase-admin/firestore';
+import type { EmailTemplateStage } from '@ats/shared-types';
 
 import { db } from '../core/firebaseAdmin';
 
@@ -23,7 +24,7 @@ export class SeedEmailTemplatesServiceError extends Error {
 type TemplateDefinition = {
   id: string;
   name: string;
-  stage: string;
+  stage: EmailTemplateStage;
   subject: string;
   body: string;
   isDefault: boolean;
@@ -139,6 +140,19 @@ const TEMPLATE_SEEDS: TemplateDefinition[] = [
     isDefault: true,
   },
   {
+    id: 'entrevista-presencial',
+    name: 'Entrevista presencial',
+    stage: 'onsite_interview',
+    subject:
+      'Te esperamos para una entrevista presencial — [Nombre de la Posición]',
+    body: `<p>Estimado/a [Nombre del Candidato],</p>
+<p>Queremos invitarte a una entrevista presencial para el puesto de <strong>[Nombre de la Posición]</strong> en <strong>[Nombre de la Empresa]</strong>.</p>
+<p><strong>Dirección:</strong> COMPLETAR DIRECCIÓN</p>
+<p>Ante cualquier consulta, escribinos a [Email del Reclutador].</p>
+<p>Saludos,<br>[Nombre del Reclutador]<br>[Email del Reclutador]</p>`,
+    isDefault: true,
+  },
+  {
     id: 'oferta-laboral',
     name: 'Oferta Laboral',
     stage: 'offer',
@@ -192,9 +206,13 @@ export class SeedEmailTemplatesService {
 
   async seedEmailTemplates(): Promise<SeedEmailTemplatesResult> {
     try {
-      const snapshot = await this.collection.limit(1).get();
+      const snapshot = await this.collection.get();
+      const existingIds = new Set(snapshot.docs.map((doc) => doc.id));
+      const missingTemplates = TEMPLATE_SEEDS.filter(
+        (template) => !existingIds.has(template.id),
+      );
 
-      if (!snapshot.empty) {
+      if (missingTemplates.length === 0) {
         return {
           processed: TEMPLATE_SEEDS.length,
           created: 0,
@@ -204,7 +222,7 @@ export class SeedEmailTemplatesService {
 
       const batch = db.batch();
 
-      for (const template of TEMPLATE_SEEDS) {
+      for (const template of missingTemplates) {
         const docRef = this.collection.doc(template.id);
         batch.set(docRef, {
           ...template,
@@ -217,8 +235,8 @@ export class SeedEmailTemplatesService {
 
       return {
         processed: TEMPLATE_SEEDS.length,
-        created: TEMPLATE_SEEDS.length,
-        skipped: 0,
+        created: missingTemplates.length,
+        skipped: TEMPLATE_SEEDS.length - missingTemplates.length,
       };
     } catch (error) {
       throw new SeedEmailTemplatesServiceError(

@@ -4,6 +4,7 @@ import {
   EMPLOYEE_ROLES,
   STAGE_CONFIG,
   type EmployeeRole,
+  type PreviewApplicationStageEmailPayload,
   type UpdateApplicationStagePayload,
 } from '@ats/shared-types';
 import { OAuth2Client } from 'google-auth-library';
@@ -176,6 +177,65 @@ export const updateApplicationStage = onRequest(
       response
         .status(500)
         .json({ error: 'No se pudo actualizar la postulación.' });
+    }
+  },
+);
+
+export const previewApplicationStageEmail = onRequest(
+  { secrets: ['OAUTH_ENCRYPTION_KEY'] },
+  async (request, response) => {
+    try {
+      if (request.method !== 'POST') {
+        response.status(405).json({ error: 'Method Not Allowed.' });
+        return;
+      }
+
+      const { uid, role } = await requireAuthenticatedUser(request);
+
+      const payload =
+        request.body as Partial<PreviewApplicationStageEmailPayload>;
+      validateUpdateApplicationStagePayload(payload);
+      assertCanUpdateApplicationStage(role, payload.stage);
+
+      const result = await updateApplicationStageService.previewStageEmail(
+        payload,
+        uid,
+      );
+
+      response.status(200).json(result);
+    } catch (error) {
+      if (error instanceof HttpAuthError) {
+        response.status(401).json({ error: error.message });
+        return;
+      }
+
+      if (error instanceof ApplicationNotFoundError) {
+        response.status(404).json({ error: error.message });
+        return;
+      }
+
+      if (error instanceof UpdateApplicationValidationError) {
+        response.status(400).json({ error: error.message });
+        return;
+      }
+
+      if (error instanceof ApplicationStageForbiddenError) {
+        response.status(403).json({ error: error.message });
+        return;
+      }
+
+      if (error instanceof ApplicationStageTransitionError) {
+        response.status(409).json({ error: error.message });
+        return;
+      }
+
+      logger.error(
+        'Error inesperado previsualizando email de etapa de postulación',
+        error,
+      );
+      response.status(500).json({
+        error: 'No se pudo previsualizar el email de cambio de etapa.',
+      });
     }
   },
 );

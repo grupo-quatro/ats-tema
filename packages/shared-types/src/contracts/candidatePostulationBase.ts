@@ -5,8 +5,10 @@ export interface CandidatePostulationBase {
   lastName: string;
   email: string;
   phone: string;
+  expectedMonthlySalaryArs: number;
 
   location?: string;
+  linkedinUrl?: string;
   desiredPosition?: string;
   yearsOfExperience?: number;
   education?: string;

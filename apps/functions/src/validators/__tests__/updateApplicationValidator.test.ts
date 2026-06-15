@@ -137,6 +137,9 @@ describe('validateUpdateApplicationStagePayload', () => {
     'schedule_tech_1',
     'tech_1_scheduled',
     'tech_1_done',
+    'onsite_interview',
+    'psychotechnical',
+    'pre_employment',
     'hired',
     'withdrawn',
   ] as const)('acepta el stage válido "%s"', (stage) => {

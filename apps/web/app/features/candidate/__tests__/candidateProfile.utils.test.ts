@@ -85,6 +85,24 @@ describe('buildStageHistory', () => {
     expect(history[0]!.status).toBe('current');
   });
 
+  it('ubica entrevista presencial, psicotecnico y preocupacional antes de enviar oferta', () => {
+    const history = buildStageHistory('hr_2_done');
+    const keys = history.map((s) => s.key);
+
+    expect(keys.indexOf('entrevista_presencial')).toBeGreaterThan(
+      keys.indexOf('entrevista_rrhh_2_realizada'),
+    );
+    expect(keys.indexOf('psicotecnico')).toBe(
+      keys.indexOf('entrevista_presencial') + 1,
+    );
+    expect(keys.indexOf('preocupacional')).toBe(
+      keys.indexOf('psicotecnico') + 1,
+    );
+    expect(keys.indexOf('enviar_oferta')).toBe(
+      keys.indexOf('preocupacional') + 1,
+    );
+  });
+
   it('retorna una entrada por cada stage del orden excepto profile_pending (sistema-solo)', () => {
     const history = buildStageHistory('screening');
     expect(history.length).toBe(PIPELINE_ORDER.length - 1);

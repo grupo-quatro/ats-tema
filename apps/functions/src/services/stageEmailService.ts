@@ -7,8 +7,10 @@ import type {
   ApplicationStage,
   Candidate,
   CreateEmailLogDTO,
+  EmailTemplateStage,
   GmailCredential,
   Job,
+  PreviewApplicationStageEmailResponse,
 } from '@ats/shared-types';
 import { GMAIL_STATUS, STAGE_CONFIG } from '@ats/shared-types';
 
@@ -34,6 +36,74 @@ export class StageEmailService {
     private readonly oauth2Client: OAuth2Client,
     private readonly employeeRepository?: IEmployeeRepository,
   ) {}
+
+  async previewIfTemplateExists(
+    application: Application,
+    candidate: Candidate,
+    job: Job,
+    newStage: ApplicationStage,
+    recruiterId: string,
+    recruiterEmail: string,
+    offerLink = '',
+  ): Promise<PreviewApplicationStageEmailResponse> {
+    const candidateEmail = candidate.email ?? '';
+    const { emailTemplateStage } = STAGE_CONFIG[newStage];
+
+    if (
+      emailTemplateStage === null ||
+      (emailTemplateStage === 'offer' && !offerLink)
+    ) {
+      return {
+        stage: newStage,
+        candidateEmail,
+        hasEmail: false,
+      };
+    }
+
+    const template = await this.emailTemplateRepository.findByStage(
+      emailTemplateStage as EmailTemplateStage,
+    );
+    if (!template) {
+      return {
+        stage: newStage,
+        candidateEmail,
+        hasEmail: false,
+      };
+    }
+
+    const [orgConfig, calendarLink] = await Promise.all([
+      this.orgConfigRepository.get(),
+      this.employeeRepository?.getCalendarLink(recruiterId) ??
+        Promise.resolve(null),
+    ]);
+
+    const candidateName =
+      [candidate.firstName, candidate.lastName].filter(Boolean).join(' ') ||
+      candidate.fullName ||
+      candidate.email ||
+      '';
+
+    const context: ResolverContext = {
+      candidateName,
+      positionName: job.title,
+      recruiterName: recruiterEmail,
+      recruiterEmail,
+      calendarLink: calendarLink ?? '',
+      companyName: orgConfig.companyName,
+      offerLink,
+    };
+
+    const { subject, body } = this.templateResolver.resolve(template, context);
+
+    return {
+      stage: newStage,
+      candidateEmail,
+      hasEmail: true,
+      templateName: template.name,
+      subject,
+      body,
+    };
+  }
 
   async sendIfTemplateExists(
     application: Application,

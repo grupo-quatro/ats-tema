@@ -7,6 +7,8 @@ import type {
   GetApplicationsByJobResponse,
   GetCvSignedUrlResponse,
   GetStageHistoryResponse,
+  PreviewApplicationStageEmailPayload,
+  PreviewApplicationStageEmailResponse,
   UpdateApplicationStagePayload,
   UpdateApplicationStageResponse,
 } from '@ats/shared-types';
@@ -51,6 +53,25 @@ export async function updateApplicationStage(
   if (!res.ok) {
     const error = await res.json();
     throw new Error(error.error || 'Error al actualizar la postulación');
+  }
+  return res.json();
+}
+
+export async function previewApplicationStageEmail(
+  payload: PreviewApplicationStageEmailPayload,
+): Promise<PreviewApplicationStageEmailResponse> {
+  const token = await getToken();
+  const res = await fetch(getFunctionUrl('previewApplicationStageEmail'), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Error al previsualizar el email');
   }
   return res.json();
 }

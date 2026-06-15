@@ -16,6 +16,30 @@ import type {
 } from '../mock/candidateMock';
 import { STAGE_LABELS } from '../mock/candidateMock';
 
+export const STAGE_ORDER: ApplicationStage[] = [
+  'applied',
+  'screening',
+  'schedule_hr_1',
+  'hr_1_scheduled',
+  'hr_1_done',
+  'cv_submitted',
+  'schedule_tech_1',
+  'tech_1_scheduled',
+  'tech_1_done',
+  'schedule_tech_2',
+  'tech_2_scheduled',
+  'tech_2_done',
+  'schedule_hr_2',
+  'hr_2_scheduled',
+  'hr_2_done',
+  'onsite_interview',
+  'psychotechnical',
+  'pre_employment',
+  'send_offer',
+  'offer_sent',
+  'hired',
+];
+
 export const STAGE_KEY_MAP: Partial<
   Record<ApplicationStage, CandidateStageKey>
 > = {
@@ -27,6 +51,7 @@ export const STAGE_KEY_MAP: Partial<
   schedule_hr_2: 'contacto_entrevista_rrhh_2',
   hr_2_scheduled: 'entrevista_rrhh_2_agendada',
   hr_2_done: 'entrevista_rrhh_2_realizada',
+  onsite_interview: 'entrevista_presencial',
   cv_submitted: 'cv_presentado_area',
   schedule_tech_1: 'contacto_entrevista_tecnica_1',
   tech_1_scheduled: 'entrevista_tecnica_1_agendada',
@@ -34,6 +59,8 @@ export const STAGE_KEY_MAP: Partial<
   schedule_tech_2: 'contacto_entrevista_tecnica_2',
   tech_2_scheduled: 'entrevista_tecnica_2_agendada',
   tech_2_done: 'entrevista_tecnica_2_realizada',
+  psychotechnical: 'psicotecnico',
+  pre_employment: 'preocupacional',
   send_offer: 'enviar_oferta',
   offer_sent: 'oferta_enviada',
   hired: 'contratado',
@@ -53,6 +80,7 @@ export const CANDIDATE_STAGE_TO_APP_STAGE: Record<
   contacto_entrevista_rrhh_2: 'schedule_hr_2',
   entrevista_rrhh_2_agendada: 'hr_2_scheduled',
   entrevista_rrhh_2_realizada: 'hr_2_done',
+  entrevista_presencial: 'onsite_interview',
   cv_presentado_area: 'cv_submitted',
   contacto_entrevista_tecnica_1: 'schedule_tech_1',
   entrevista_tecnica_1_agendada: 'tech_1_scheduled',
@@ -60,6 +88,8 @@ export const CANDIDATE_STAGE_TO_APP_STAGE: Record<
   contacto_entrevista_tecnica_2: 'schedule_tech_2',
   entrevista_tecnica_2_agendada: 'tech_2_scheduled',
   entrevista_tecnica_2_realizada: 'tech_2_done',
+  psicotecnico: 'psychotechnical',
+  preocupacional: 'pre_employment',
   enviar_oferta: 'send_offer',
   oferta_enviada: 'offer_sent',
   contratado: 'hired',
@@ -201,6 +231,8 @@ export function mapApplicationToProfile(
     title: '',
     email: application.candidateEmail ?? '',
     phone: '',
+    expectedMonthlySalaryArs: undefined,
+    linkedinUrl: undefined,
     location: '',
     yearsOfExperience: undefined,
     professionalSummary: undefined,
@@ -231,6 +263,8 @@ export function mapDetailToProfile(
     title: detail.job.title,
     email: candidate.email ?? '',
     phone: candidate.phone ?? '',
+    expectedMonthlySalaryArs: candidate.expectedMonthlySalaryArs,
+    linkedinUrl: candidate.linkedinUrl,
     location: candidate.location ?? '',
     yearsOfExperience: candidate.yearsOfExperience,
     professionalSummary: candidate.professionalSummary,

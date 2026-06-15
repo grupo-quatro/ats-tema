@@ -19,6 +19,7 @@ import {
   CandidateRegistrationService,
 } from '../services/candidateService';
 import {
+  validateConfirmCandidateProfilePayload,
   validateDiscardCandidateDraftPayload,
   validateGetCandidateProfileForConfirmationPayload,
   validateRegisterCandidatePayload,
@@ -90,6 +91,10 @@ function getPayload<T>(requestBody: unknown): Partial<T> {
   }
 
   return requestBody as Partial<T>;
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Error desconocido';
 }
 
 const candidateRegistrationCVService = new CandidateRegistrationCVService();
@@ -218,15 +223,10 @@ export const confirmCandidateProfile = onRequest(async (request, response) => {
       applicationId: payload.applicationId,
     });
 
-    if (!payload.candidateId || !payload.profile) {
-      throw new HttpsError(
-        'invalid-argument',
-        'Faltan argumentos mandatorios: candidateId y profile son requeridos.',
-      );
-    }
+    validateConfirmCandidateProfilePayload(payload);
 
     const result = await candidateRegistrationService.confirmCandidateProfile(
-      payload as ConfirmCandidateProfilePayload,
+      payload,
     );
 
     logger.info('Perfil de candidato confirmado con éxito', {
@@ -235,9 +235,9 @@ export const confirmCandidateProfile = onRequest(async (request, response) => {
     });
 
     response.status(200).json(result);
-  } catch (error: any) {
+  } catch (error) {
     logger.error('Error fatal al confirmar el perfil del candidato', {
-      error: error.message,
+      error: getErrorMessage(error),
       payload: request.body,
     });
 
@@ -250,10 +250,10 @@ export const confirmCandidateProfile = onRequest(async (request, response) => {
       return;
     }
 
-    if (error.message?.includes('CANDIDATE_NOT_FOUND')) {
+    if (getErrorMessage(error).includes('CANDIDATE_NOT_FOUND')) {
       sendError(
         response,
-        new HttpsError('not-found', error.message),
+        new HttpsError('not-found', getErrorMessage(error)),
         'Ocurrió un error interno en el servidor al procesar la confirmación.',
       );
       return;

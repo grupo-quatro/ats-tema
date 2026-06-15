@@ -28,6 +28,7 @@ const payload: RegisterCandidatePayload = {
   lastName: 'García',
   email: 'ana@example.com',
   phone: '11223344',
+  expectedMonthlySalaryArs: 1200000,
 };
 
 const manualResponse: RegisterCandidateResponse = {
@@ -51,6 +52,7 @@ const profileForConfirmationResponse: GetCandidateProfileForConfirmationResponse
       lastName: 'García',
       email: 'ana@example.com',
       phone: '11223344',
+      expectedMonthlySalaryArs: 1200000,
       technicalSkills: ['TypeScript'],
     },
   };
@@ -154,6 +156,7 @@ describe('PostulationService.confirmCandidateProfile', () => {
       lastName: 'García',
       email: 'ana@example.com',
       phone: '11223344',
+      expectedMonthlySalaryArs: 1200000,
     },
   };
 

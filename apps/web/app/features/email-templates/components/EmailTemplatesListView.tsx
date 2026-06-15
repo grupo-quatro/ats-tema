@@ -43,6 +43,7 @@ const STAGE_COLORS: Record<
   interview_tech_1: { color: '#2563eb', background: '#dbeafe' },
   sch_interview_tech_2: { color: '#334155', background: '#f1f5f9' },
   interview_tech_2: { color: '#2563eb', background: '#dbeafe' },
+  onsite_interview: { color: '#7c3aed', background: '#ede9fe' },
   offer: { color: '#16a34a', background: '#dcfce7' },
   hired: { color: '#16a34a', background: '#dcfce7' },
   rejected: { color: '#64748b', background: '#f1f5f9' },

@@ -23,6 +23,8 @@ export interface Candidate {
 
   email?: string;
   phone?: string;
+  expectedMonthlySalaryArs?: number;
+  linkedinUrl?: string;
   location?: string;
 
   yearsOfExperience?: number;
@@ -53,6 +55,8 @@ export interface CreateCandidateDTO {
 
   email?: string;
   phone?: string;
+  expectedMonthlySalaryArs?: number;
+  linkedinUrl?: string;
   location?: string;
 
   yearsOfExperience?: number;

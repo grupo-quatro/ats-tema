@@ -36,6 +36,9 @@ export const PIPELINE_ORDER: ApplicationStage[] = [
   'schedule_hr_2',
   'hr_2_scheduled',
   'hr_2_done',
+  'onsite_interview',
+  'psychotechnical',
+  'pre_employment',
   'send_offer',
   'offer_sent',
   'hired',
@@ -106,6 +109,11 @@ export const STAGE_CONFIG: Record<ApplicationStage, StageConfig> = {
     emailTemplateStage: null,
     transitionMode: 'on_interview_submision',
   },
+  onsite_interview: {
+    label: 'Entrevista presencial',
+    emailTemplateStage: 'onsite_interview',
+    transitionMode: 'recruiter_action',
+  },
   schedule_tech_1: {
     label: 'Contactamos para agendar 1ª Entrevista Técnica',
     emailTemplateStage: 'sch_interview_tech_1',
@@ -135,6 +143,16 @@ export const STAGE_CONFIG: Record<ApplicationStage, StageConfig> = {
     label: '2ª Entrevista Técnica Realizada',
     emailTemplateStage: null,
     transitionMode: 'on_interview_submision',
+  },
+  psychotechnical: {
+    label: 'Psicotécnico',
+    emailTemplateStage: null,
+    transitionMode: 'recruiter_action',
+  },
+  pre_employment: {
+    label: 'Preocupacional',
+    emailTemplateStage: null,
+    transitionMode: 'recruiter_action',
   },
   send_offer: {
     label: 'Enviamos oferta laboral',

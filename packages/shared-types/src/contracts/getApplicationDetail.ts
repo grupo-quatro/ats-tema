@@ -21,6 +21,8 @@ export interface ApplicationDetailCandidateDTO {
   lastName?: string;
   email?: string;
   phone?: string;
+  expectedMonthlySalaryArs?: number;
+  linkedinUrl?: string;
   location?: string;
   yearsOfExperience?: number;
   /** Educación como texto libre (registro manual). */

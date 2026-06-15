@@ -184,6 +184,8 @@ export class CandidateRegistrationService {
         fullName,
         email: normalizedEmail,
         phone: normalizedProfile.phone,
+        expectedMonthlySalaryArs: normalizedProfile.expectedMonthlySalaryArs,
+        linkedinUrl: normalizedProfile.linkedinUrl,
         location: normalizedProfile.location,
         yearsOfExperience: normalizedProfile.yearsOfExperience,
         education: normalizedProfile.education,
@@ -285,6 +287,8 @@ export class CandidateRegistrationService {
       lastName: candidate.lastName,
       email: candidate.email,
       phone: candidate.phone,
+      expectedMonthlySalaryArs: candidate.expectedMonthlySalaryArs,
+      linkedinUrl: candidate.linkedinUrl,
       location: candidate.location,
       yearsOfExperience: candidate.yearsOfExperience,
       education: candidate.education,
@@ -358,6 +362,8 @@ export class CandidateRegistrationService {
       fullName,
       email: normalizedEmail,
       phone: normalizedProfile.phone,
+      expectedMonthlySalaryArs: normalizedProfile.expectedMonthlySalaryArs,
+      linkedinUrl: normalizedProfile.linkedinUrl,
       location: normalizedProfile.location,
       yearsOfExperience: normalizedProfile.yearsOfExperience,
       education: normalizedProfile.education,
@@ -405,7 +411,7 @@ export class CandidateRegistrationService {
       profileStatus: 'completed',
       applicationStatus: applicationId ? 'active' : undefined,
       applicationStage: applicationId ? 'applied' : undefined,
-      cvParseStatus: (currentCandidate as any).cvParseStatus || 'not_required',
+      cvParseStatus: currentCandidate.cvParseStatus || 'not_required',
     };
   }
 

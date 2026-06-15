@@ -30,6 +30,7 @@ export type CandidateStageKey =
   | 'contacto_entrevista_rrhh_2'
   | 'entrevista_rrhh_2_agendada'
   | 'entrevista_rrhh_2_realizada'
+  | 'entrevista_presencial'
   | 'cv_presentado_area'
   | 'contacto_entrevista_tecnica_1'
   | 'entrevista_tecnica_1_agendada'
@@ -37,6 +38,8 @@ export type CandidateStageKey =
   | 'contacto_entrevista_tecnica_2'
   | 'entrevista_tecnica_2_agendada'
   | 'entrevista_tecnica_2_realizada'
+  | 'psicotecnico'
+  | 'preocupacional'
   | 'enviar_oferta'
   | 'oferta_enviada'
   | 'contratado'
@@ -61,6 +64,9 @@ export const STAGE_ORDER: CandidateStageKey[] = [
   'contacto_entrevista_rrhh_2',
   'entrevista_rrhh_2_agendada',
   'entrevista_rrhh_2_realizada',
+  'entrevista_presencial',
+  'psicotecnico',
+  'preocupacional',
   'enviar_oferta',
   'oferta_enviada',
   'contratado',
@@ -75,6 +81,7 @@ export const STAGE_LABELS: Record<CandidateStageKey, string> = {
   contacto_entrevista_rrhh_2: 'Contactamos para agendar 2ª Entrevista RRHH',
   entrevista_rrhh_2_agendada: '2ª Entrevista RRHH Agendada',
   entrevista_rrhh_2_realizada: '2ª Entrevista RRHH Realizada',
+  entrevista_presencial: 'Entrevista presencial',
   cv_presentado_area: 'CV presentado al área técnica',
   contacto_entrevista_tecnica_1:
     'Contactamos para agendar 1ª Entrevista Técnica',
@@ -84,6 +91,8 @@ export const STAGE_LABELS: Record<CandidateStageKey, string> = {
     'Contactamos para agendar 2ª Entrevista Técnica',
   entrevista_tecnica_2_agendada: '2ª Entrevista Técnica Agendada',
   entrevista_tecnica_2_realizada: '2ª Entrevista Técnica Realizada',
+  psicotecnico: 'Psicotécnico',
+  preocupacional: 'Preocupacional',
   enviar_oferta: 'Enviamos oferta laboral',
   oferta_enviada: 'Oferta enviada',
   contratado: 'Contratado',
@@ -109,6 +118,8 @@ export interface CandidateMockProfile {
   title: string;
   email: string;
   phone: string;
+  expectedMonthlySalaryArs?: number;
+  linkedinUrl?: string;
   location: string;
   yearsOfExperience?: number;
   professionalSummary?: string;

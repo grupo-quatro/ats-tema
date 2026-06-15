@@ -8,6 +8,7 @@ export type EmailTemplateStage =
   | 'interview_tech_1'
   | 'sch_interview_tech_2'
   | 'interview_tech_2'
+  | 'onsite_interview'
   | 'offer'
   | 'hired'
   | 'rejected'

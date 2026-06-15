@@ -22,8 +22,10 @@ import {
 import { useRouter } from 'next/navigation';
 import {
   Briefcase,
+  DollarSign,
   FileText,
   GraduationCap,
+  LinkIcon,
   Mail,
   MapPin,
   Phone,
@@ -66,6 +68,8 @@ type ManualCandidateValues = {
   lastName: string;
   email: string;
   phone: string;
+  expectedMonthlySalaryArs: string;
+  linkedinUrl: string;
   location: string;
   technicalSkills: string;
   professionalSummary: string;
@@ -76,6 +80,8 @@ const defaultValues: ManualCandidateValues = {
   lastName: '',
   email: '',
   phone: '',
+  expectedMonthlySalaryArs: '',
+  linkedinUrl: '',
   location: '',
   technicalSkills: '',
   professionalSummary: '',
@@ -115,6 +121,43 @@ function validatePhone({ value }: { value: string }): string | undefined {
   return undefined;
 }
 
+function validateExpectedMonthlySalaryArs({
+  value,
+}: {
+  value: string;
+}): string | undefined {
+  const trimmed = value?.trim() ?? '';
+  if (!trimmed) return 'El salario mensual pretendido es requerido';
+
+  const numericValue = Number(trimmed);
+  if (!Number.isFinite(numericValue) || numericValue <= 0) {
+    return 'Ingresa un salario valido en ARS';
+  }
+
+  return undefined;
+}
+
+function validateLinkedinUrl({ value }: { value: string }): string | undefined {
+  const trimmed = value?.trim() ?? '';
+  if (!trimmed) return undefined;
+
+  const urlValue = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+
+  try {
+    const url = new URL(urlValue);
+    const hostname = url.hostname.toLowerCase();
+    if (hostname !== 'linkedin.com' && !hostname.endsWith('.linkedin.com')) {
+      return 'Ingresa una URL de LinkedIn valida';
+    }
+  } catch {
+    return 'Ingresa una URL valida';
+  }
+
+  return undefined;
+}
+
 function scrollToFirstInvalidField() {
   window.setTimeout(() => {
     const invalidField = document.querySelector<HTMLElement>(
@@ -132,6 +175,14 @@ const v = {
   lastName: requiredTrim('Los apellidos son requeridos'),
   email: { onBlur: validateEmail, onSubmit: validateEmail },
   phone: { onBlur: validatePhone, onSubmit: validatePhone },
+  expectedMonthlySalaryArs: {
+    onBlur: validateExpectedMonthlySalaryArs,
+    onSubmit: validateExpectedMonthlySalaryArs,
+  },
+  linkedinUrl: {
+    onBlur: validateLinkedinUrl,
+    onSubmit: validateLinkedinUrl,
+  },
 };
 
 const PAGE_MAX_WIDTH = 900;
@@ -225,6 +276,8 @@ export function ManualCandidateForm({
     form.setFieldValue('lastName', '');
     form.setFieldValue('email', '');
     form.setFieldValue('phone', '');
+    form.setFieldValue('expectedMonthlySalaryArs', '');
+    form.setFieldValue('linkedinUrl', '');
     form.setFieldValue('location', '');
     form.setFieldValue('technicalSkills', '');
     form.setFieldValue('professionalSummary', '');
@@ -337,6 +390,10 @@ export function ManualCandidateForm({
           lastName: value.lastName.trim(),
           email: value.email.trim(),
           phone: value.phone.trim(),
+          expectedMonthlySalaryArs: Math.round(
+            Number(value.expectedMonthlySalaryArs.trim()),
+          ),
+          linkedinUrl: value.linkedinUrl.trim() || undefined,
           location: value.location.trim() || undefined,
           yearsOfExperience,
           education: formatEducationSummary(parsedEducation),
@@ -405,6 +462,11 @@ export function ManualCandidateForm({
     form.setFieldValue('lastName', profile.lastName ?? '');
     form.setFieldValue('email', profile.email ?? '');
     form.setFieldValue('phone', profile.phone ?? '');
+    form.setFieldValue(
+      'expectedMonthlySalaryArs',
+      profile.expectedMonthlySalaryArs?.toString() ?? '',
+    );
+    form.setFieldValue('linkedinUrl', profile.linkedinUrl ?? '');
     form.setFieldValue('location', profile.location ?? '');
     form.setFieldValue(
       'technicalSkills',
@@ -698,6 +760,27 @@ export function ManualCandidateForm({
                   validators={v.phone}
                   fieldType="tel"
                   autoComplete="tel"
+                />
+                <ManualProfileFormField
+                  Field={Field}
+                  name="expectedMonthlySalaryArs"
+                  label="Salario mensual pretendido (ARS)"
+                  Icon={DollarSign}
+                  required
+                  validators={v.expectedMonthlySalaryArs}
+                  fieldType="number"
+                  slotProps={{
+                    htmlInput: { min: 1, step: 1 },
+                  }}
+                />
+                <ManualProfileFormField
+                  Field={Field}
+                  name="linkedinUrl"
+                  label="LinkedIn"
+                  Icon={LinkIcon}
+                  validators={v.linkedinUrl}
+                  autoComplete="url"
+                  placeholder="https://www.linkedin.com/in/tu-perfil"
                 />
                 <ManualProfileFormField
                   Field={Field}

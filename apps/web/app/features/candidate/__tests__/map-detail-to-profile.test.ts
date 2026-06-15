@@ -18,6 +18,8 @@ const makeDetail = (
     fullName: 'Valentina Rossi',
     email: 'valentina@example.com',
     phone: '1122334455',
+    expectedMonthlySalaryArs: 1800000,
+    linkedinUrl: 'https://linkedin.com/in/valentina',
     location: 'Buenos Aires',
     technicalSkills: ['React', 'TypeScript'],
   },
@@ -38,6 +40,8 @@ describe('mapDetailToProfile', () => {
     expect(profile.initials).toBe('VR');
     expect(profile.email).toBe('valentina@example.com');
     expect(profile.phone).toBe('1122334455');
+    expect(profile.expectedMonthlySalaryArs).toBe(1800000);
+    expect(profile.linkedinUrl).toBe('https://linkedin.com/in/valentina');
     expect(profile.location).toBe('Buenos Aires');
   });
 

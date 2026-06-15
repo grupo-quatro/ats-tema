@@ -4,6 +4,8 @@ export interface NormalizableCandidateProfile {
   fullName?: string;
   email?: string;
   phone?: string;
+  expectedMonthlySalaryArs?: number;
+  linkedinUrl?: string;
   location?: string;
   yearsOfExperience?: number;
   education?: string;
@@ -26,6 +28,17 @@ export function normalizeEmail(value?: string): string | undefined {
 export function normalizePhone(value?: string): string | undefined {
   const normalized = value?.replace(/\D/g, '');
   return normalized || undefined;
+}
+
+export function normalizeLinkedinUrl(value?: string): string | undefined {
+  const normalized = normalizeText(value);
+  if (!normalized) return undefined;
+
+  if (/^https?:\/\//i.test(normalized)) {
+    return normalized;
+  }
+
+  return `https://${normalized}`;
 }
 
 export function normalizeSkills(skills?: string[]): string[] | undefined {
@@ -64,6 +77,16 @@ export function normalizeYearsOfExperience(value?: number): number | undefined {
   return value;
 }
 
+export function normalizeExpectedMonthlySalaryArs(
+  value?: number,
+): number | undefined {
+  if (value === undefined || !Number.isFinite(value) || value <= 0) {
+    return undefined;
+  }
+
+  return Math.round(value);
+}
+
 export function normalizeCandidateProfile<
   T extends NormalizableCandidateProfile,
 >(profile: T): T {
@@ -74,6 +97,10 @@ export function normalizeCandidateProfile<
     fullName: normalizeText(profile.fullName),
     email: normalizeEmail(profile.email),
     phone: normalizePhone(profile.phone),
+    expectedMonthlySalaryArs: normalizeExpectedMonthlySalaryArs(
+      profile.expectedMonthlySalaryArs,
+    ),
+    linkedinUrl: normalizeLinkedinUrl(profile.linkedinUrl),
     location: normalizeText(profile.location),
     yearsOfExperience: normalizeYearsOfExperience(profile.yearsOfExperience),
     education: normalizeText(profile.education),

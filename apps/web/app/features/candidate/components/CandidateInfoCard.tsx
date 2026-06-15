@@ -8,6 +8,7 @@ import {
   Collapse,
   Divider,
   IconButton,
+  Link,
   Typography,
 } from '@mui/material';
 import {
@@ -15,8 +16,10 @@ import {
   Calendar,
   ChevronDown,
   ChevronUp,
+  DollarSign,
   FileText,
   GraduationCap,
+  LinkIcon,
   Mail,
   MapPin,
   Phone,
@@ -28,6 +31,12 @@ interface CandidateInfoCardProps {
   candidate: CandidateMockProfile;
   onViewCv: () => void;
 }
+
+const salaryFormatter = new Intl.NumberFormat('es-AR', {
+  style: 'currency',
+  currency: 'ARS',
+  maximumFractionDigits: 0,
+});
 
 export function CandidateInfoCard({
   candidate,
@@ -81,6 +90,29 @@ export function CandidateInfoCard({
               {candidate.phone}
             </Typography>
           </Box>
+          {candidate.expectedMonthlySalaryArs !== undefined ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <DollarSign size={14} />
+              <Typography variant="body2" color="text.secondary">
+                {salaryFormatter.format(candidate.expectedMonthlySalaryArs)}
+              </Typography>
+            </Box>
+          ) : null}
+          {candidate.linkedinUrl ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <LinkIcon size={14} />
+              <Link
+                href={candidate.linkedinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                variant="body2"
+                underline="hover"
+                sx={{ wordBreak: 'break-word' }}
+              >
+                {candidate.linkedinUrl}
+              </Link>
+            </Box>
+          ) : null}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <MapPin size={14} color="#64748b" />
             <Typography variant="body2" color="text.secondary">

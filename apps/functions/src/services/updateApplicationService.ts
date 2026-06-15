@@ -3,6 +3,8 @@ import { logger } from 'firebase-functions';
 import type {
   ApplicationStage,
   ApplicationStatus,
+  PreviewApplicationStageEmailResponse,
+  PreviewApplicationStageEmailPayload,
   UpdateApplicationStagePayload,
   UpdateApplicationStageResponse,
 } from '@ats/shared-types';
@@ -124,6 +126,57 @@ export class UpdateApplicationStageService {
     }
 
     return { ok: true };
+  }
+
+  async previewStageEmail(
+    payload: PreviewApplicationStageEmailPayload,
+    changedBy: string,
+  ): Promise<PreviewApplicationStageEmailResponse> {
+    const { applicationId, stage } = payload;
+
+    const application =
+      await this.applicationsRepository.findById(applicationId);
+    if (!application) {
+      throw new ApplicationNotFoundError(applicationId);
+    }
+
+    if (application.status === 'draft') {
+      throw new ApplicationStageTransitionError(
+        'No se puede cambiar la etapa de una postulación draft.',
+      );
+    }
+
+    if (
+      ['rejected', 'withdrawn', 'hired'].includes(application.status) &&
+      application.stage !== stage
+    ) {
+      throw new ApplicationStageTransitionError(
+        'La postulación está en un estado final y no puede avanzar sin una regla de reapertura.',
+      );
+    }
+
+    const [candidate, job, userRecord] = await Promise.all([
+      this.candidatesRepository.findById(application.candidateId),
+      this.jobsRepository.findById(application.jobId),
+      auth.getUser(changedBy).catch(() => null),
+    ]);
+
+    if (!candidate || !job || !this.stageEmailService) {
+      return {
+        stage,
+        candidateEmail: application.candidateEmail ?? '',
+        hasEmail: false,
+      };
+    }
+
+    return this.stageEmailService.previewIfTemplateExists(
+      application,
+      candidate,
+      job,
+      stage,
+      changedBy,
+      userRecord?.email ?? changedBy,
+    );
   }
 
   private resolveStatus(

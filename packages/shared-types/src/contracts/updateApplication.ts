@@ -10,3 +10,14 @@ export interface UpdateApplicationStagePayload {
 export interface UpdateApplicationStageResponse {
   ok: boolean;
 }
+
+export interface PreviewApplicationStageEmailPayload extends UpdateApplicationStagePayload {}
+
+export interface PreviewApplicationStageEmailResponse {
+  stage: ApplicationStage;
+  candidateEmail: string;
+  hasEmail: boolean;
+  templateName?: string;
+  subject?: string;
+  body?: string;
+}

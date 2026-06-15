@@ -61,6 +61,8 @@ export class GetApplicationDetailService {
           lastName: candidate.lastName,
           email: candidate.email,
           phone: candidate.phone,
+          expectedMonthlySalaryArs: candidate.expectedMonthlySalaryArs,
+          linkedinUrl: candidate.linkedinUrl,
           location: candidate.location,
           yearsOfExperience: candidate.yearsOfExperience,
           education: candidate.education,

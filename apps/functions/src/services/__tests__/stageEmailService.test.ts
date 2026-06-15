@@ -206,21 +206,23 @@ describe('StageEmailService.sendIfTemplateExists', () => {
     );
   });
 
-  it('no crea EmailLog ni llama al sender cuando el stage no tiene template configurado', async () => {
-    // 'profile_pending' mapea a null en APPLICATION_TO_EMAIL_STAGE_MAP
-    await service.sendIfTemplateExists(
-      application,
-      candidate,
-      job,
-      'profile_pending',
-      'recruiter-1',
-      'recruiter@example.com',
-    );
+  it.each(['psychotechnical', 'pre_employment'] as const)(
+    'no crea EmailLog ni llama al sender cuando el stage %s no tiene template configurado',
+    async (stage) => {
+      await service.sendIfTemplateExists(
+        application,
+        candidate,
+        job,
+        stage,
+        'recruiter-1',
+        'recruiter@example.com',
+      );
 
-    expect(templateRepo.findByStage).not.toHaveBeenCalled();
-    expect(logRepo.create).not.toHaveBeenCalled();
-    expect(sender.send).not.toHaveBeenCalled();
-  });
+      expect(templateRepo.findByStage).not.toHaveBeenCalled();
+      expect(logRepo.create).not.toHaveBeenCalled();
+      expect(sender.send).not.toHaveBeenCalled();
+    },
+  );
 
   it('no crea EmailLog cuando el stage tiene mapeo pero no hay template en Firestore', async () => {
     vi.mocked(templateRepo.findByStage).mockResolvedValue(null);
@@ -321,6 +323,35 @@ describe('StageEmailService.sendIfTemplateExists', () => {
     expect(logRepo.updateStatus).toHaveBeenCalledWith('log-id-1', {
       status: 'sent',
     });
+  });
+
+  it('envia email de entrevista presencial usando el texto fijo de la plantilla', async () => {
+    vi.mocked(templateRepo.findByStage).mockResolvedValue(
+      makeTemplate({
+        stage: 'onsite_interview',
+        subject: 'Entrevista presencial',
+        body: '<p>Direccion: Av. Corrientes 1234</p>',
+      }),
+    );
+    vi.mocked(userRepo.getGmailCredential).mockResolvedValue(validCredential);
+    vi.mocked(sender.send).mockResolvedValue(undefined);
+
+    await service.sendIfTemplateExists(
+      application,
+      candidate,
+      job,
+      'onsite_interview',
+      'recruiter-1',
+      'recruiter@example.com',
+    );
+
+    expect(templateRepo.findByStage).toHaveBeenCalledWith('onsite_interview');
+    expect(resolver.resolve).toHaveBeenCalledWith(
+      expect.objectContaining({ stage: 'onsite_interview' }),
+      expect.objectContaining({ companyName: 'ATS Corp' }),
+    );
+    expect(logRepo.create).toHaveBeenCalledOnce();
+    expect(sender.send).toHaveBeenCalledOnce();
   });
 
   it('marca EmailLog como failed con mensaje descriptivo cuando el recruiter no tiene Gmail conectado', async () => {
@@ -444,5 +475,109 @@ describe('StageEmailService.sendIfTemplateExists', () => {
       expect.anything(),
       expect.objectContaining({ calendarLink: '' }),
     );
+  });
+});
+
+describe('StageEmailService.previewIfTemplateExists', () => {
+  let templateRepo: IEmailTemplateRepository;
+  let logRepo: IEmailLogRepository;
+  let userRepo: IUserRepository;
+  let orgRepo: IOrgConfigRepository;
+  let resolver: TemplateResolverService;
+  let sender: GmailSenderService;
+  let oauth2: OAuth2Client;
+  let service: StageEmailService;
+
+  const application = makeApplication();
+  const candidate = makeCandidate();
+  const job = makeJob();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    templateRepo = makeEmailTemplateRepo();
+    logRepo = makeEmailLogRepo();
+    userRepo = makeUserRepo();
+    orgRepo = makeOrgConfigRepo();
+    resolver = makeTemplateResolver();
+    sender = makeGmailSender();
+    oauth2 = makeOAuth2Client();
+
+    vi.mocked(orgRepo.get).mockResolvedValue({ companyName: 'ATS Corp' });
+
+    service = buildService(
+      templateRepo,
+      logRepo,
+      userRepo,
+      orgRepo,
+      resolver,
+      sender,
+      oauth2,
+    );
+  });
+
+  it('retorna hasEmail false cuando la etapa no tiene template configurado', async () => {
+    const preview = await service.previewIfTemplateExists(
+      application,
+      candidate,
+      job,
+      'screening',
+      'recruiter-1',
+      'recruiter@example.com',
+    );
+
+    expect(preview).toEqual({
+      stage: 'screening',
+      candidateEmail: 'ana@example.com',
+      hasEmail: false,
+    });
+    expect(templateRepo.findByStage).not.toHaveBeenCalled();
+    expect(sender.send).not.toHaveBeenCalled();
+    expect(logRepo.create).not.toHaveBeenCalled();
+  });
+
+  it('resuelve la plantilla con datos reales para mostrar el preview', async () => {
+    const template = makeTemplate({
+      name: 'Postulacion recibida',
+      stage: 'application_received',
+      subject: 'Entrevista para [Nombre del Puesto]',
+      body: '<p>Hola [Nombre del Candidato]</p>',
+    });
+    vi.mocked(templateRepo.findByStage).mockResolvedValue(template);
+    vi.mocked(resolver.resolve).mockReturnValue({
+      subject: 'Entrevista para Desarrollador Senior',
+      body: '<p>Hola Ana Garcia</p>',
+    });
+
+    const preview = await service.previewIfTemplateExists(
+      application,
+      candidate,
+      job,
+      'applied',
+      'recruiter-1',
+      'recruiter@example.com',
+    );
+
+    expect(templateRepo.findByStage).toHaveBeenCalledWith(
+      'application_received',
+    );
+    expect(resolver.resolve).toHaveBeenCalledWith(
+      template,
+      expect.objectContaining({
+        candidateName: expect.stringContaining('Ana'),
+        positionName: 'Desarrollador Senior',
+        recruiterEmail: 'recruiter@example.com',
+        companyName: 'ATS Corp',
+      }),
+    );
+    expect(preview).toEqual({
+      stage: 'applied',
+      candidateEmail: 'ana@example.com',
+      hasEmail: true,
+      templateName: 'Postulacion recibida',
+      subject: 'Entrevista para Desarrollador Senior',
+      body: '<p>Hola Ana Garcia</p>',
+    });
+    expect(sender.send).not.toHaveBeenCalled();
+    expect(logRepo.create).not.toHaveBeenCalled();
   });
 });

@@ -26,6 +26,7 @@ export { getApplicationsByJob } from './callables/getApplicationsByJob';
 export { getApplicationsByCandidate } from './callables/getApplicationsByCandidate';
 export { getApplicationDetail } from './callables/getApplicationDetail';
 export {
+  previewApplicationStageEmail,
   updateApplication,
   updateApplicationStage,
 } from './callables/updateApplication';

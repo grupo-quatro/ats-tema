@@ -38,6 +38,7 @@ const makePayload = (
   lastName: 'García',
   email: 'ana@example.com',
   phone: '11223344',
+  expectedMonthlySalaryArs: 1200000,
   ...overrides,
 });
 
@@ -95,6 +96,7 @@ describe('CandidateRegistrationService.registerCandidate', () => {
         fullName: 'Ana García',
         email: 'ana@example.com',
         phone: '11223344',
+        expectedMonthlySalaryArs: 1200000,
         profileStatus: 'completed',
         registrationSource: 'manual',
         cvParseStatus: 'not_required',
@@ -392,6 +394,8 @@ describe('CandidateRegistrationService.getCandidateProfileForConfirmation', () =
       lastName: 'García',
       email: 'ana@example.com',
       phone: '11223344',
+      expectedMonthlySalaryArs: 1200000,
+      linkedinUrl: 'https://linkedin.com/in/ana-garcia',
       location: 'Buenos Aires',
       yearsOfExperience: 3,
       education: 'Analista de Sistemas',
@@ -446,6 +450,8 @@ describe('CandidateRegistrationService.getCandidateProfileForConfirmation', () =
         lastName: 'García',
         email: 'ana@example.com',
         phone: '11223344',
+        expectedMonthlySalaryArs: 1200000,
+        linkedinUrl: 'https://linkedin.com/in/ana-garcia',
         location: 'Buenos Aires',
         yearsOfExperience: 3,
         education: 'Analista de Sistemas',
@@ -575,6 +581,7 @@ describe('CandidateRegistrationService.confirmCandidateProfile', () => {
         lastName: 'Loria',
         email: 'ana@example.com',
         phone: '11223344',
+        expectedMonthlySalaryArs: 1200000,
       },
     });
 
@@ -584,6 +591,7 @@ describe('CandidateRegistrationService.confirmCandidateProfile', () => {
         firstName: 'Ana',
         lastName: 'Loria',
         fullName: 'Ana Loria',
+        expectedMonthlySalaryArs: 1200000,
         profileStatus: 'completed',
       }),
     );
@@ -613,6 +621,8 @@ describe('CandidateRegistrationService.confirmCandidateProfile', () => {
         lastName: ' Loria ',
         email: ' ANA@Example.COM ',
         phone: '+54 (11) 2233-4455',
+        expectedMonthlySalaryArs: 1200000.4,
+        linkedinUrl: ' linkedin.com/in/ana-loria ',
         technicalSkills: [' React ', 'react', ' TypeScript '],
       },
     });
@@ -628,6 +638,8 @@ describe('CandidateRegistrationService.confirmCandidateProfile', () => {
         fullName: 'Ana Loria',
         email: 'ana@example.com',
         phone: '541122334455',
+        expectedMonthlySalaryArs: 1200000,
+        linkedinUrl: 'https://linkedin.com/in/ana-loria',
         technicalSkills: ['React', 'TypeScript'],
       }),
     );
@@ -662,6 +674,7 @@ describe('CandidateRegistrationService.confirmCandidateProfile', () => {
           lastName: 'Loria',
           email: 'ana@example.com',
           phone: '11223344',
+          expectedMonthlySalaryArs: 1200000,
         },
       }),
     ).rejects.toThrow(CandidateRegistrationConflictError);
@@ -688,6 +701,7 @@ describe('CandidateRegistrationService.confirmCandidateProfile', () => {
           lastName: 'Loria',
           email: 'ana@example.com',
           phone: '11223344',
+          expectedMonthlySalaryArs: 1200000,
         },
       }),
     ).resolves.toMatchObject({
