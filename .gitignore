@@ -47,3 +47,4 @@ apps/functions/firestore-debug.log
 emulator-data/
 firebase-export-*/
 firestore-debug.log
+.secret.local
