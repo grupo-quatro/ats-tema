@@ -101,6 +101,8 @@ export class UserRepository implements IUserRepository {
 
   // ─── Gmail ───────────────────────────────────────────────────────────────────
 
+  // ─── Gmail ───────────────────────────────────────────────────────────────────
+
   async getGmailCredential(uid: string): Promise<GmailCredential | null> {
     try {
       const snapshot = await this.collection.doc(uid).get();
@@ -136,6 +138,8 @@ export class UserRepository implements IUserRepository {
       );
     }
   }
+
+  // ─── Calendar OAuth ───────────────────────────────────────────────────────────
 
   // ─── Calendar OAuth ───────────────────────────────────────────────────────────
 

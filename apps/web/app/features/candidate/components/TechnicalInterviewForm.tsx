@@ -4,12 +4,20 @@ import {
   Button,
   Chip,
   CircularProgress,
+  FormControl,
+  FormLabel,
+  MenuItem,
   Rating,
+  Select,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
-import type { ApplicationStage, Skill } from '@ats/shared-types';
+import {
+  SENIORITY_OPTIONS,
+  type ApplicationStage,
+  type Skill,
+} from '@ats/shared-types';
 import { saveCandidacyNote } from '../../../shared/api/candidacyNotesApi';
 import { saveInterviewForm } from '../../../shared/api/interviewFormsApi';
 import AppSnackbar from '@/shared/components/AppSnackbar';
@@ -38,6 +46,7 @@ export function TechnicalInterviewForm({
   const [ratings, setRatings] =
     useState<Record<string, number>>(initialRatings);
   const [overall, setOverall] = useState<number>(0);
+  const [technicalSeniority, setTechnicalSeniority] = useState('');
   const [decision, setDecision] = useState<CandidateStageKey | ''>('');
   const [comments, setComments] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -54,11 +63,15 @@ export function TechnicalInterviewForm({
   const trimmedComments = comments.trim();
   const decisionLabel =
     decisionOptions.find((option) => option.key === decision)?.label ?? '';
+  const technicalSeniorityLabel =
+    SENIORITY_OPTIONS.find((option) => option.value === technicalSeniority)
+      ?.label ?? '';
   const unratedSkills = skills.filter(
     (skill) => (ratings[skill.name] ?? 0) < 1,
   );
   const isFormValid =
     overall >= 1 &&
+    technicalSeniority !== '' &&
     decision !== '' &&
     trimmedComments.length > 0 &&
     unratedSkills.length === 0 &&
@@ -74,6 +87,11 @@ export function TechnicalInterviewForm({
 
     if (!overall) {
       setErrorMessage('La calificación general es obligatoria.');
+      return;
+    }
+
+    if (!technicalSeniorityLabel) {
+      setErrorMessage('El seniority técnico es obligatorio.');
       return;
     }
 
@@ -109,6 +127,10 @@ export function TechnicalInterviewForm({
             question: 'Nivel técnico general',
             answer: 'Evaluación registrada en entrevista.',
             rating: overall,
+          },
+          {
+            question: 'Seniority técnico',
+            answer: technicalSeniorityLabel,
           },
           {
             question: 'Decisión recomendada',
@@ -226,6 +248,28 @@ export function TechnicalInterviewForm({
           disabled={isSaving}
         />
       </Box>
+
+      <FormControl fullWidth required sx={{ mb: 2 }}>
+        <FormLabel sx={{ mb: 1, fontWeight: 600 }}>
+          Seniority Técnico
+        </FormLabel>
+        <Select
+          size="small"
+          value={technicalSeniority}
+          onChange={(event) => setTechnicalSeniority(event.target.value)}
+          disabled={isSaving}
+          displayEmpty
+        >
+          <MenuItem value="" disabled>
+            Seleccionar
+          </MenuItem>
+          {SENIORITY_OPTIONS.map((option) => (
+            <MenuItem key={option.value} value={option.value}>
+              {option.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
       <InterviewDecisionSelect
         value={decision}

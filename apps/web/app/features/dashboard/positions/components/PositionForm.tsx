@@ -23,11 +23,12 @@ import { Plus, Sparkles, Star, FileText, CircleAlert, X } from 'lucide-react';
 
 import { useState } from 'react';
 
-import type {
-  CreateJobPayload,
-  Skill,
-  JobLocation,
-  JobStatus,
+import {
+  SENIORITY_OPTIONS,
+  type CreateJobPayload,
+  type JobLocation,
+  type JobStatus,
+  type Skill,
 } from '@ats/shared-types';
 
 interface PositionFormProps {
@@ -347,7 +348,7 @@ export default function PositionForm({
                         >
                           Seniority Buscado *
                         </FormLabel>
-                        <TextField
+                        <Select
                           size="small"
                           fullWidth
                           value={field.state.value}
@@ -361,7 +362,16 @@ export default function PositionForm({
                               bgcolor: '#f8fafc',
                             },
                           }}
-                        />
+                        >
+                          <MenuItem value="" disabled>
+                            Seleccionar
+                          </MenuItem>
+                          {SENIORITY_OPTIONS.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                              {option.label}
+                            </MenuItem>
+                          ))}
+                        </Select>
                       </FormControl>
                     )}
                   </form.Field>

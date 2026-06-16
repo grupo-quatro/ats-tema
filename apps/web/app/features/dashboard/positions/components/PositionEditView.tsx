@@ -35,14 +35,15 @@ import {
   Users,
   X,
 } from 'lucide-react';
-import type {
-  Job,
-  JobLocation,
-  JobStatus,
-  ListPositionsResponse,
-  Skill,
-  UpdateJobDTO,
-  UpdatePositionPayload,
+import {
+  SENIORITY_OPTIONS,
+  type Job,
+  type JobLocation,
+  type JobStatus,
+  type ListPositionsResponse,
+  type Skill,
+  type UpdateJobDTO,
+  type UpdatePositionPayload,
 } from '@ats/shared-types';
 import {
   updatePosition,
@@ -940,7 +941,7 @@ export default function PositionEditView({ job, onSave }: Props) {
                           >
                             Seniority Buscado
                           </FieldLabel>
-                          <TextField
+                          <Select
                             fullWidth
                             size="small"
                             value={field.state.value}
@@ -948,8 +949,21 @@ export default function PositionEditView({ job, onSave }: Props) {
                             onChange={(event) =>
                               field.handleChange(event.target.value)
                             }
-                            sx={inputSx}
-                          />
+                            sx={{
+                              borderRadius: '8px',
+                              bgcolor: '#f8fafc',
+                              minHeight: 44,
+                            }}
+                          >
+                            <MenuItem value="" disabled>
+                              Seleccionar
+                            </MenuItem>
+                            {SENIORITY_OPTIONS.map((option) => (
+                              <MenuItem key={option.value} value={option.value}>
+                                {option.label}
+                              </MenuItem>
+                            ))}
+                          </Select>
                         </FormControl>
                       )}
                     </form.Field>
