@@ -29,7 +29,6 @@ import { useAuth } from '../../shared/lib/authContext';
 import ConnectGmailButton from '../../features/gmail/components/ConnectGmailButton';
 import ConnectCalendarButton from '../../features/calendar/components/ConnectCalendarButton';
 import ConnectGoogleButton from '../../features/auth/components/ConnectGoogleButton';
-import ConnectGoogleButton from '../../features/auth/components/ConnectGoogleButton';
 import CalendarLinkEditor from '../../features/calendar/components/CalendarLinkEditor';
 import { useEmployeeProfile } from '../../features/calendar/hooks/useEmployeeProfile';
 
@@ -70,13 +69,7 @@ export default function Sidebar() {
   const { employee } = useEmployeeProfile();
   const gmailConnected = employee?.gmailStatus === GMAIL_STATUS.CONNECTED;
   const calendarConnected = employee?.calendarStatus === GMAIL_STATUS.CONNECTED;
-  const gmailConnected = employee?.gmailStatus === GMAIL_STATUS.CONNECTED;
-  const calendarConnected = employee?.calendarStatus === GMAIL_STATUS.CONNECTED;
   const gmailRevoked = employee?.gmailStatus === GMAIL_STATUS.DISCONNECTED;
-  const calendarRevoked =
-    employee?.calendarStatus === GMAIL_STATUS.DISCONNECTED;
-  const showUnifiedConnect =
-    role === EMPLOYEE_ROLES.HR && !gmailConnected && !calendarConnected;
   const calendarRevoked =
     employee?.calendarStatus === GMAIL_STATUS.DISCONNECTED;
   const showUnifiedConnect =

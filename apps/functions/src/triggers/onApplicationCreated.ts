@@ -115,7 +115,7 @@ export const onApplicationCreated = onDocumentCreated(
       );
 
       logger.info(
-        `[onApplicationCreated] Email de postulación recibida procesado para applicationId=${applicationId}`,
+        `[onApplicationCreated] Email de postulación recibida procesado p:ara applicationId=${applicationId}`,
       );
     } catch (error) {
       logger.error(

@@ -250,9 +250,7 @@ export function TechnicalInterviewForm({
       </Box>
 
       <FormControl fullWidth required sx={{ mb: 2 }}>
-        <FormLabel sx={{ mb: 1, fontWeight: 600 }}>
-          Seniority Técnico
-        </FormLabel>
+        <FormLabel sx={{ mb: 1, fontWeight: 600 }}>Seniority Técnico</FormLabel>
         <Select
           size="small"
           value={technicalSeniority}
