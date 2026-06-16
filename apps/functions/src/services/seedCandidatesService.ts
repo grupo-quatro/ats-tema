@@ -405,6 +405,14 @@ const CANDIDATE_SEEDS: SeedCandidateDefinition[] = [
   },
 ];
 
+const CANDIDATE_INFO_MAP: Record<string, { fullName: string; email: string }> =
+  Object.fromEntries(
+    CANDIDATE_SEEDS.map((seed) => [
+      seed.id,
+      { fullName: seed.data.fullName ?? '', email: seed.data.email ?? '' },
+    ]),
+  );
+
 // Distribuye candidatos en distintas etapas del pipeline para los jobs del seeder
 const APPLICATION_SEEDS: SeedApplicationDefinition[] = [
   // frontend-ssr-developer — candidatos en distintas etapas
@@ -580,9 +588,12 @@ export class SeedCandidatesService {
             continue;
           }
 
+          const candidateInfo = CANDIDATE_INFO_MAP[appSeed.candidateId];
           const dto: CreateApplicationDTO = {
             jobId: appSeed.jobId,
             candidateId: appSeed.candidateId,
+            candidateName: candidateInfo?.fullName,
+            candidateEmail: candidateInfo?.email,
             stage: appSeed.stage,
             status: appSeed.status,
             ...(appSeed.fitScore !== undefined && {

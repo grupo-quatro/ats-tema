@@ -17,6 +17,11 @@ export class GmailSendError extends Error {
   }
 }
 
+function encodeRfc2047(text: string): string {
+  if (!/[^\x00-\x7F]/.test(text)) return text;
+  return `=?UTF-8?B?${Buffer.from(text, 'utf8').toString('base64')}?=`;
+}
+
 export class GmailSenderService {
   async send(payload: SendEmailPayload): Promise<void> {
     if (process.env.GMAIL_MOCK === 'true') {
@@ -29,7 +34,7 @@ export class GmailSenderService {
     const mimeString = [
       'From: me',
       `To: ${payload.to}`,
-      `Subject: ${payload.subject}`,
+      `Subject: ${encodeRfc2047(payload.subject)}`,
       'MIME-Version: 1.0',
       'Content-Type: text/html; charset=utf-8',
       '',

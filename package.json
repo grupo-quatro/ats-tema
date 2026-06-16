@@ -12,6 +12,7 @@
     "test": "turbo run test",
     "test:watch": "turbo run test -- --watch",
     "seed": "node scripts/seed-emulator.mjs",
+    "seed:staging": "node scripts/seed-staging.mjs",
     "seed-gmail": "node scripts/seed-emulator.mjs && node --env-file=apps/web/.env.local scripts/seed-gmail-credential.mjs"
   },
   "config": {
