@@ -118,7 +118,37 @@ jobs:
             fs.writeFileSync('apps/web/package.json', JSON.stringify(pkg, null, 2));
           "
 
+      - name: Empaquetar shared-types para Cloud Functions
+        run: |
+          mkdir -p apps/functions/shared-types
+          cp -R packages/shared-types/dist apps/functions/shared-types/dist
+          node -e "
+            const fs = require('fs');
+
+            const sharedPkg = {
+              name: '@ats/shared-types',
+              version: '0.0.0',
+              main: './dist/index.js',
+              types: './dist/index.d.ts',
+              exports: {
+                '.': {
+                  types: './dist/index.d.ts',
+                  default: './dist/index.js'
+                }
+              }
+            };
+            fs.writeFileSync(
+              'apps/functions/shared-types/package.json',
+              JSON.stringify(sharedPkg, null, 2)
+            );
+
+            const functionsPkgPath = 'apps/functions/package.json';
+            const functionsPkg = JSON.parse(fs.readFileSync(functionsPkgPath, 'utf8'));
+            functionsPkg.dependencies['@ats/shared-types'] = 'file:./shared-types';
+            fs.writeFileSync(functionsPkgPath, JSON.stringify(functionsPkg, null, 2));
+          "
+
       - name: Deploy
-        run: firebase deploy --only hosting,functions,firestore,storage --project ats-tema-ort
+        run: firebase deploy --only hosting,functions,firestore,storage --project ats-tema-ort --force
         env:
           FIREBASE_TOKEN: ${{ steps.auth.outputs.access_token }}
