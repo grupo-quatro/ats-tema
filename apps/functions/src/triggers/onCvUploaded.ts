@@ -19,7 +19,7 @@ export const onCVUploaded = onObjectFinalized(
   {
     memory: '512MiB',
     timeoutSeconds: 120,
-    region: process.env.FUNCTIONS_REGION ?? 'us-central1',
+    region: process.env.FUNCTIONS_REGION ?? 'us-east1',
   },
   async (event) => {
     const filePath = event.data.name;
